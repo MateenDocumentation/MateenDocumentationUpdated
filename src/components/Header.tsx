@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import logo from '../assets/logo.webp';
+const logo = '/logo.webp';
 
 const serviceLinks = [
   { label: 'Printing & Photocopy',              to: '/services/printing-photocopy' },

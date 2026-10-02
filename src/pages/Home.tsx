@@ -2,8 +2,8 @@ import { useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion';
 import Layout from '../components/Layout';
-import heroPrinterPoster from '../imports/mateen_hero_printer_poster.webp';
-import heroPrinterVideo from '../imports/mateen_hero_printer_preview_16x9.mp4';
+const heroPrinterPoster = '/mateen_hero_printer_poster.webp';
+const heroPrinterVideo = '/mateen_hero_printer_preview_16x9.mp4';
 
 /* ── Motion variants ──────────────────────────────── */
 const fadeUp = {
