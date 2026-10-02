@@ -1,0 +1,15 @@
+{
+  "title": "Mateen Documentation | Where Printing Meets Documentation",
+  "description": "Printing, photocopying, customized products, student support, NADRA/biometric facilitation, legal and business documentation services in North Nazimabad, Karachi.",
+  "language": "en",
+  "robots": {
+    "index": true
+  },
+  "icons": {
+    "icon": "/favicon.png"
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

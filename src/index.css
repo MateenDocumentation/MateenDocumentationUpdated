@@ -1,0 +1,103 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --color-brand:       #071A2B;
+  --color-brand-dark:  #090B0D;
+  --color-brand-mid:   #071A2B;
+  --color-brand-light: #00AEEF;
+  --color-brand-pale:  #EEEAE1;
+  --color-accent:      #00AEEF;
+  --color-magenta:     #EC008C;
+  --color-yellow:      #FFD400;
+  --color-paper:       #EEF7FF;
+}
+
+:root {
+  --background:           #EEF7FF;
+  --foreground:           #090B0D;
+  --card:                 #EEF7FF;
+  --card-foreground:      #090B0D;
+  --primary:              #071A2B;
+  --primary-foreground:   #EEF7FF;
+  --secondary:            #EEF7FF;
+  --secondary-foreground: #071A2B;
+  --muted:                #EEF7FF;
+  --muted-foreground:     #6b7280;
+  --accent:               #00AEEF;
+  --accent-foreground:    #EEF7FF;
+  --border:               #e2e8f0;
+  --ring:                 #071A2B;
+  --radius:               10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Manrope', 'Inter', sans-serif;
+  color: var(--foreground);
+  background: #EEF7FF;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+}
+
+/* ── Scrollbar ─────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #071A2B; border-radius: 2px; }
+
+/* ── Btn arrow ─────────────── */
+.btn-arrow {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background-clip: padding-box;
+}
+.btn-arrow .arrow-icon { transition: transform 0.25s ease; }
+.btn-arrow:hover .arrow-icon { transform: translateX(4px); }
+
+/* Keep animated fills, image zooms, and hover layers inside rounded controls. */
+.hover-clip,
+a[class*='rounded-'],
+button[class*='rounded-'] {
+  isolation: isolate;
+  background-clip: padding-box;
+  overflow: hidden;
+}
+
+.hover-clip::before,
+.hover-clip::after,
+a[class*='rounded-']::before,
+a[class*='rounded-']::after,
+button[class*='rounded-']::before,
+button[class*='rounded-']::after {
+  border-radius: inherit;
+}
+
+::selection {
+  color: #EEF7FF;
+  background: #071A2B;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
