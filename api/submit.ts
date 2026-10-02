@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
+const DESTINATION = 'mateendocumentation@gmail.com';
 const MAX_BODY_BYTES = 28 * 1024 * 1024;
 
 type Submission = {
@@ -38,8 +39,6 @@ export default async function handler(request: IncomingMessage, response: Server
     return sendJson(response, 503, { error: 'Email delivery is not configured yet. Please use WhatsApp for now.' });
   }
 
-  const contactToEmail = process.env.CONTACT_TO_EMAIL || 'mateendocumentation@gmail.com';
-
   try {
     const submission = await readJson(request);
     if (!submission.type || !submission.fields?.['Full Name'] || !submission.fields.Phone) {
@@ -62,8 +61,8 @@ export default async function handler(request: IncomingMessage, response: Server
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.RESEND_FROM_EMAIL || 'Mateen Documentation Website <contact@mateendocumentation.com>',
-        to: [contactToEmail],
+        from: process.env.RESEND_FROM_EMAIL || 'Mateen Documentation Website <onboarding@resend.dev>',
+        to: [DESTINATION],
         reply_to: submission.fields.Email || undefined,
         subject: `${submission.type === 'order' ? 'Online order' : 'Contact message'} from ${submission.fields['Full Name']}`,
         html: `<h1>Mateen Documentation website submission</h1><table style="border-collapse:collapse">${rows}</table>`,
