@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Layout from './Layout';
+import { useCms } from '../cms/CmsContext';
+import { useCmsSection, str, arr } from '../cms/useCmsPage';
 
 interface ServiceItem {
   name: string;
@@ -261,21 +263,71 @@ export default function ServicePage({
   related,
   children,
 }: Props) {
-  const waMsg = encodeURIComponent(ctaWhatsApp ?? `Hi, I need help with ${title}`);
-  const waHref = `https://wa.me/923312478337?text=${waMsg}`;
-  const phoneHref = 'tel:+923312478337';
-  const orderLink = `/order-online?service=${encodeURIComponent(title)}`;
-  const heroUrl = new URL(heroImage, 'https://mateendocumentation.com');
+  // ── CMS overrides: look up this service by URL slug ───────────────────────
+  const location = useLocation();
+  const { cmsServices, headerSettings, siteSettings } = useCms();
+  const urlSlug = location.pathname.replace(/^\/services\//, '').replace(/\/+$/, '');
+  const pageSlug = `/services/${urlSlug}`;
+  const cmsService = cmsServices.find(s => s.slug === urlSlug);
+
+  // Per-service page sections
+  const heroSection = useCmsSection(pageSlug, 'hero');
+  const servicesListSection = useCmsSection(pageSlug, 'services_list');
+  const howStepsSection = useCmsSection(pageSlug, 'how_steps');
+  const relatedSection = useCmsSection(pageSlug, 'related');
+  const sharedHowSection = useCmsSection('/shared', 'service_labels');
+
+  // Apply CMS values with prop fallbacks
+  const resolvedTitle = (cmsService?.title?.trim() || title);
+  const resolvedIntro = (cmsService?.description?.trim() || intro);
+  const resolvedHeroImage = (cmsService?.image_url?.trim() || heroImage);
+  const resolvedHeroSubtitle = str(heroSection, 'subtitle', heroSubtitle);
+  const resolvedNote = str(heroSection, 'note', note ?? '');
+  const resolvedCtaWhatsApp = str(heroSection, 'wa_message', '');
+
+  // Checklist items from CMS
+  type CmsServiceItem = { name: string; desc?: string };
+  const cmsServiceItems = arr<CmsServiceItem>(servicesListSection, 'items');
+  const resolvedServices = cmsServiceItems.length ? cmsServiceItems : services;
+
+  // How We Help steps from CMS
+  type CmsHowStep = { num: string; title: string; desc: string };
+  const cmsHowSteps = arr<CmsHowStep>(howStepsSection, 'steps');
+  const resolvedHowSteps = cmsHowSteps.length
+    ? HOW_STEPS.map((s, i) => ({ ...s, title: cmsHowSteps[i]?.title ?? s.title, desc: cmsHowSteps[i]?.desc ?? s.desc }))
+    : HOW_STEPS;
+
+  // Shared section labels (global across all service pages)
+  const labelAvailable = str(sharedHowSection, 'available_services', 'Available Services');
+  const labelWhatWeOffer = str(sharedHowSection, 'what_we_offer', 'What We Offer');
+  const labelSimpleProcess = str(sharedHowSection, 'simple_process', 'Simple Process');
+  const labelHowWeHelp = str(sharedHowSection, 'how_we_help', 'How We Help You');
+  const labelExploreMore = str(sharedHowSection, 'explore_more', 'Explore More');
+  const labelYouMightNeed = str(sharedHowSection, 'you_might_need', 'You Might Also Need');
+
+  // Related services from CMS
+  type CmsRelated = { label: string; to: string };
+  const cmsRelated = arr<CmsRelated>(relatedSection, 'items');
+  const resolvedRelated = cmsRelated.length ? cmsRelated : related;
+
+  // CMS phone/WhatsApp with hardcoded fallback
+  const rawPhone = headerSettings?.phone ?? siteSettings?.phone ?? '+923312478337';
+  const rawWa = headerSettings?.whatsapp ?? siteSettings?.whatsapp ?? '923312478337';
+  const phoneHref = `tel:${rawPhone.replace(/\s/g, '')}`;
+  const waMsg = encodeURIComponent(resolvedCtaWhatsApp || ctaWhatsApp || `Hi, I need help with ${resolvedTitle}`);
+  const waHref = `https://wa.me/${rawWa.replace(/[^0-9]/g, '')}?text=${waMsg}`;
+  const orderLink = `/order-online?service=${encodeURIComponent(resolvedTitle)}`;
+  const heroUrl = new URL(resolvedHeroImage, 'https://mateendocumentation.com');
   const heroWidth = Number(heroUrl.searchParams.get('w')) || undefined;
   const heroHeight = Number(heroUrl.searchParams.get('h')) || undefined;
-  const isPrintService = /print|photo|card|stationery|design|assignment|business/i.test(title);
-  const printStyle = /bulk/i.test(title)
+  const isPrintService = /print|photo|card|stationery|design|assignment|business/i.test(resolvedTitle);
+  const printStyle = /bulk/i.test(resolvedTitle)
     ? 'bulk'
-    : /student|assignment/i.test(title)
+    : /student|assignment/i.test(resolvedTitle)
       ? 'academic'
-      : /custom|card|photo/i.test(title)
+      : /custom|card|photo/i.test(resolvedTitle)
         ? 'product'
-        : /business|design|branding/i.test(title)
+        : /business|design|branding/i.test(resolvedTitle)
           ? 'business'
           : 'production';
 
@@ -289,7 +341,7 @@ export default function ServicePage({
         {/* Background image */}
         <div className="absolute inset-0">
           <img
-            src={heroImage}
+            src={resolvedHeroImage}
             alt=""
             width={heroWidth}
             height={heroHeight}
@@ -375,7 +427,7 @@ export default function ServicePage({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.2, ease: 'easeOut' }}
           >
-            {title}
+            {resolvedTitle}
           </motion.h1>
 
           {/* Subtitle */}
@@ -386,7 +438,7 @@ export default function ServicePage({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.32, ease: 'easeOut' }}
           >
-            {heroSubtitle}
+            {resolvedHeroSubtitle}
           </motion.p>
 
           {/* CTA Buttons */}
@@ -480,17 +532,17 @@ export default function ServicePage({
                 className="text-[17px] leading-relaxed text-[#374151]"
                 style={{ fontFamily: 'Manrope, sans-serif' }}
               >
-                {intro}
+                {resolvedIntro}
               </motion.p>
 
               {/* Optional note / disclaimer */}
-              {note && (
+              {resolvedNote && (
                 <motion.div
                   variants={itemFade}
                   className="mt-6 pl-5 py-4 pr-4 rounded-xl border-l-4 border-[#071A2B] bg-[#EEF7FF]"
                 >
                   <p className="text-sm text-[#374151] leading-relaxed" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                    {note}
+                    {resolvedNote}
                   </p>
                 </motion.div>
               )}
@@ -513,8 +565,8 @@ export default function ServicePage({
             >
               <div className="relative rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.14)]">
                 <img
-                  src={heroImage}
-                  alt={title}
+                  src={resolvedHeroImage}
+                  alt={resolvedTitle}
                   width={heroWidth}
                   height={heroHeight}
                   className="w-full h-72 lg:h-[420px] object-cover"
@@ -590,13 +642,13 @@ export default function ServicePage({
               className="text-xs font-semibold text-[#071A2B] tracking-[0.2em] uppercase mb-3"
               style={{ fontFamily: 'Manrope, sans-serif' }}
             >
-              Available Services
+              {labelAvailable}
             </p>
             <h2
               className="text-3xl lg:text-4xl font-bold text-[#090B0D]"
               style={{ fontFamily: 'Sora, sans-serif' }}
             >
-              What We Offer
+              {labelWhatWeOffer}
             </h2>
           </motion.div>
 
@@ -608,7 +660,7 @@ export default function ServicePage({
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
           >
-            {services.map((svc, i) => (
+            {resolvedServices.map((svc, i) => (
               <motion.div
                 key={i}
                 variants={itemFade}
@@ -661,13 +713,13 @@ export default function ServicePage({
               className="text-xs font-semibold text-[#071A2B] tracking-[0.2em] uppercase mb-3"
               style={{ fontFamily: 'Manrope, sans-serif' }}
             >
-              Simple Process
+              {labelSimpleProcess}
             </p>
             <h2
               className="text-3xl lg:text-4xl font-bold text-[#090B0D]"
               style={{ fontFamily: 'Sora, sans-serif' }}
             >
-              How We Help You
+              {labelHowWeHelp}
             </h2>
           </motion.div>
 
@@ -690,7 +742,7 @@ export default function ServicePage({
               whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
             >
-              {HOW_STEPS.map((step, i) => (
+              {resolvedHowSteps.map((step, i) => (
                 <motion.div
                   key={i}
                   variants={itemFade}
@@ -742,7 +794,7 @@ export default function ServicePage({
       {/* ══════════════════════════════════════════════════════════════════
           5. RELATED SERVICES
       ══════════════════════════════════════════════════════════════════ */}
-      {related.length > 0 && (
+      {resolvedRelated.length > 0 && (
         <section className="py-16 bg-[#EEF7FF]">
           <div className="max-w-[1400px] mx-auto px-6 lg:px-10">
 
@@ -758,13 +810,13 @@ export default function ServicePage({
                 className="text-xs font-semibold text-[#071A2B] tracking-[0.2em] uppercase mb-3"
                 style={{ fontFamily: 'Manrope, sans-serif' }}
               >
-                Explore More
+                {labelExploreMore}
               </p>
               <h2
                 className="text-2xl lg:text-3xl font-bold text-[#090B0D]"
                 style={{ fontFamily: 'Sora, sans-serif' }}
               >
-                You Might Also Need
+                {labelYouMightNeed}
               </h2>
             </motion.div>
 
@@ -776,7 +828,7 @@ export default function ServicePage({
               whileInView="visible"
               viewport={{ once: true, margin: '-80px' }}
             >
-              {related.slice(0, 3).map((rel, i) => (
+              {resolvedRelated.slice(0, 3).map((rel, i) => (
                 <motion.div
                   key={i}
                   variants={itemFade}

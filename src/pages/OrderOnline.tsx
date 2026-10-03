@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { fileToAttachment, submitInquiry } from '../lib/submitInquiry';
+import { useCmsSection, str } from '../cms/useCmsPage';
+import { useCms } from '../cms/CmsContext';
 
 const inView = { once: true, margin: '-80px' };
 const fadeUp = {
@@ -27,6 +29,25 @@ const WhatsAppIcon = () => (
 );
 
 export default function OrderOnline() {
+  const { siteSettings, headerSettings } = useCms();
+  const rawPhone = headerSettings?.phone ?? siteSettings?.phone ?? '+923312478337';
+  const telHref = `tel:${rawPhone.replace(/\s/g, '')}`;
+
+  const orderHero = useCmsSection('/order-online', 'hero');
+  const heroEyebrow = str(orderHero, 'eyebrow', 'SEND YOUR FILE ONLINE');
+  const heroTitle1 = str(orderHero, 'title_line1', 'Send Your File.');
+  const heroTitle2 = str(orderHero, 'title_line2', "We'll Handle the Rest.");
+  const heroIntro = str(orderHero, 'intro', 'Upload your document, assignment, image or design file. Tell us your requirements — we review, prepare, and complete your order.');
+
+  const howSection = useCmsSection('/order-online', 'how_it_works');
+  const howEyebrow = str(howSection, 'eyebrow', 'SIMPLE PROCESS');
+  const howHeading = str(howSection, 'heading', 'How It Works');
+  type HowStep = { title: string; desc: string };
+  const cmsHowSteps = (() => {
+    const s = howSection?.content?.['steps'];
+    return Array.isArray(s) ? (s as HowStep[]) : [];
+  })();
+
   const [form, setForm] = useState({
     name: '', phone: '', whatsapp: '', email: '',
     category: '', quantity: '', printingType: 'not-applicable',
@@ -163,22 +184,22 @@ export default function OrderOnline() {
           <motion.p className="text-[11px] font-bold tracking-[0.22em] text-[#00AEEF] uppercase mb-4"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}>
-            SEND YOUR FILE ONLINE
+            {heroEyebrow}
           </motion.p>
 
           <motion.h1 className="font-bold leading-[1.08] mb-5"
             style={{ fontSize: 'clamp(38px,5.5vw,68px)' }}
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.7, ease: 'easeOut' as const }}>
-            <span className="block text-white">Send Your File.</span>
-            <span className="block" style={{ color: '#00AEEF' }}>We'll Handle the Rest.</span>
+            <span className="block text-white">{heroTitle1}</span>
+            <span className="block" style={{ color: '#00AEEF' }}>{heroTitle2}</span>
           </motion.h1>
 
           <motion.p className="text-[17px] max-w-2xl mb-8 leading-relaxed"
             style={{ color: 'rgba(255,255,255,0.60)' }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ delay: 0.45, duration: 0.6 }}>
-            Upload your document, assignment, image or design file. Tell us your requirements — we review, prepare, and complete your order.
+            {heroIntro}
           </motion.p>
 
           {/* File type chips — translucent on dark */}
@@ -205,8 +226,8 @@ export default function OrderOnline() {
             whileInView="show"
             viewport={inView}
           >
-            <p className="text-[11px] font-bold tracking-[0.2em] text-[#00AEEF] uppercase mb-2">SIMPLE PROCESS</p>
-            <h2 className="text-2xl font-bold text-[#090B0D]">How It Works</h2>
+            <p className="text-[11px] font-bold tracking-[0.2em] text-[#00AEEF] uppercase mb-2">{howEyebrow}</p>
+            <h2 className="text-2xl font-bold text-[#090B0D]">{howHeading}</h2>
           </motion.div>
 
           <div className="relative">
@@ -228,8 +249,8 @@ export default function OrderOnline() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                   ),
-                  title: 'Upload Your File',
-                  desc: 'Send your document, assignment, image, or design file through the form.',
+                  title: cmsHowSteps[0]?.title ?? 'Upload Your File',
+                  desc: cmsHowSteps[0]?.desc ?? 'Send your document, assignment, image, or design file through the form.',
                 },
                 {
                   num: '02',
@@ -238,8 +259,8 @@ export default function OrderOnline() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                   ),
-                  title: 'Share Requirements',
-                  desc: 'Specify size, quantity, color, paper type, and any special instructions.',
+                  title: cmsHowSteps[1]?.title ?? 'Share Requirements',
+                  desc: cmsHowSteps[1]?.desc ?? 'Specify size, quantity, color, paper type, and any special instructions.',
                 },
                 {
                   num: '03',
@@ -249,8 +270,8 @@ export default function OrderOnline() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                   ),
-                  title: 'We Prepare',
-                  desc: 'Our team reviews your file, confirms details, and prepares your order.',
+                  title: cmsHowSteps[2]?.title ?? 'We Prepare',
+                  desc: cmsHowSteps[2]?.desc ?? 'Our team reviews your file, confirms details, and prepares your order.',
                 },
                 {
                   num: '04',
@@ -259,8 +280,8 @@ export default function OrderOnline() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   ),
-                  title: 'Collect or Deliver',
-                  desc: 'Pick up your completed order from our shop, or arrange for delivery.',
+                  title: cmsHowSteps[3]?.title ?? 'Collect or Deliver',
+                  desc: cmsHowSteps[3]?.desc ?? 'Pick up your completed order from our shop, or arrange for delivery.',
                 },
               ].map((step, i) => (
                 <motion.div key={i} variants={fadeUp} className="relative flex flex-col items-center text-center">
@@ -708,7 +729,8 @@ export default function OrderOnline() {
             </motion.div>
             <motion.a
               variants={fadeUp}
-              href="tel:+923312478337"
+              href={telHref}
+              aria-label="Call Mateen Documentation"
               whileHover={{ y: -3 }}
               className="inline-flex items-center gap-2 border-2 border-white/20 text-white/80 font-semibold text-[15px] px-7 py-3.5 rounded-xl hover:border-white hover:text-white transition-all"
             >

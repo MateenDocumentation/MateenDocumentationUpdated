@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { submitInquiry } from '../lib/submitInquiry';
+import { useCms } from '../cms/CmsContext';
+import { useCmsSection, str } from '../cms/useCmsPage';
 
 const inView = { once: true, margin: '-80px' };
 const fadeUp = {
@@ -15,6 +17,28 @@ const stagger = {
 } as const;
 
 export default function Contact() {
+  const { siteSettings } = useCms();
+  const contactHero = useCmsSection('/contact', 'hero');
+
+  const heroTitle1 = str(contactHero, 'title_line1', 'Visit, Call, WhatsApp');
+  const heroTitle2 = str(contactHero, 'title_line2', 'or Send Your File.');
+  const heroIntro = str(contactHero, 'intro', "We're here to help. Come to our shop in H Block, North Nazimabad — or reach us online.");
+  const heroEyebrow = str(contactHero, 'eyebrow', 'GET IN TOUCH');
+  const locationPill = str(contactHero, 'location_pill', siteSettings?.address?.split(',').slice(1, 3).join(',').trim() ?? 'H Block, North Nazimabad');
+
+  const contactInfoSection = useCmsSection('/contact', 'contact_info');
+  const reachUsHeading = str(contactInfoSection, 'reach_us_heading', 'Reach Us');
+  const hoursLabel = str(contactInfoSection, 'hours_label', 'Opening Hours');
+  const hoursText = str(contactInfoSection, 'hours_text', 'Open daily — visit us during business hours.');
+
+  const phone = siteSettings?.phone ?? '+923312478337';
+  const wa = siteSettings?.whatsapp ?? '923312478337';
+  const email = siteSettings?.email ?? 'mateendocumentation@gmail.com';
+  const address = siteSettings?.address ?? 'Shop# 1, A&Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi';
+  const mapsUrl = siteSettings?.maps_url ?? 'https://maps.app.goo.gl/SCs4s2xzNkkBoR5e6';
+  const telHref = `tel:${phone.replace(/\s/g, '')}`;
+  const waHref = `https://wa.me/${wa.replace(/[^0-9]/g, '')}`;
+
   const [form, setForm] = useState({ name: '', phone: '', email: '', service: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
@@ -127,7 +151,7 @@ export default function Contact() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            GET IN TOUCH
+            {heroEyebrow}
           </motion.p>
 
           <motion.h1
@@ -137,8 +161,8 @@ export default function Contact() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.7, ease: 'easeOut' as const }}
           >
-            <span className="block text-white">Visit, Call, WhatsApp</span>
-            <span className="block text-[#00AEEF]">or Send Your File.</span>
+            <span className="block text-white">{heroTitle1}</span>
+            <span className="block text-[#00AEEF]">{heroTitle2}</span>
           </motion.h1>
 
           <motion.p
@@ -147,7 +171,7 @@ export default function Contact() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.45, duration: 0.6 }}
           >
-            We're here to help. Come to our shop in H Block, North Nazimabad — or reach us online.
+            {heroIntro}
           </motion.p>
 
           {/* Quick pills */}
@@ -158,7 +182,8 @@ export default function Contact() {
             transition={{ delay: 0.55, duration: 0.5 }}
           >
             <a
-              href="tel:+923312478337"
+              href={telHref}
+              aria-label="Call Mateen Documentation"
               className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/16 border border-white/15 text-white text-[13px] font-medium px-4 py-2 rounded-full backdrop-blur-sm transition-all"
             >
               <svg className="w-4 h-4 text-[#00AEEF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -167,7 +192,7 @@ export default function Contact() {
               Call
             </a>
             <a
-              href="https://wa.me/923312478337"
+              href={waHref}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-[#25D366]/15 hover:bg-[#25D366]/25 border border-[#25D366]/30 text-white text-[13px] font-medium px-4 py-2 rounded-full backdrop-blur-sm transition-all"
@@ -177,13 +202,13 @@ export default function Contact() {
               </svg>
               WhatsApp
             </a>
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/80 text-[13px] font-medium px-4 py-2 rounded-full">
+            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" aria-label="Open Mateen Documentation location in Google Maps" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/16 border border-white/15 text-white/80 text-[13px] font-medium px-4 py-2 rounded-full transition-all">
               <svg className="w-4 h-4 text-[#00AEEF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              H Block, North Nazimabad
-            </div>
+              {locationPill}
+            </a>
           </motion.div>
         </div>
       </section>
@@ -213,7 +238,7 @@ export default function Contact() {
               <div className="absolute -right-8 top-10 bottom-10 w-px bg-gradient-to-b from-transparent via-[#00AEEF]/20 to-transparent hidden lg:block" />
 
               <motion.h2 variants={fadeUp} className="text-2xl font-bold text-[#090B0D] mb-8 relative z-10">
-                Reach Us
+                {reachUsHeading}
               </motion.h2>
 
               <div className="space-y-5 relative z-10">
@@ -226,7 +251,8 @@ export default function Contact() {
                       </svg>
                     ),
                     label: 'Address',
-                    value: 'Shop# 1, A&Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi',
+                    value: address,
+                    href: mapsUrl,
                     color: 'text-[#00AEEF]',
                     bg: 'bg-[#00AEEF]/10',
                   },
@@ -237,8 +263,8 @@ export default function Contact() {
                       </svg>
                     ),
                     label: 'Phone',
-                    value: '+92 331 2478337',
-                    href: 'tel:+923312478337',
+                    value: phone,
+                    href: telHref,
                     color: 'text-[#00AEEF]',
                     bg: 'bg-[#00AEEF]/10',
                   },
@@ -249,8 +275,8 @@ export default function Contact() {
                       </svg>
                     ),
                     label: 'WhatsApp',
-                    value: '+92 331 2478337',
-                    href: 'https://wa.me/923312478337',
+                    value: phone,
+                    href: waHref,
                     color: 'text-[#25D366]',
                     bg: 'bg-[#25D366]/10',
                   },
@@ -261,8 +287,8 @@ export default function Contact() {
                       </svg>
                     ),
                     label: 'Email',
-                    value: 'mateendocumentation@gmail.com',
-                    href: 'mailto:mateendocumentation@gmail.com',
+                    value: email,
+                    href: `mailto:${email}`,
                     color: 'text-[#00AEEF]',
                     bg: 'bg-[#00AEEF]/10',
                   },
@@ -273,11 +299,12 @@ export default function Contact() {
                     </div>
                     <div>
                       <p className="text-[12px] font-semibold text-[#090B0D]/40 uppercase tracking-wide mb-0.5">{item.label}</p>
-                      {'href' in item ? (
-                        <a href={item.href} className="text-[15px] text-[#090B0D] font-medium leading-snug hover:text-[#071A2B] transition-colors">{item.value}</a>
-                      ) : (
-                        <p className="text-[15px] text-[#090B0D] font-medium leading-snug">{item.value}</p>
-                      )}
+                      <a
+                        href={item.href}
+                        {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                        aria-label={item.label === 'Address' ? 'Open Mateen Documentation location in Google Maps' : undefined}
+                        className="text-[15px] text-[#090B0D] font-medium leading-snug hover:text-[#071A2B] transition-colors"
+                      >{item.value}</a>
                     </div>
                   </motion.div>
                 ))}
@@ -286,14 +313,14 @@ export default function Contact() {
               <motion.div variants={fadeUp} className="my-8 border-t border-[#e8edf8]" />
 
               <motion.div variants={fadeUp} className="mb-8">
-                <p className="text-[12px] font-bold text-[#090B0D]/40 uppercase tracking-wide mb-1">Opening Hours</p>
-                <p className="text-[15px] text-[#090B0D]/70">Open daily — visit us during business hours.</p>
+                <p className="text-[12px] font-bold text-[#090B0D]/40 uppercase tracking-wide mb-1">{hoursLabel}</p>
+                <p className="text-[15px] text-[#090B0D]/70">{hoursText}</p>
               </motion.div>
 
               <motion.div variants={stagger} className="flex flex-col gap-3">
                 <motion.a
                   variants={fadeUp}
-                  href="https://maps.app.goo.gl/SCs4s2xzNkkBoR5e6"
+                  href={mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ y: -3 }}
@@ -306,7 +333,7 @@ export default function Contact() {
                 </motion.a>
                 <motion.a
                   variants={fadeUp}
-                  href="https://wa.me/923312478337"
+                  href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ y: -3 }}
@@ -319,7 +346,7 @@ export default function Contact() {
                 </motion.a>
                 <motion.a
                   variants={fadeUp}
-                  href="tel:+923312478337"
+                  href={telHref}
                   whileHover={{ y: -3 }}
                   className="inline-flex items-center justify-center gap-2 border-2 border-[#090B0D] text-[#090B0D] font-semibold text-[15px] px-6 py-3 rounded-xl hover:bg-[#090B0D] hover:text-white transition-all"
                 >
@@ -351,7 +378,7 @@ export default function Contact() {
                       Thank you! Your message has been submitted successfully. We’ll contact you shortly.
                     </p>
                     <motion.a
-                      href="https://wa.me/923312478337"
+                      href={waHref}
                       target="_blank"
                       rel="noopener noreferrer"
                       whileHover={{ y: -3 }}
@@ -460,14 +487,16 @@ export default function Contact() {
               </motion.h2>
               <motion.div variants={fadeUp} className="space-y-3 text-[15px] text-[#090B0D]/70 leading-relaxed">
                 <p className="font-semibold text-[#090B0D]">Mateen Documentation</p>
-                <p>Shop# 1, A&amp;Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi</p>
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" aria-label="Open Mateen Documentation location in Google Maps" className="hover:text-[#071A2B] transition-colors">
+                  {address}
+                </a>
               </motion.div>
             </motion.div>
 
             {/* Right — Map placeholder */}
             <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={inView}>
               <a
-                href="https://maps.app.goo.gl/SCs4s2xzNkkBoR5e6"
+                href={mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block"
@@ -541,7 +570,7 @@ export default function Contact() {
           >
             <motion.a
               variants={fadeUp}
-              href="https://wa.me/923312478337"
+              href={waHref}
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ y: -3 }}
@@ -564,7 +593,7 @@ export default function Contact() {
             </motion.div>
             <motion.a
               variants={fadeUp}
-              href="tel:+923312478337"
+              href={telHref}
               whileHover={{ y: -3 }}
               className="inline-flex items-center gap-2 border-2 border-white/20 text-white/80 font-semibold text-[15px] px-7 py-3.5 rounded-xl hover:border-white hover:text-white transition-all"
             >

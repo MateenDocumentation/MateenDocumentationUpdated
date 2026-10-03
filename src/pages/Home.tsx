@@ -4,6 +4,8 @@ import { motion, useMotionValue, useScroll, useSpring, useTransform } from 'fram
 import Layout from '../components/Layout';
 import heroPrinterPoster from '../imports/mateen_hero_printer_poster.webp';
 import heroPrinterVideo from '../imports/mateen_hero_printer_preview_16x9.mp4';
+import { useCmsSection, str, arr } from '../cms/useCmsPage';
+import { useCms } from '../cms/CmsContext';
 
 /* ── Motion variants ──────────────────────────────── */
 const fadeUp = {
@@ -101,10 +103,22 @@ const services = [
 
 /* ── Process steps ────────────────────────────────── */
 const steps = [
-  { n: '01', title: 'Choose Your Service', body: 'Select from printing, documentation, NADRA facilitation, customized products, and more.' },
-  { n: '02', title: 'Share Your Requirements', body: 'Walk in or send files via WhatsApp — we handle any format, any size.' },
-  { n: '03', title: 'We Prepare It Precisely', body: 'Our team handles formatting, printing, lamination and finishing in-house.' },
-  { n: '04', title: 'Collect or Deliver', body: 'Pick up from our shop or arrange delivery for bulk and business orders.' },
+  {
+    n: '01', title: 'Choose Your Service', body: 'Select from printing, documentation, NADRA facilitation, customized products and more.',
+    icon: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><path d="M14 17.5h7M17.5 14v7" /></svg>),
+  },
+  {
+    n: '02', title: 'Share Your Requirements', body: 'Walk in or send files via WhatsApp — we handle any format, any size, any deadline.',
+    icon: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>),
+  },
+  {
+    n: '03', title: 'We Prepare It Precisely', body: 'Our team handles formatting, printing, lamination and professional finishing in-house.',
+    icon: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>),
+  },
+  {
+    n: '04', title: 'Collect or Deliver', body: 'Pick up from our shop or arrange delivery for bulk and business orders.',
+    icon: (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M5 12h14M12 5l7 7-7 7" /></svg>),
+  },
 ];
 
 /* ── Who We Serve ─────────────────────────────────── */
@@ -123,6 +137,114 @@ const benefits = [
 ];
 
 export default function Home() {
+  // ── CMS hero content (falls back to hardcoded when no CMS data exists) ──
+  const heroSection = useCmsSection('/', 'hero');
+  const { headerSettings, siteSettings } = useCms();
+
+  const rawHeading = str(heroSection, 'heading', '');
+  const heroParts = rawHeading.split('\n');
+  const heroLine1 = heroParts[0] || 'Where Printing';
+  const heroLine2 = heroParts[1] ?? 'Meets Documentation.';
+  const heroBadge = str(heroSection, 'badge', 'Modern print studio & facilitation centre');
+  const heroDescription = str(heroSection, 'description', 'Professional printing and dependable documentation services, thoughtfully handled in one place.');
+  const ctaPrimaryText = str(heroSection, 'cta_primary_text', 'Send Your File');
+  const ctaPrimaryUrl = str(heroSection, 'cta_primary_url', '/order-online');
+  const ctaSecondaryText = str(heroSection, 'cta_secondary_text', 'WhatsApp Us');
+  const ctaTertiaryText = str(heroSection, 'cta_tertiary_text', 'View Services');
+  const ctaTertiaryUrl = str(heroSection, 'cta_tertiary_url', '/services');
+
+  // CMS phone/wa with fallbacks
+  const rawWa = headerSettings?.whatsapp ?? siteSettings?.whatsapp ?? '923312478337';
+  const rawPhone = headerSettings?.phone ?? siteSettings?.phone ?? '+923312478337';
+  const waBase = `https://wa.me/${rawWa.replace(/[^0-9]/g, '')}`;
+  const waHref = str(heroSection, 'cta_secondary_url', '') || waBase;
+
+  // ── Service strip CMS ──
+  const serviceStripSection = useCmsSection('/', 'service_strip');
+  type StripItem = { label: string; url: string };
+  const cmsStripItems = arr<StripItem>(serviceStripSection, 'items');
+  const resolvedServices = services.map((s, i) => ({
+    ...s,
+    label: cmsStripItems[i]?.label ?? s.label,
+    to: cmsStripItems[i]?.url ?? s.to,
+  }));
+
+  // ── Printing feature CMS ──
+  const printingSection = useCmsSection('/', 'printing_feature');
+  const printingHeading = str(printingSection, 'heading', 'Printing & Photocopy');
+  const printingDesc = str(printingSection, 'description', 'From single-page copies to large-format print runs — color, black & white, sticker paper, transparent sheets, vinyl and photo paper. We handle A4 through A3 with care and precision.');
+  const printingItems = arr<string>(printingSection, 'checklist');
+  const defaultPrintingItems = ['Color & B/W Printing', 'Lamination & Binding', 'A4, A3 & Custom Sizes', 'Scanning & PDF Conversion', 'Photo & Glossy Paper', 'Bulk Print Discounts'];
+  const resolvedPrintingItems = printingItems.length ? printingItems : defaultPrintingItems;
+  const printingCtaLabel = str(printingSection, 'cta_label', 'Learn More');
+  const printingCtaUrl = str(printingSection, 'cta_url', '/services/printing-photocopy');
+
+  // ── Academic feature CMS ──
+  const academicSection = useCmsSection('/', 'academic_feature');
+  const academicHeading1 = str(academicSection, 'heading_line1', 'Assignment &');
+  const academicHeading2 = str(academicSection, 'heading_line2', 'Academic Support');
+  const academicDesc = str(academicSection, 'description', 'School reports, college assignments, university thesis, project files — typed, formatted and printed to standard. Near Saifee College, we know student timelines.');
+  const academicItems = arr<string>(academicSection, 'checklist');
+  const defaultAcademicItems = ['Typing', 'Assignments & Projects', 'Editing & Formatting', 'Binding', 'Presentations', 'Reports & Research Work'];
+  const resolvedAcademicItems = academicItems.length ? academicItems : defaultAcademicItems;
+  const academicCtaLabel = str(academicSection, 'cta_label', 'Send Assignment');
+  const academicWaMsg = str(academicSection, 'wa_message', '');
+  const academicWaHref = academicWaMsg ? `${waBase}?text=${encodeURIComponent(academicWaMsg)}` : waBase;
+
+  // ── How It Works CMS ──
+  const howSection = useCmsSection('/', 'how_it_works');
+  const howHeading = str(howSection, 'heading', 'How It Works');
+  const howSubtitle = str(howSection, 'subtitle', 'Fast, simple, reliable — from your requirement to finished output in four easy steps.');
+  type HowStep = { n: string; title: string; body: string };
+  const cmsHowSteps = arr<HowStep>(howSection, 'steps');
+  const resolvedSteps = steps.map((s, i) => ({
+    ...s,
+    n: cmsHowSteps[i]?.n ?? s.n,
+    title: cmsHowSteps[i]?.title ?? s.title,
+    body: cmsHowSteps[i]?.body ?? s.body,
+  }));
+  const howCtaLabel = str(howSection, 'cta_label', 'Ready to start? WhatsApp us now');
+  const howWaMsg = str(howSection, 'wa_message', '');
+  const howWaHref = howWaMsg ? `${waBase}?text=${encodeURIComponent(howWaMsg)}` : waBase;
+
+  // ── Customized printing CMS ──
+  const customizedSection = useCmsSection('/', 'customized_printing');
+  const customHeading1 = str(customizedSection, 'heading_line1', 'Make It');
+  const customHeading2 = str(customizedSection, 'heading_line2', 'Personal');
+  const customDesc = str(customizedSection, 'description', 'Put your name, photo, or design on anything — mugs, frames, stickers, business cards and more. We handle the design and print everything in-house.');
+  const customItems = arr<string>(customizedSection, 'items');
+  const defaultCustomItems = ['Photo Mugs & Gifts', 'Custom Stickers & Labels', 'Business Cards & Letterheads', 'PVC ID Cards', 'Photo Frames', 'Branded Merchandise'];
+  const resolvedCustomItems = customItems.length ? customItems : defaultCustomItems;
+  const customCtaLabel = str(customizedSection, 'cta_label', 'Explore Customized Printing');
+  const customCtaUrl = str(customizedSection, 'cta_url', '/services/customized-printing');
+
+  // ── Who We Serve CMS ──
+  const whoServeSection = useCmsSection('/', 'who_we_serve');
+  const whoServeEyebrow = str(whoServeSection, 'eyebrow', 'Who We Serve');
+  const whoServeHeading = str(whoServeSection, 'heading', 'For Everyone In The Community');
+  type ServePanel = { title: string; description: string; tags: string[]; image: string; image_alt: string };
+  const cmsServePanels = arr<ServePanel>(whoServeSection, 'panels');
+  const defaultServePanels: ServePanel[] = [
+    { title: 'Students', description: 'From assignments and thesis to final-year projects — typing, formatting, printing and binding handled with care.', tags: ['Assignments', 'Printing', 'Binding', 'Projects'], image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=700&h=1160&fit=crop&auto=format', image_alt: 'Student with laptop studying' },
+    { title: 'Families &\nIndividuals', description: 'Public facilitation, NADRA assistance, documentation and custom-printed items for everyday personal needs.', tags: ['Documentation', 'NADRA', 'Public Facilitation', 'Custom Print'], image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=700&h=1160&fit=crop&auto=format', image_alt: 'Family at a documentation centre' },
+    { title: 'Businesses &\nOrganizations', description: 'Bulk printing, business documentation, letterheads, rubber stamps and branding for offices and enterprises.', tags: ['Bulk Printing', 'Letterheads', 'Branding', 'Business Docs'], image: 'https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=700&h=1160&fit=crop&auto=format', image_alt: 'Business professionals in meeting' },
+  ];
+  const resolvedServePanels = cmsServePanels.length ? cmsServePanels : defaultServePanels;
+
+  // ── Final CTA CMS ──
+  const finalCtaSection = useCmsSection('/', 'final_cta');
+  const finalCtaHeading1 = str(finalCtaSection, 'heading_line1', 'Get It Done.');
+  const finalCtaHeading2 = str(finalCtaSection, 'heading_line2', 'Today.');
+  const finalCtaSubline = str(finalCtaSection, 'subline', siteSettings?.address ? `${siteSettings.address} — walk in anytime, or send us your file right now.` : 'Shop# 1, A&Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi — walk in anytime, or send us your file right now.');
+  const finalCtaWaLabel = str(finalCtaSection, 'wa_label', 'WhatsApp Us Now');
+  const finalCtaWaMsg = str(finalCtaSection, 'wa_message', '');
+  const finalCtaWaHref = finalCtaWaMsg ? `${waBase}?text=${encodeURIComponent(finalCtaWaMsg)}` : waBase;
+  const finalCtaPhoneHref = `tel:${rawPhone.replace(/\s/g, '')}`;
+  const finalCtaPhoneLabel = str(finalCtaSection, 'phone_label', 'Call Now');
+  const finalCtaServiceTags = arr<string>(finalCtaSection, 'service_tags');
+  const defaultServiceTags = ['Printing', 'Documentation', 'NADRA Facilitation', 'Customized Products', 'Student Services'];
+  const resolvedServiceTags = finalCtaServiceTags.length ? finalCtaServiceTags : defaultServiceTags;
+
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '22%']);
@@ -207,12 +329,12 @@ export default function Home() {
               initial="hidden"
               animate="show"
             >
-              {/* Eyebrow pill — "YOUR DOCUMENTATION PARTNER" */}
+              {/* Eyebrow pill */}
               <motion.div
                 variants={fadeUp}
                 className="inline-flex items-center gap-2 border border-white/15 bg-white/5 text-[#EEF7FF]/70 text-[11px] font-black tracking-[0.22em] uppercase px-4 py-2.5 rounded-full mb-7"
               >
-                Modern print studio &amp; facilitation centre
+                {heroBadge}
               </motion.div>
 
               {/* H1 */}
@@ -221,8 +343,8 @@ export default function Home() {
                 className="font-bold text-white leading-[1.06] tracking-tight mb-6"
                 style={{ fontSize: 'clamp(2.8rem, 5.5vw, 4.6rem)' }}
               >
-                Where Printing
-                <span className="block text-[#EEF7FF]">Meets Documentation.</span>
+                {heroLine1}
+                {heroLine2 && <span className="block text-[#EEF7FF]">{heroLine2}</span>}
               </motion.h1>
 
               <motion.div variants={fadeUp} className="flex h-1.5 w-36 overflow-hidden mb-7" aria-hidden="true">
@@ -238,44 +360,43 @@ export default function Home() {
                 className="text-[16px] leading-relaxed mb-9 max-w-[440px]"
                 style={{ color: 'rgba(255,255,255,0.62)' }}
               >
-                Professional printing and dependable documentation services, thoughtfully handled in one place.
+                {heroDescription}
               </motion.p>
 
-              {/* CTAs: Send Your File (blue) | WhatsApp Us (green) | View Services (dark) */}
+              {/* CTAs */}
               <motion.div variants={fadeUp} className="flex flex-wrap gap-3 mb-10">
-                {/* Send Your File — blue primary */}
+                {/* Primary CTA — blue */}
                 <motion.div className="hover-clip rounded-lg" whileHover={{ y: -2, boxShadow: '0 8px 28px rgba(28,100,232,0.45)' }} whileTap={{ scale: 0.97 }}>
                   <Link
-                    to="/order-online"
+                    to={ctaPrimaryUrl}
                     className="group inline-flex items-center gap-2.5 text-white font-bold px-7 py-4 rounded-lg transition-colors text-[15px]"
                     style={{ background: '#00AEEF', color: '#071A2B' }}
                   >
-                    {/* Telegram/send icon */}
                     <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
                     </svg>
-                    Send Your File
+                    {ctaPrimaryText}
                   </Link>
                 </motion.div>
-                {/* WhatsApp Us — green */}
+                {/* Secondary CTA — WhatsApp green */}
                 <motion.div className="hover-clip rounded-lg" whileHover={{ y: -2, boxShadow: '0 8px 28px rgba(34,197,94,0.4)' }} whileTap={{ scale: 0.97 }}>
                   <a
-                    href="https://wa.me/923312478337"
+                    href={waHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group inline-flex items-center gap-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold px-7 py-4 rounded-lg transition-colors text-[15px]"
                   >
                     <WaIcon />
-                    WhatsApp Us
+                    {ctaSecondaryText}
                   </a>
                 </motion.div>
-                {/* View Services — dark transparent */}
+                {/* Tertiary CTA — dark transparent */}
                 <motion.div whileHover={{ y: -2 }} whileTap={{ scale: 0.97 }}>
                   <Link
-                    to="/services"
+                    to={ctaTertiaryUrl}
                     className="group inline-flex items-center gap-2.5 border border-white/20 hover:border-white/40 bg-white/5 hover:bg-white/10 text-white font-semibold px-7 py-4 rounded-lg transition-all text-[15px]"
                   >
-                    View Services
+                    {ctaTertiaryText}
                     <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
@@ -388,7 +509,7 @@ export default function Home() {
               variants={{ show: { transition: { staggerChildren: 0.07 } } }}
               initial="hidden" whileInView="show" viewport={inView}
             >
-              {services.map((s, i) => (
+              {resolvedServices.map((s, i) => (
                 <motion.div key={s.to} variants={fadeUp}>
                   <Link to={s.to} className="block group">
                     {i === 0 ? (
@@ -584,25 +705,18 @@ export default function Home() {
                   className="font-bold leading-[1.04] tracking-tight mb-6"
                   style={{ fontSize: 'clamp(2.9rem, 4.5vw, 4.4rem)' }}
                 >
-                  <span style={{ color: '#08122a' }}>Printing &amp;</span><br />
-                  <span style={{ color: '#071A2B' }}>Photocopy</span>
+                  <span style={{ color: '#08122a' }}>{printingHeading.split('\n')[0] ?? printingHeading}</span><br />
+                  {printingHeading.includes('\n') && <span style={{ color: '#071A2B' }}>{printingHeading.split('\n')[1]}</span>}
                 </motion.h2>
 
                 {/* Description */}
                 <motion.p variants={fadeUp} className="leading-relaxed mb-9 text-[15.5px] max-w-[400px]" style={{ color: 'rgba(30,40,80,0.58)' }}>
-                  From single-page copies to large-format print runs — color, black &amp; white, sticker paper, transparent sheets, vinyl and photo paper. We handle A4 through A3 with care and precision.
+                  {printingDesc}
                 </motion.p>
 
                 {/* 2-column checklist */}
                 <motion.div variants={{ show: { transition: { staggerChildren: 0.08 } } }} className="grid grid-cols-2 gap-x-6 gap-y-5 mb-11">
-                  {[
-                    'Color & B/W Printing',
-                    'Lamination & Binding',
-                    'A4, A3 & Custom Sizes',
-                    'Scanning & PDF Conversion',
-                    'Photo & Glossy Paper',
-                    'Bulk Print Discounts',
-                  ].map(item => (
+                  {resolvedPrintingItems.map(item => (
                     <motion.div key={item} variants={fadeUp} className="flex items-center gap-3 group/item">
                       <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-200"
                         style={{ background: '#dce7ff' }}>
@@ -623,11 +737,11 @@ export default function Home() {
                     className="inline-block hover-clip rounded-2xl"
                   >
                     <Link
-                      to="/services/printing-photocopy"
+                      to={printingCtaUrl}
                       className="group inline-flex items-center gap-3 text-white font-bold px-10 py-4 rounded-2xl text-[15px] transition-all"
                       style={{ background: 'linear-gradient(135deg,#071A2B 0%,#2445bf 100%)', boxShadow: '0 4px 20px rgba(7,26,43,0.30)' }}
                     >
-                      Learn More
+                      {printingCtaLabel}
                       <svg className="w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
@@ -663,8 +777,8 @@ export default function Home() {
                 className="font-bold leading-[1.05] tracking-tight mb-6"
                 style={{ fontSize: 'clamp(2.6rem, 4vw, 4rem)', color: '#08122a' }}
               >
-                Assignment &amp;<br />
-                <span style={{ color: '#071A2B' }}>Academic Support</span>
+                {academicHeading1}<br />
+                <span style={{ color: '#071A2B' }}>{academicHeading2}</span>
               </motion.h2>
 
               {/* Description */}
@@ -673,7 +787,7 @@ export default function Home() {
                 className="leading-relaxed mb-9 text-[15.5px] max-w-[420px]"
                 style={{ color: 'rgba(30,40,80,0.55)' }}
               >
-                School reports, college assignments, university thesis, project files — typed, formatted and printed to standard. Near Saifee College, we know student timelines.
+                {academicDesc}
               </motion.p>
 
               {/* 2-column checklist */}
@@ -681,14 +795,7 @@ export default function Home() {
                 variants={{ show: { transition: { staggerChildren: 0.09 } } }}
                 className="grid grid-cols-2 gap-x-6 gap-y-5 mb-11"
               >
-                {[
-                  'Typing',
-                  'Assignments & Projects',
-                  'Editing & Formatting',
-                  'Binding',
-                  'Presentations',
-                  'Reports & Research Work',
-                ].map(item => (
+                {resolvedAcademicItems.map(item => (
                   <motion.div key={item} variants={fadeUp} className="flex items-center gap-3">
                     <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#dce7ff' }}>
                       <svg className="w-3.5 h-3.5" style={{ color: '#071A2B' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -704,7 +811,7 @@ export default function Home() {
               <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
                 {/* Primary: Send Assignment (WhatsApp) */}
                 <motion.a
-                  href="https://wa.me/923312478337"
+                  href={academicWaHref}
                   target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 text-white font-bold px-8 py-4 rounded-2xl text-[14.5px] transition-all"
                   style={{ background: 'linear-gradient(135deg,#071A2B 0%,#2445bf 100%)', boxShadow: '0 4px 20px rgba(7,26,43,0.28)' }}
@@ -712,7 +819,7 @@ export default function Home() {
                   whileTap={{ scale: 0.97 }}
                 >
                   <WaIcon />
-                  Send Assignment
+                  {academicCtaLabel}
                 </motion.a>
               </motion.div>
             </motion.div>
@@ -872,10 +979,10 @@ export default function Home() {
             </motion.div>
             <motion.h2 variants={fadeUp} className="font-bold text-[#08122a] leading-tight"
               style={{ fontSize: 'clamp(2.4rem,4vw,3.8rem)' }}>
-              How It Works
+              {howHeading}
             </motion.h2>
             <motion.p variants={fadeUp} className="mt-4 text-[15.5px] max-w-md mx-auto" style={{ color: 'rgba(30,40,80,0.50)' }}>
-              Fast, simple, reliable — from your requirement to finished output in four easy steps.
+              {howSubtitle}
             </motion.p>
           </motion.div>
 
@@ -909,53 +1016,7 @@ export default function Home() {
               variants={{ show: { transition: { staggerChildren: 0.22 } } }}
               initial="hidden" whileInView="show" viewport={inView}
             >
-              {[
-                {
-                  n: '01',
-                  title: 'Choose Your Service',
-                  body: 'Select from printing, documentation, NADRA facilitation, customized products and more.',
-                  icon: (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-                      <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                      <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                      <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                      <path d="M14 17.5h7M17.5 14v7" />
-                    </svg>
-                  ),
-                },
-                {
-                  n: '02',
-                  title: 'Share Your Requirements',
-                  body: 'Walk in or send files via WhatsApp — we handle any format, any size, any deadline.',
-                  icon: (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                    </svg>
-                  ),
-                },
-                {
-                  n: '03',
-                  title: 'We Prepare It Precisely',
-                  body: 'Our team handles formatting, printing, lamination and professional finishing in-house.',
-                  icon: (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-                      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                      <path d="M2 17l10 5 10-5" />
-                      <path d="M2 12l10 5 10-5" />
-                    </svg>
-                  ),
-                },
-                {
-                  n: '04',
-                  title: 'Collect or Deliver',
-                  body: 'Pick up from our shop or arrange delivery for bulk and business orders.',
-                  icon: (
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  ),
-                },
-              ].map((step, i) => (
+              {resolvedSteps.map((step, i) => (
                 <motion.div
                   key={step.n}
                   className="flex flex-col items-center text-center px-4 lg:px-6 group"
@@ -1038,13 +1099,13 @@ export default function Home() {
             transition={{ duration: 0.6, ease: 'easeOut', delay: 0.3 }}
           >
             <a
-              href="https://wa.me/923312478337"
+              href={howWaHref}
               target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2.5 text-[13.5px] font-bold px-7 py-3.5 rounded-2xl border-2 transition-all"
               style={{ borderColor: 'rgba(7,26,43,0.25)', color: '#071A2B' }}
             >
               <WaIcon />
-              Ready to start? WhatsApp us now
+              {howCtaLabel}
               <svg className="w-4 h-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -1097,25 +1158,18 @@ export default function Home() {
 
               {/* Heading */}
               <motion.h2 variants={fadeUp} className="font-bold leading-[1.04] tracking-tight mb-6" style={{ fontSize: 'clamp(2.8rem,4.5vw,4.4rem)' }}>
-                <span className="text-white">Make It</span><br />
-                <span style={{ color: '#5a84f0' }}>Personal</span>
+                <span className="text-white">{customHeading1}</span><br />
+                <span style={{ color: '#5a84f0' }}>{customHeading2}</span>
               </motion.h2>
 
               {/* Description */}
               <motion.p variants={fadeUp} className="leading-relaxed mb-8 text-[15px] max-w-[380px]" style={{ color: 'rgba(255,255,255,0.48)' }}>
-                Put your name, photo, or design on anything — mugs, frames, stickers, business cards and more. We handle the design and print everything in-house.
+                {customDesc}
               </motion.p>
 
               {/* Service list */}
               <motion.ul variants={{ show: { transition: { staggerChildren: 0.08 } } }} className="space-y-3.5 mb-11">
-                {[
-                  'Photo Mugs & Gifts',
-                  'Custom Stickers & Labels',
-                  'Business Cards & Letterheads',
-                  'PVC ID Cards',
-                  'Photo Frames',
-                  'Branded Merchandise',
-                ].map(item => (
+                {resolvedCustomItems.map(item => (
                   <motion.li key={item} variants={fadeUp} className="flex items-center gap-3">
                     <span className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(60,100,230,0.18)', border: '1px solid rgba(60,100,230,0.30)' }}>
                       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: '#5a84f0' }}>
@@ -1131,11 +1185,11 @@ export default function Home() {
               <motion.div variants={fadeUp}>
                 <motion.div whileHover={{ y: -3, boxShadow: '0 10px 36px rgba(60,100,230,0.45)' }} whileTap={{ scale: 0.97 }} className="inline-block hover-clip rounded-2xl">
                   <Link
-                    to="/services/customized-printing"
+                    to={customCtaUrl}
                     className="group inline-flex items-center gap-3 text-white font-bold px-9 py-4 rounded-2xl text-[15px] transition-all"
                     style={{ background: 'linear-gradient(135deg,#071A2B 0%,#3a5fd0 100%)', boxShadow: '0 4px 22px rgba(60,100,230,0.32)' }}
                   >
-                    Explore Customized Printing
+                    {customCtaLabel}
                     <svg className="w-4.5 h-4.5 group-hover:translate-x-1.5 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
@@ -1523,109 +1577,43 @@ export default function Home() {
 
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 relative z-10">
           <motion.div className="text-center mb-14" variants={staggerSlow} initial="hidden" whileInView="show" viewport={inView}>
-            <motion.p variants={fadeUp} className="text-[#00AEEF] font-bold text-xs tracking-[0.22em] uppercase mb-3">Who We Serve</motion.p>
-            <motion.h2 variants={fadeUp} className="text-4xl lg:text-5xl font-bold text-[#090B0D]">For Everyone In The Community</motion.h2>
+            <motion.p variants={fadeUp} className="text-[#00AEEF] font-bold text-xs tracking-[0.22em] uppercase mb-3">{whoServeEyebrow}</motion.p>
+            <motion.h2 variants={fadeUp} className="text-4xl lg:text-5xl font-bold text-[#090B0D]">{whoServeHeading}</motion.h2>
           </motion.div>
 
           <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-5" variants={stagger} initial="hidden" whileInView="show" viewport={inView}>
-
-            {/* ── 1. Students ── */}
-            <motion.div variants={fadeUp}
-              className="group relative rounded-[28px] overflow-hidden cursor-default"
-              style={{ height: '580px', boxShadow: '0 24px 64px rgba(5,12,40,0.14)' }}
-              whileHover={{ y: -8, transition: { duration: 0.32, ease: 'easeOut' } }}
-            >
-              <img loading="lazy" className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.07]"
-                alt="Student with laptop studying"
-                src="https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=700&h=1160&fit=crop&auto=format" />
-              {/* Base gradient — always on */}
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(5,12,40,0.96) 0%, rgba(8,16,44,0.70) 38%, rgba(0,0,0,0.12) 70%, transparent 100%)' }} />
-              {/* Hover gradient intensifier */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(7,26,43,0.18) 0%, transparent 60%)' }} />
-              {/* Blue left accent bar */}
-              <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[28px] transition-opacity duration-400" style={{ background: 'linear-gradient(to bottom, #00AEEF, #071A2B)', opacity: 0 }} />
-              <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[28px] group-hover:opacity-100 opacity-0 transition-opacity duration-400" style={{ background: 'linear-gradient(to bottom, #00AEEF, #071A2B)' }} />
-              {/* Number */}
-              <div className="absolute top-7 right-7 text-[10px] font-black tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.20)' }}>01</div>
-              <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                {/* Tags — always visible at low opacity, lift on hover */}
-                <div className="flex flex-wrap gap-1.5 mb-5 transition-all duration-400 group-hover:translate-y-0" style={{ transform: 'translateY(4px)' }}>
-                  {['Assignments', 'Printing', 'Binding', 'Projects'].map(t => (
-                    <span key={t} className="px-3 py-1 rounded-full text-[10px] font-bold text-white transition-colors duration-300"
-                      style={{ background: 'rgba(0,174,239,0.28)', border: '1px solid rgba(0,174,239,0.38)', backdropFilter: 'blur(4px)' }}>
-                      {t}
-                    </span>
-                  ))}
+            {resolvedServePanels.map((panel, idx) => (
+              <motion.div key={idx} variants={fadeUp}
+                className="group relative rounded-[28px] overflow-hidden cursor-default"
+                style={{ height: '580px', boxShadow: '0 24px 64px rgba(5,12,40,0.14)' }}
+                whileHover={{ y: -8, transition: { duration: 0.32, ease: 'easeOut' } }}
+              >
+                <img loading="lazy" className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.07]"
+                  alt={panel.image_alt || panel.title}
+                  src={panel.image} />
+                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(5,12,40,0.96) 0%, rgba(8,16,44,0.70) 38%, rgba(0,0,0,0.12) 70%, transparent 100%)' }} />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(7,26,43,0.18) 0%, transparent 60%)' }} />
+                <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[28px] group-hover:opacity-100 opacity-0 transition-opacity duration-400" style={{ background: 'linear-gradient(to bottom, #00AEEF, #071A2B)' }} />
+                <div className="absolute top-7 right-7 text-[10px] font-black tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.20)' }}>{String(idx + 1).padStart(2, '0')}</div>
+                <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                  <div className="flex flex-wrap gap-1.5 mb-5 transition-all duration-400" style={{ transform: 'translateY(4px)' }}>
+                    {(panel.tags ?? []).map(t => (
+                      <span key={t} className="px-3 py-1 rounded-full text-[10px] font-bold text-white transition-colors duration-300"
+                        style={{ background: 'rgba(0,174,239,0.28)', border: '1px solid rgba(0,174,239,0.38)', backdropFilter: 'blur(4px)' }}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="w-8 h-[2px] mb-4 rounded-full" style={{ background: '#00AEEF' }} />
+                  <h3 className="text-3xl font-bold text-white mb-2.5 leading-tight transition-transform duration-400 group-hover:-translate-y-1">
+                    {panel.title.split('\n').map((line, li) => li === 0 ? line : <span key={li}><br />{line}</span>)}
+                  </h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.58)' }}>
+                    {panel.description}
+                  </p>
                 </div>
-                {/* Blue accent line above title */}
-                <div className="w-8 h-[2px] mb-4 rounded-full" style={{ background: '#00AEEF' }} />
-                <h3 className="text-3xl font-bold text-white mb-2.5 leading-tight transition-transform duration-400 group-hover:-translate-y-1">Students</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.58)' }}>
-                  From assignments and thesis to final-year projects — typing, formatting, printing and binding handled with care.
-                </p>
-              </div>
-            </motion.div>
-
-            {/* ── 2. Families & Individuals ── */}
-            <motion.div variants={fadeUp}
-              className="group relative rounded-[28px] overflow-hidden cursor-default"
-              style={{ height: '580px', boxShadow: '0 24px 64px rgba(5,12,40,0.14)' }}
-              whileHover={{ y: -8, transition: { duration: 0.32, ease: 'easeOut' } }}
-            >
-              <img loading="lazy" className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.07]"
-                alt="Family at a documentation centre"
-                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=700&h=1160&fit=crop&auto=format" />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(5,12,40,0.96) 0%, rgba(8,16,44,0.70) 38%, rgba(0,0,0,0.12) 70%, transparent 100%)' }} />
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(7,26,43,0.18) 0%, transparent 60%)' }} />
-              <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[28px] group-hover:opacity-100 opacity-0 transition-opacity duration-400" style={{ background: 'linear-gradient(to bottom, #00AEEF, #071A2B)' }} />
-              <div className="absolute top-7 right-7 text-[10px] font-black tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.20)' }}>02</div>
-              <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <div className="flex flex-wrap gap-1.5 mb-5 transition-all duration-400" style={{ transform: 'translateY(4px)' }}>
-                  {['Documentation', 'NADRA', 'Public Facilitation', 'Custom Print'].map(t => (
-                    <span key={t} className="px-3 py-1 rounded-full text-[10px] font-bold text-white transition-colors duration-300"
-                      style={{ background: 'rgba(0,174,239,0.28)', border: '1px solid rgba(0,174,239,0.38)', backdropFilter: 'blur(4px)' }}>
-                      {t}
-                    </span>
-                  ))}
-                </div>
-                <div className="w-8 h-[2px] mb-4 rounded-full" style={{ background: '#00AEEF' }} />
-                <h3 className="text-3xl font-bold text-white mb-2.5 leading-tight transition-transform duration-400 group-hover:-translate-y-1">Families &<br />Individuals</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.58)' }}>
-                  Public facilitation, NADRA assistance, documentation and custom-printed items for everyday personal needs.
-                </p>
-              </div>
-            </motion.div>
-
-            {/* ── 3. Businesses & Organizations ── */}
-            <motion.div variants={fadeUp}
-              className="group relative rounded-[28px] overflow-hidden cursor-default"
-              style={{ height: '580px', boxShadow: '0 24px 64px rgba(5,12,40,0.14)' }}
-              whileHover={{ y: -8, transition: { duration: 0.32, ease: 'easeOut' } }}
-            >
-              <img loading="lazy" className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.07]"
-                alt="Business professionals in meeting"
-                src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=700&h=1160&fit=crop&auto=format" />
-              <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(5,12,40,0.96) 0%, rgba(8,16,44,0.70) 38%, rgba(0,0,0,0.12) 70%, transparent 100%)' }} />
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'linear-gradient(135deg, rgba(7,26,43,0.18) 0%, transparent 60%)' }} />
-              <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-[28px] group-hover:opacity-100 opacity-0 transition-opacity duration-400" style={{ background: 'linear-gradient(to bottom, #00AEEF, #071A2B)' }} />
-              <div className="absolute top-7 right-7 text-[10px] font-black tracking-[0.18em]" style={{ color: 'rgba(255,255,255,0.20)' }}>03</div>
-              <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <div className="flex flex-wrap gap-1.5 mb-5 transition-all duration-400" style={{ transform: 'translateY(4px)' }}>
-                  {['Bulk Printing', 'Letterheads', 'Branding', 'Business Docs'].map(t => (
-                    <span key={t} className="px-3 py-1 rounded-full text-[10px] font-bold text-white transition-colors duration-300"
-                      style={{ background: 'rgba(0,174,239,0.28)', border: '1px solid rgba(0,174,239,0.38)', backdropFilter: 'blur(4px)' }}>
-                      {t}
-                    </span>
-                  ))}
-                </div>
-                <div className="w-8 h-[2px] mb-4 rounded-full" style={{ background: '#00AEEF' }} />
-                <h3 className="text-3xl font-bold text-white mb-2.5 leading-tight transition-transform duration-400 group-hover:-translate-y-1">Businesses &<br />Organizations</h3>
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.58)' }}>
-                  Bulk printing, business documentation, letterheads, rubber stamps and branding for offices and enterprises.
-                </p>
-              </div>
-            </motion.div>
-
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
@@ -1757,27 +1745,27 @@ export default function Home() {
             <motion.h2 variants={fadeUp}
               className="font-bold leading-[1.04] tracking-tight mb-5"
               style={{ fontSize: 'clamp(48px, 8vw, 88px)', color: 'white' }}>
-              Get It Done.
+              {finalCtaHeading1}
             </motion.h2>
             <motion.h2 variants={fadeUp}
               className="font-bold leading-[1.04] tracking-tight mb-8"
               style={{ fontSize: 'clamp(48px, 8vw, 88px)', color: '#00AEEF' }}>
-              Today.
+              {finalCtaHeading2}
             </motion.h2>
 
             {/* Subline */}
             <motion.p variants={fadeUp} className="text-base lg:text-lg mb-12 max-w-lg mx-auto leading-relaxed" style={{ color: 'rgba(255,255,255,0.46)' }}>
-              Shop# 1, A&Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi — walk in anytime, or send us your file right now.
+              {finalCtaSubline}
             </motion.p>
 
             {/* 3 CTA buttons */}
             <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-14">
-              <motion.a href="https://wa.me/923312478337" target="_blank" rel="noopener noreferrer"
+              <motion.a href={finalCtaWaHref} target="_blank" rel="noopener noreferrer"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 font-bold px-8 py-4 rounded-2xl text-sm text-white transition-all"
                 style={{ background: '#25D366', boxShadow: '0 8px 32px rgba(37,211,102,0.32)' }}
                 whileHover={{ y: -4, boxShadow: '0 16px 40px rgba(37,211,102,0.42)', transition: { duration: 0.22 } }}
                 whileTap={{ scale: 0.97 }}>
-                <WaIcon /> WhatsApp Us Now
+                <WaIcon /> {finalCtaWaLabel}
               </motion.a>
               <motion.div className="w-full sm:w-auto" whileHover={{ y: -4, transition: { duration: 0.22 } }}>
                 <Link to="/order-online"
@@ -1786,19 +1774,19 @@ export default function Home() {
                   Order Online <span className="arrow-icon">→</span>
                 </Link>
               </motion.div>
-              <motion.a href="tel:+923312478337"
+              <motion.a href={finalCtaPhoneHref}
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-2xl text-sm transition-all"
                 style={{ border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.80)', background: 'rgba(255,255,255,0.04)' }}
                 whileHover={{ y: -4, background: 'rgba(255,255,255,0.09)', transition: { duration: 0.22 } }}
                 whileTap={{ scale: 0.97 }}>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                Call Now
+                {finalCtaPhoneLabel}
               </motion.a>
             </motion.div>
 
             {/* Service ribbon — pill tags */}
             <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-2">
-              {['Printing', 'Documentation', 'NADRA Facilitation', 'Customized Products', 'Student Services'].map((s, i) => (
+              {resolvedServiceTags.map((s, i) => (
                 <span key={s} className="px-4 py-1.5 rounded-full text-[11px] font-semibold tracking-wide"
                   style={{
                     background: i % 2 === 0 ? 'rgba(7,26,43,0.28)' : 'rgba(0,174,239,0.14)',

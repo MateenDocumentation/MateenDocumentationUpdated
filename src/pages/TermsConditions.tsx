@@ -1,4 +1,6 @@
 import LegalPage, { type LegalSection } from '../components/LegalPage';
+import { useCmsSection, str, arr } from '../cms/useCmsPage';
+import { useCms } from '../cms/CmsContext';
 
 const sections: LegalSection[] = [
   {
@@ -107,13 +109,48 @@ const sections: LegalSection[] = [
   },
 ];
 
+const FALLBACK_INTRO = 'By accessing the Mateen Documentation website or submitting a service request, you agree to the following terms and conditions.';
+
 export default function TermsConditions() {
+  const { siteSettings } = useCms();
+  const cmsSection = useCmsSection('/terms-conditions', 'rich_text');
+  const cmsSections = arr<LegalSection>(cmsSection, 'sections');
+  const introduction = str(cmsSection, 'introduction', FALLBACK_INTRO);
+  const pageTitle = str(cmsSection, 'page_title', 'Terms & Conditions');
+
+  const phone = siteSettings?.phone ?? '+923312478337';
+  const email = siteSettings?.email ?? 'mateendocumentation@gmail.com';
+  const address = siteSettings?.address ?? 'Shop# 1, A&Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi';
+
+  const contactSection: LegalSection = {
+    title: 'Contact',
+    paragraphs: [
+      <>
+        For questions regarding these terms:
+        <br /><br />
+        <strong>Mateen Documentation</strong>
+        <br />
+        {address}
+        <br />
+        Phone: <a className="text-[#071A2B] font-semibold hover:underline" href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a>
+        <br />
+        Email: <a className="text-[#071A2B] font-semibold hover:underline" href={`mailto:${email}`}>{email}</a>
+      </>,
+    ],
+  };
+
+  const baseSections = cmsSections.length ? cmsSections : sections;
+  const resolvedSections = [
+    ...baseSections.filter(s => s.title !== 'Contact'),
+    contactSection,
+  ];
+
   return (
     <LegalPage
-      title="Terms & Conditions"
+      title={pageTitle}
       description="Terms and Conditions for using the Mateen Documentation website and requesting services."
-      introduction="By accessing the Mateen Documentation website or submitting a service request, you agree to the following terms and conditions."
-      sections={sections}
+      introduction={introduction}
+      sections={resolvedSections}
     />
   );
 }

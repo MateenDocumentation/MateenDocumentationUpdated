@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { useCmsSection, str, arr } from '../cms/useCmsPage';
+import { useCms } from '../cms/CmsContext';
 
 /* ── Motion variants ──────────────────────────────── */
 const inView = { once: true, margin: '-80px' };
@@ -226,6 +228,66 @@ const serviceTags = ['Printing', 'Documentation', 'Biometric', 'Customized', 'St
 /*  ABOUT PAGE                                         */
 /* ═══════════════════════════════════════════════════ */
 export default function About() {
+  const aboutHero = useCmsSection('/about', 'hero');
+  const whoSection = useCmsSection('/about', 'who_we_are');
+  const servicesSection = useCmsSection('/about', 'services_grid');
+  const audiencesSection = useCmsSection('/about', 'audiences');
+  const principlesSection = useCmsSection('/about', 'principles');
+  const locationSection = useCmsSection('/about', 'location');
+  const { siteSettings, headerSettings } = useCms();
+
+  const heroTitle1 = str(aboutHero, 'title_line1', 'Multiple Services.');
+  const heroTitle2 = str(aboutHero, 'title_line2', 'One Convenient Place.');
+  const heroSubtitle = str(aboutHero, 'subtitle', 'A multi-service printing, documentation, biometric and public facilitation centre in H Block, North Nazimabad — all your needs handled under one roof.');
+
+  const whoHeading = str(whoSection, 'heading', 'Your Neighbourhood Documentation & Print Centre');
+  const whoBody1 = str(whoSection, 'body1', 'Mateen Documentation is a multi-service centre providing printing, photocopying, scanning, documentation, biometric facilitation, customized printing, student assignment services and business documentation — all in one convenient location in H Block, North Nazimabad.');
+  const whoBody2 = str(whoSection, 'body2', "Whether you're a student needing your assignment printed and bound, a professional requiring legal documents, a family visiting for NADRA facilitation, or a business ordering bulk letterheads — we serve everyone under one roof.");
+  const whoTagsArr = arr<string>(whoSection, 'tags');
+  const resolvedTags = whoTagsArr.length ? whoTagsArr : serviceTags;
+
+  type ServicePanelItem = { title: string; eyebrow: string; desc: string; image: string; to: string };
+  const cmsPanels = arr<ServicePanelItem>(servicesSection, 'items');
+  const resolvedPanels = cmsPanels.length ? cmsPanels : servicesPanels;
+
+  type AudienceItem = { label: string; desc: string };
+  const cmsAudienceItems = arr<AudienceItem>(audiencesSection, 'items');
+  const resolvedAudiences = cmsAudienceItems.length
+    ? audiences.map((a, i) => ({ ...a, ...(cmsAudienceItems[i] ?? {}) }))
+    : audiences;
+
+  type PrincipleItem = { title: string; desc: string };
+  const cmsPrincipleItems = arr<PrincipleItem>(principlesSection, 'items');
+  const resolvedPrinciples = cmsPrincipleItems.length
+    ? principles.map((p, i) => ({ ...p, ...(cmsPrincipleItems[i] ?? {}) }))
+    : principles;
+
+  // Hero eyebrow
+  const heroEyebrow = str(aboutHero, 'eyebrow', 'ABOUT MATEEN DOCUMENTATION');
+
+  // Section eyebrows and headings
+  const whoEyebrow = str(whoSection, 'eyebrow', 'WHO WE ARE');
+  const whoRightImage = str(whoSection, 'image', 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=700&h=860&fit=crop&auto=format');
+  const whoRightImageAlt = str(whoSection, 'image_alt', 'Mateen Documentation Centre — H Block, North Nazimabad');
+  const servicesEyebrow = str(servicesSection, 'eyebrow', 'OUR SERVICES');
+  const servicesHeading = str(servicesSection, 'heading', 'What We Do');
+  const audiencesEyebrow = str(audiencesSection, 'eyebrow', 'WHO WE SERVE');
+  const audiencesHeading = str(audiencesSection, 'heading', 'For Everyone in the Community');
+  const principlesEyebrow = str(principlesSection, 'eyebrow', 'OUR APPROACH');
+  const principlesHeading = str(principlesSection, 'heading', 'How We Work');
+
+  // Location section
+  const locationEyebrow = str(locationSection, 'eyebrow', 'FIND US');
+  const locationHeading = str(locationSection, 'heading', 'Visit Our Centre');
+  const locationHours = str(locationSection, 'hours', 'Open daily — visit us for all your printing and documentation needs.');
+  const locationAddress = str(locationSection, 'address', siteSettings?.address ?? 'Shop# 1, A&Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi');
+  const locationMapsUrl = str(locationSection, 'maps_url', siteSettings?.maps_url ?? 'https://maps.app.goo.gl/SCs4s2xzNkkBoR5e6');
+  const rawWa = headerSettings?.whatsapp ?? siteSettings?.whatsapp ?? '923312478337';
+  const rawPhone = headerSettings?.phone ?? siteSettings?.phone ?? '+923312478337';
+  const locationWaHref = `https://wa.me/${rawWa.replace(/[^0-9]/g, '')}`;
+  const locationPhoneHref = `tel:${rawPhone.replace(/\s/g, '')}`;
+  const locationBadgeText = str(locationSection, 'badge_text', siteSettings?.address?.split(',').slice(1, 3).join(',').trim() ?? 'H Block, North Nazimabad');
+
   return (
     <Layout
       title="About Mateen Documentation — H Block, North Nazimabad"
@@ -298,7 +360,7 @@ export default function About() {
               variants={fadeUp}
               className="text-[#00AEEF] text-xs font-semibold tracking-[0.2em] uppercase mb-4 font-['Manrope']"
             >
-              ABOUT MATEEN DOCUMENTATION
+              {heroEyebrow}
             </motion.p>
 
             {/* Hero title */}
@@ -307,8 +369,8 @@ export default function About() {
               className="font-['Sora'] font-bold text-white leading-[1.08] mb-6"
               style={{ fontSize: 'clamp(42px, 6vw, 76px)' }}
             >
-              Multiple Services.<br />
-              <span className="text-[#00AEEF]">One Convenient Place.</span>
+              {heroTitle1}<br />
+              <span className="text-[#00AEEF]">{heroTitle2}</span>
             </motion.h1>
 
             {/* Subtitle */}
@@ -316,7 +378,7 @@ export default function About() {
               variants={fadeUp}
               className="text-white/70 font-['Manrope'] text-lg leading-relaxed max-w-xl"
             >
-              A multi-service printing, documentation, biometric and public facilitation centre in H Block, North Nazimabad — all your needs handled under one roof.
+              {heroSubtitle}
             </motion.p>
           </motion.div>
         </div>
@@ -347,7 +409,7 @@ export default function About() {
                 variants={fadeUp}
                 className="text-[#00AEEF] text-xs font-semibold tracking-[0.2em] uppercase mb-4 font-['Manrope']"
               >
-                WHO WE ARE
+                {whoEyebrow}
               </motion.p>
               {/* Heading */}
               <motion.h2
@@ -355,24 +417,24 @@ export default function About() {
                 className="font-['Sora'] font-bold text-[#090B0D] leading-[1.15] mb-6"
                 style={{ fontSize: 'clamp(28px, 3.5vw, 44px)' }}
               >
-                Your Neighbourhood Documentation &amp; Print Centre
+                {whoHeading}
               </motion.h2>
               {/* Body paragraphs */}
               <motion.p
                 variants={fadeUp}
                 className="text-[#090B0D]/70 font-['Manrope'] text-base leading-relaxed mb-5"
               >
-                Mateen Documentation is a multi-service centre providing printing, photocopying, scanning, documentation, biometric facilitation, customized printing, student assignment services and business documentation — all in one convenient location in H Block, North Nazimabad.
+                {whoBody1}
               </motion.p>
               <motion.p
                 variants={fadeUp}
                 className="text-[#090B0D]/70 font-['Manrope'] text-base leading-relaxed mb-8"
               >
-                Whether you're a student needing your assignment printed and bound, a professional requiring legal documents, a family visiting for NADRA facilitation, or a business ordering bulk letterheads — we serve everyone under one roof.
+                {whoBody2}
               </motion.p>
               {/* Service tag chips */}
               <motion.div variants={fadeUp} className="flex flex-wrap gap-2">
-                {serviceTags.map((tag) => (
+                {resolvedTags.map((tag) => (
                   <span
                     key={tag}
                     className="text-xs font-semibold font-['Manrope'] tracking-wide px-3.5 py-1.5 rounded-full border border-[#071A2B]/20 text-[#071A2B] bg-[#EEF7FF]"
@@ -394,20 +456,24 @@ export default function About() {
               {/* Main image */}
               <div className="rounded-3xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.14)] aspect-[4/5] max-h-[520px]">
                 <img
-                  src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=700&h=860&fit=crop&auto=format"
-                  alt="Mateen Documentation Centre — H Block, North Nazimabad"
+                  src={whoRightImage}
+                  alt={whoRightImageAlt}
                   loading="lazy"
                   className="w-full h-full object-cover"
                 />
               </div>
               {/* Floating badge */}
-              <div
-                className="absolute -bottom-4 -left-4 flex items-center gap-2 px-4 py-2.5 rounded-full text-white text-sm font-semibold font-['Manrope'] shadow-xl backdrop-blur-md"
+              <a
+                href={locationMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open Mateen Documentation location in Google Maps"
+                className="absolute -bottom-4 -left-4 flex items-center gap-2 px-4 py-2.5 rounded-full text-white text-sm font-semibold font-['Manrope'] shadow-xl backdrop-blur-md hover:opacity-90 transition-opacity"
                 style={{ background: 'rgba(10,15,30,0.82)', border: '1px solid rgba(0,174,239,0.3)' }}
               >
                 <LocationPinIcon className="w-4 h-4 text-[#00AEEF]" />
-                H Block, North Nazimabad
-              </div>
+                {locationBadgeText}
+              </a>
             </motion.div>
 
           </div>
@@ -432,14 +498,14 @@ export default function About() {
               variants={fadeUp}
               className="text-[#00AEEF] text-xs font-semibold tracking-[0.2em] uppercase mb-3 font-['Manrope']"
             >
-              OUR SERVICES
+              {servicesEyebrow}
             </motion.p>
             <motion.h2
               variants={fadeUp}
               className="font-['Sora'] font-bold text-[#090B0D] leading-tight"
               style={{ fontSize: 'clamp(28px, 3.5vw, 44px)' }}
             >
-              What We Do
+              {servicesHeading}
             </motion.h2>
           </motion.div>
 
@@ -451,7 +517,7 @@ export default function About() {
             whileInView="show"
             viewport={inView}
           >
-            {servicesPanels.map((panel) => (
+            {resolvedPanels.map((panel) => (
               <motion.div key={panel.title} variants={fadeUp}>
                 <Link to={panel.to} className="block">
                   <motion.div
@@ -510,14 +576,14 @@ export default function About() {
               variants={fadeUp}
               className="text-[#00AEEF] text-xs font-semibold tracking-[0.2em] uppercase mb-3 font-['Manrope']"
             >
-              WHO WE SERVE
+              {audiencesEyebrow}
             </motion.p>
             <motion.h2
               variants={fadeUp}
               className="font-['Sora'] font-bold text-[#090B0D] leading-tight"
               style={{ fontSize: 'clamp(28px, 3.5vw, 44px)' }}
             >
-              For Everyone in the Community
+              {audiencesHeading}
             </motion.h2>
           </motion.div>
 
@@ -529,7 +595,7 @@ export default function About() {
             whileInView="show"
             viewport={inView}
           >
-            {audiences.map((audience) => (
+            {resolvedAudiences.map((audience) => (
               <motion.div
                 key={audience.label}
                 variants={fadeUp}
@@ -574,14 +640,14 @@ export default function About() {
               variants={fadeUp}
               className="text-[#00AEEF] text-xs font-semibold tracking-[0.2em] uppercase mb-3 font-['Manrope']"
             >
-              OUR APPROACH
+              {principlesEyebrow}
             </motion.p>
             <motion.h2
               variants={fadeUp}
               className="font-['Sora'] font-bold text-white leading-tight"
               style={{ fontSize: 'clamp(28px, 3.5vw, 44px)' }}
             >
-              How We Work
+              {principlesHeading}
             </motion.h2>
           </motion.div>
 
@@ -593,7 +659,7 @@ export default function About() {
             whileInView="show"
             viewport={inView}
           >
-            {principles.map((p) => (
+            {resolvedPrinciples.map((p) => (
               <motion.div
                 key={p.title}
                 variants={fadeUp}
@@ -633,32 +699,34 @@ export default function About() {
                 variants={fadeUp}
                 className="text-[#00AEEF] text-xs font-semibold tracking-[0.2em] uppercase mb-4 font-['Manrope']"
               >
-                FIND US
+                {locationEyebrow}
               </motion.p>
               <motion.h2
                 variants={fadeUp}
                 className="font-['Sora'] font-bold text-[#090B0D] leading-tight mb-6"
                 style={{ fontSize: 'clamp(26px, 3vw, 40px)' }}
               >
-                Visit Our Centre
+                {locationHeading}
               </motion.h2>
               <motion.div variants={fadeUp} className="flex items-start gap-3 mb-4">
-                <LocationPinIcon className="w-5 h-5 text-[#00AEEF] flex-shrink-0 mt-0.5" />
-                <p className="font-['Manrope'] text-[#090B0D]/75 text-base leading-relaxed">
-                  Shop# 1, A&amp;Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi
-                </p>
+                <a href={locationMapsUrl} target="_blank" rel="noopener noreferrer" aria-label="Open Mateen Documentation location in Google Maps" className="flex items-start gap-3 hover:opacity-80 transition-opacity">
+                  <LocationPinIcon className="w-5 h-5 text-[#00AEEF] flex-shrink-0 mt-0.5" />
+                  <p className="font-['Manrope'] text-[#090B0D]/75 text-base leading-relaxed">
+                    {locationAddress}
+                  </p>
+                </a>
               </motion.div>
               <motion.p
                 variants={fadeUp}
                 className="font-['Manrope'] text-[#090B0D]/60 text-sm mb-8 leading-relaxed"
               >
-                Open daily — visit us for all your printing and documentation needs.
+                {locationHours}
               </motion.p>
 
               {/* 3 buttons */}
               <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
                 <a
-                  href="https://maps.app.goo.gl/SCs4s2xzNkkBoR5e6"
+                  href={locationMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-[#071A2B] text-[#071A2B] font-semibold font-['Manrope'] text-sm hover:bg-[#071A2B] hover:text-white transition-all duration-200"
@@ -667,7 +735,7 @@ export default function About() {
                   Get Directions
                 </a>
                 <a
-                  href="https://wa.me/923312478337"
+                  href={locationWaHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold font-['Manrope'] text-sm text-white transition-all duration-200 hover:opacity-90"
@@ -677,7 +745,7 @@ export default function About() {
                   WhatsApp Us
                 </a>
                 <a
-                  href="tel:+923312478337"
+                  href={locationPhoneHref}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold font-['Manrope'] text-sm text-white transition-all duration-200 hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg, #071A2B 0%, #00AEEF 100%)' }}
                 >
@@ -697,7 +765,7 @@ export default function About() {
               transition={{ duration: 0.75, ease: 'easeOut' }}
             >
               <a
-                href="https://maps.app.goo.gl/SCs4s2xzNkkBoR5e6"
+                href={locationMapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block rounded-3xl overflow-hidden h-[300px] relative group"
@@ -723,7 +791,7 @@ export default function About() {
                   <div className="text-center px-4">
                     <p className="font-['Sora'] font-bold text-white text-sm mb-1">Mateen Documentation</p>
                     <p className="font-['Manrope'] text-white/60 text-xs leading-snug">
-                      Shop# 1, A&amp;Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi
+                      {locationAddress}
                     </p>
                   </div>
                   <span className="text-[#00AEEF] text-xs font-semibold font-['Manrope'] tracking-wide uppercase mt-1">
@@ -829,7 +897,8 @@ export default function About() {
             </Link>
             {/* Call Now — frosted */}
             <a
-              href="tel:+923312478337"
+              href={locationPhoneHref}
+              aria-label="Call Mateen Documentation"
               className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-semibold font-['Manrope'] text-sm text-white transition-all duration-200 hover:bg-white/20"
               style={{ background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)' }}
             >

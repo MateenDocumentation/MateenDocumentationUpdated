@@ -1,4 +1,6 @@
 import LegalPage, { type LegalSection } from '../components/LegalPage';
+import { useCmsSection, str, arr } from '../cms/useCmsPage';
+import { useCms } from '../cms/CmsContext';
 
 const sections: LegalSection[] = [
   {
@@ -91,13 +93,48 @@ const sections: LegalSection[] = [
   },
 ];
 
+const FALLBACK_INTRO = 'Mateen Documentation respects your privacy and is committed to protecting the personal information you provide when using our website, submitting an enquiry, placing an online order, contacting us through WhatsApp, or using our services.';
+
 export default function PrivacyPolicy() {
+  const { siteSettings } = useCms();
+  const cmsSection = useCmsSection('/privacy-policy', 'rich_text');
+  const cmsSections = arr<LegalSection>(cmsSection, 'sections');
+  const introduction = str(cmsSection, 'introduction', FALLBACK_INTRO);
+  const pageTitle = str(cmsSection, 'page_title', 'Privacy Policy');
+
+  const phone = siteSettings?.phone ?? '+923312478337';
+  const email = siteSettings?.email ?? 'mateendocumentation@gmail.com';
+  const address = siteSettings?.address ?? 'Shop# 1, A&Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi';
+
+  const contactSection: LegalSection = {
+    title: 'Contact',
+    paragraphs: [
+      <>
+        For privacy-related enquiries:
+        <br /><br />
+        <strong>Mateen Documentation</strong>
+        <br />
+        {address}
+        <br />
+        Phone: <a className="text-[#071A2B] font-semibold hover:underline" href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a>
+        <br />
+        Email: <a className="text-[#071A2B] font-semibold hover:underline" href={`mailto:${email}`}>{email}</a>
+      </>,
+    ],
+  };
+
+  const baseSections = cmsSections.length ? cmsSections : sections;
+  const resolvedSections = [
+    ...baseSections.filter(s => s.title !== 'Contact'),
+    contactSection,
+  ];
+
   return (
     <LegalPage
-      title="Privacy Policy"
+      title={pageTitle}
       description="Privacy Policy for Mateen Documentation website enquiries, uploaded files and online orders."
-      introduction="Mateen Documentation respects your privacy and is committed to protecting the personal information you provide when using our website, submitting an enquiry, placing an online order, contacting us through WhatsApp, or using our services."
-      sections={sections}
+      introduction={introduction}
+      sections={resolvedSections}
     />
   );
 }
