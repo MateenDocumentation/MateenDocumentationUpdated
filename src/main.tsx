@@ -38,7 +38,6 @@ const app = (
 // Use hydrateRoot when the page was prerendered (root has child nodes),
 // createRoot otherwise (development / non-prerendered environments).
 if (rootEl.hasChildNodes()) {
-  ReactDOM.hydrateRoot(rootEl, app);
-} else {
-  ReactDOM.createRoot(rootEl).render(app);
+  rootEl.replaceChildren();
 }
+ReactDOM.createRoot(rootEl).render(app);
