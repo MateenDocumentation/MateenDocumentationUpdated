@@ -1,7 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useLocation } from 'react-router';
+import { PublicPageShell } from './PublicPageShell';
 import { SEO_CONFIG } from '../seo/config';
 import { AuthProvider } from '../admin/context/AuthContext';
 import { ToastProvider } from '../admin/components/Toast';
@@ -9,20 +8,10 @@ import { ToastProvider } from '../admin/components/Toast';
 // ─── Public website ─────────────────────────────────────────────────────────
 
 export function Root() {
-  const location = useLocation();
-
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={location.pathname}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.25, ease: 'easeInOut' }}
-      >
-        <Outlet />
-      </motion.div>
-    </AnimatePresence>
+    <PublicPageShell>
+      <Outlet />
+    </PublicPageShell>
   );
 }
 

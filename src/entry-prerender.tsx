@@ -3,6 +3,7 @@ import { StaticRouter } from 'react-router-dom';
 import { getSeoEntry } from './seo/config';
 import { CmsDataProvider } from './cms/CmsContext';
 import type { CmsData } from './cms/CmsContext';
+import { PublicPageShell } from './app/PublicPageShell';
 
 export {
   absoluteUrl,
@@ -14,12 +15,22 @@ export {
 
 export async function renderPage(pathname: string, cmsData?: CmsData) {
   const Page = (await getSeoEntry(pathname).load()).default;
+
   const inner = (
     <StaticRouter location={pathname}>
-      <Page />
+      <PublicPageShell>
+        <Page />
+      </PublicPageShell>
     </StaticRouter>
   );
+
   return renderToString(
-    cmsData ? <CmsDataProvider data={cmsData}>{inner}</CmsDataProvider> : inner
+    cmsData ? (
+      <CmsDataProvider data={cmsData}>
+        {inner}
+      </CmsDataProvider>
+    ) : (
+      inner
+    )
   );
 }
