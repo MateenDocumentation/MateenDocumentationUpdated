@@ -275,13 +275,15 @@ export default function ServicePage({
   const servicesListSection = useCmsSection(pageSlug, 'services_list');
   const howStepsSection = useCmsSection(pageSlug, 'how_steps');
   const relatedSection = useCmsSection(pageSlug, 'related');
-  const sharedHowSection = useCmsSection('/shared', 'service_labels');
+  const sharedHowSection = useCmsSection('/shared', 'shared_labels');
 
   // Apply CMS values with prop fallbacks
   const resolvedTitle = (cmsService?.title?.trim() || title);
   const resolvedIntro = (cmsService?.description?.trim() || intro);
   const resolvedHeroImage = (str(heroSection, 'image_url', '') || str(heroSection, 'background_image_url', '') || cmsService?.image_url?.trim() || heroImage);
   const resolvedHeroSubtitle = str(heroSection, 'subtitle', heroSubtitle);
+  const resolvedBreadcrumb = str(heroSection, 'breadcrumb', breadcrumb);
+  const resolvedOrderCtaLabel = str(heroSection, 'cta_label', ctaLabel ?? 'Order Online');
   const resolvedNote = str(heroSection, 'note', note ?? '');
   const resolvedCtaWhatsApp = str(heroSection, 'wa_message', '');
 
@@ -297,13 +299,28 @@ export default function ServicePage({
     ? HOW_STEPS.map((s, i) => ({ ...s, title: cmsHowSteps[i]?.title ?? s.title, desc: cmsHowSteps[i]?.desc ?? s.desc }))
     : HOW_STEPS;
 
-  // Shared section labels (global across all service pages)
-  const labelAvailable = str(sharedHowSection, 'available_services', 'Available Services');
-  const labelWhatWeOffer = str(sharedHowSection, 'what_we_offer', 'What We Offer');
-  const labelSimpleProcess = str(sharedHowSection, 'simple_process', 'Simple Process');
-  const labelHowWeHelp = str(sharedHowSection, 'how_we_help', 'How We Help You');
-  const labelExploreMore = str(sharedHowSection, 'explore_more', 'Explore More');
-  const labelYouMightNeed = str(sharedHowSection, 'you_might_need', 'You Might Also Need');
+  type SharedLabel = { key: string; value: string };
+  const sharedLabelItems = arr<SharedLabel>(sharedHowSection, 'items');
+  const sharedLabel = (key: string, fallback: string) => sharedLabelItems.find(item => item.key === key)?.value?.trim() || fallback;
+
+  const labelAvailable = sharedLabel('available_services', str(sharedHowSection, 'available_services', 'Available Services'));
+  const labelWhatWeOffer = sharedLabel('what_we_offer', str(sharedHowSection, 'what_we_offer', 'What We Offer'));
+  const labelSimpleProcess = sharedLabel('simple_process', str(sharedHowSection, 'simple_process', 'Simple Process'));
+  const labelHowWeHelp = sharedLabel('how_we_help', str(sharedHowSection, 'how_we_help', 'How We Help You'));
+  const labelExploreMore = sharedLabel('explore_more', str(sharedHowSection, 'explore_more', 'Explore More'));
+  const labelYouMightNeed = sharedLabel('you_might_need', str(sharedHowSection, 'you_might_need', 'You Might Also Need'));
+  const labelService = sharedLabel('service', 'Service');
+  const labelWhatsapp = sharedLabel('whatsapp_us', 'WhatsApp Us');
+  const labelSendRequirement = sharedLabel('send_requirement', 'Send Requirement Online');
+  const labelCallNow = sharedLabel('call_now', 'Call Now');
+  const labelAboutService = sharedLabel('about_service', 'About This Service');
+  const labelExplore = sharedLabel('explore', 'Explore');
+  const labelGetStartedEyebrow = sharedLabel('get_started_eyebrow', 'Get Started Today');
+  const labelReadyHeading = sharedLabel('ready_heading', 'Ready to Get Started?');
+  const labelReadyDescription = sharedLabel('ready_description', 'Visit us in H Block North Nazimabad, send your file online, or WhatsApp us now.');
+  const labelWhatsappNow = sharedLabel('whatsapp_now', 'WhatsApp Us Now');
+  const labelOrderOnline = sharedLabel('order_online', 'Order Online');
+  const labelPhoneCta = sharedLabel('phone_cta', 'Call Now');
 
   // Related services from CMS
   type CmsRelated = { label: string; to: string };
@@ -386,7 +403,7 @@ export default function ServicePage({
             {[
               { label: 'Home', to: '/' },
               { label: 'Services', to: '/services' },
-              { label: breadcrumb, to: null },
+              { label: resolvedBreadcrumb, to: null },
             ].map((crumb, i, arr) => (
               <span key={i} className="flex items-center gap-2">
                 {crumb.to ? (
@@ -459,7 +476,7 @@ export default function ServicePage({
               whileTap={{ scale: 0.97 }}
             >
               <WaIcon />
-              WhatsApp Us
+              {labelWhatsapp}
             </motion.a>
 
             {/* Send Requirement Online */}
@@ -474,7 +491,7 @@ export default function ServicePage({
               whileTap={{ scale: 0.97 }}
             >
               <EnvelopeIcon />
-              Send Requirement Online
+              {labelSendRequirement}
             </motion.a>
 
             {/* Call Now */}
@@ -492,7 +509,7 @@ export default function ServicePage({
               whileTap={{ scale: 0.97 }}
             >
               <PhoneIcon />
-              Call Now
+              {labelCallNow}
             </motion.a>
           </motion.div>
         </div>
@@ -523,7 +540,7 @@ export default function ServicePage({
                   className="text-xs font-semibold text-[#071A2B] tracking-[0.16em] uppercase"
                   style={{ fontFamily: 'Manrope, sans-serif' }}
                 >
-                  About This Service
+                  {labelAboutService}
                 </span>
               </motion.div>
 
@@ -850,7 +867,7 @@ export default function ServicePage({
                     </h3>
 
                     <div className="flex items-center gap-2 text-[#071A2B] font-semibold text-sm group-hover:gap-3 transition-all" style={{ fontFamily: 'Manrope, sans-serif' }}>
-                      Explore
+                      {labelExplore}
                       <ArrowRightIcon />
                     </div>
                   </Link>
@@ -889,7 +906,7 @@ export default function ServicePage({
               className="text-xs font-semibold text-[#00AEEF] tracking-[0.2em] uppercase"
               style={{ fontFamily: 'Manrope, sans-serif' }}
             >
-              Get Started Today
+              {labelGetStartedEyebrow}
             </span>
             <div className="w-12 h-px bg-[#00AEEF]/30" />
           </motion.div>
@@ -902,7 +919,7 @@ export default function ServicePage({
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
           >
-            Ready to Get Started?
+            {labelReadyHeading}
           </motion.h2>
 
           <motion.p
@@ -913,7 +930,7 @@ export default function ServicePage({
             whileInView="visible"
             viewport={{ once: true, margin: '-80px' }}
           >
-            Visit us in H Block North Nazimabad, send your file online, or WhatsApp us now.
+            {labelReadyDescription}
           </motion.p>
 
           {/* CTA Buttons */}
@@ -936,7 +953,7 @@ export default function ServicePage({
               whileTap={{ scale: 0.97 }}
             >
               <WaIcon />
-              WhatsApp Us Now
+              {labelWhatsappNow}
             </motion.a>
 
             {/* Order Online — blue gradient */}
@@ -952,7 +969,7 @@ export default function ServicePage({
               whileTap={{ scale: 0.97 }}
             >
               <EnvelopeIcon />
-              {ctaLabel ?? 'Order Online'}
+              {resolvedOrderCtaLabel}
             </motion.a>
 
             {/* Call Now — frosted border */}

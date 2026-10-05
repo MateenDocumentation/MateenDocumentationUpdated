@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from '../assets/logo.webp';
 import { useCms } from '../cms/CmsContext';
+import { useCmsSection, arr } from '../cms/useCmsPage';
 
 const DEFAULT_SERVICE_LINKS = [
   { label: 'Printing & Photocopy',              to: '/services/printing-photocopy' },
@@ -35,6 +36,10 @@ const WaIcon = () => (
 
 export default function Header() {
   const { headerSettings, siteSettings, navigationItems } = useCms();
+  const sharedLabelsSection = useCmsSection('/shared', 'shared_labels');
+  type SharedLabel = { key: string; value: string };
+  const sharedLabels = arr<SharedLabel>(sharedLabelsSection, 'items');
+  const sharedLabel = (key: string, fallback: string) => sharedLabels.find(item => item.key === key)?.value?.trim() || fallback;
   const [menuOpen, setMenuOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -68,7 +73,8 @@ export default function Header() {
     : DEFAULT_SERVICE_LINKS;
 
   // "View all" label from CMS footer service_links count or default
-  const viewAllLabel = `View All ${serviceLinks.length} Services`;
+  const viewAllLabel = sharedLabel('header_view_all_services', `View All ${serviceLinks.length} Services`);
+  const callLabel = sharedLabel('header_call', 'Call');
 
   useEffect(() => { setMenuOpen(false); setMegaOpen(false); setMobileServicesOpen(false); }, [location]);
 
@@ -233,7 +239,7 @@ export default function Header() {
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
-              Call
+              {callLabel}
             </a>
             <motion.a
               href={waHref}
@@ -322,7 +328,7 @@ export default function Header() {
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
-                    Call
+                    {callLabel}
                   </a>
                   <a
                     href={waHref}
@@ -330,7 +336,7 @@ export default function Header() {
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-[#25D366] text-white rounded-xl text-sm font-bold"
                   >
-                    <WaIcon /> WhatsApp
+                    <WaIcon /> {sharedLabel('header_whatsapp', 'WhatsApp')}
                   </a>
                 </div>
               </div>
@@ -346,7 +352,7 @@ export default function Header() {
             <svg className="w-5 h-5 text-[#071A2B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
-            <span className="text-[10px] font-bold tracking-wider text-[#071A2B]">CALL</span>
+            <span className="text-[10px] font-bold tracking-wider text-[#071A2B]">{sharedLabel('header_call_mobile', 'CALL')}</span>
           </a>
           <a
             href={waHref}
@@ -355,13 +361,13 @@ export default function Header() {
             className="flex flex-col items-center py-3.5 gap-1 bg-[#25D366] text-white"
           >
             <WaIcon />
-            <span className="text-[10px] font-bold tracking-wider">WHATSAPP</span>
+            <span className="text-[10px] font-bold tracking-wider">{sharedLabel('header_whatsapp_mobile', 'WHATSAPP')}</span>
           </a>
           <Link to="/order-online" className="flex flex-col items-center py-3.5 gap-1 bg-[#071A2B] text-white">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
             </svg>
-            <span className="text-[10px] font-bold tracking-wider">SEND FILE</span>
+            <span className="text-[10px] font-bold tracking-wider">{sharedLabel('header_send_file', 'SEND FILE')}</span>
           </Link>
         </div>
       </div>

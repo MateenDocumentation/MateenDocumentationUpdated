@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { fileToAttachment, submitInquiry } from '../lib/submitInquiry';
-import { useCmsSection, str } from '../cms/useCmsPage';
+import { useCmsSection, str, arr } from '../cms/useCmsPage';
 import { useCms } from '../cms/CmsContext';
 
 const inView = { once: true, margin: '-80px' };
@@ -29,6 +29,11 @@ const WhatsAppIcon = () => (
 );
 
 export default function OrderOnline() {
+  const sharedLabelsSection = useCmsSection('/shared', 'shared_labels');
+  type SharedLabel = { key: string; value: string };
+  const sharedLabels = arr<SharedLabel>(sharedLabelsSection, 'items');
+  const sharedLabelMap = Object.fromEntries(sharedLabels.map(item => [item.key, item.value]));
+  const pageLabel = (key: string, fallback: string) => sharedLabelMap[key] || fallback;
   const { siteSettings, headerSettings } = useCms();
   const rawPhone = headerSettings?.phone ?? siteSettings?.phone ?? '+923312478337';
   const telHref = `tel:${rawPhone.replace(/\s/g, '')}`;
@@ -40,6 +45,8 @@ export default function OrderOnline() {
   const heroIntro = str(orderHero, 'intro', 'Upload your document, assignment, image or design file. Tell us your requirements — we review, prepare, and complete your order.');
 
   const howSection = useCmsSection('/order-online', 'how_it_works');
+  const formSection = useCmsSection('/order-online', 'form_config');
+  const finalCtaSection = useCmsSection('/order-online', 'final_cta');
   const howEyebrow = str(howSection, 'eyebrow', 'SIMPLE PROCESS');
   const howHeading = str(howSection, 'heading', 'How It Works');
   type HowStep = { title: string; desc: string };
@@ -47,6 +54,64 @@ export default function OrderOnline() {
     const s = howSection?.content?.['steps'];
     return Array.isArray(s) ? (s as HowStep[]) : [];
   })();
+
+  const rawWa = headerSettings?.whatsapp ?? siteSettings?.whatsapp ?? '923312478337';
+  const waHref = `https://wa.me/${rawWa.replace(/[^0-9]/g, '')}`;
+  const acceptedFilesHeading = str(formSection, 'accepted_files_heading', 'Accepted Files');
+  const acceptedFileTypes = arr<string>(formSection, 'accepted_file_types');
+  const resolvedAcceptedFileTypes = acceptedFileTypes.length ? acceptedFileTypes : ['PDF','DOC','JPG','PNG','PPT'];
+  const acceptedFilesNote = str(formSection, 'accepted_files_note', 'Other formats accepted — describe in message.');
+  const whatsappPanelHeading = str(formSection, 'whatsapp_panel_heading', 'Prefer WhatsApp?');
+  const whatsappPanelText = str(formSection, 'whatsapp_panel_text', 'Send your file and requirements directly on WhatsApp for a quick response.');
+  const whatsappButtonLabel = str(formSection, 'whatsapp_button_label', 'Send on WhatsApp');
+  const sendItemsHeading = str(formSection, 'send_items_heading', 'You Can Send:');
+  const sendItems = arr<string>(formSection, 'send_items');
+  const resolvedSendItems = sendItems.length ? sendItems : ['Assignment','PDF Document','Photograph','Design File','Printing File','Customized Requirement','Bulk Order Requirement'];
+  const privacyText = str(formSection, 'privacy_text', 'Your files are used only to review and complete your requested service.');
+  const formHeading = str(formSection, 'form_heading', 'Your Order Requirement');
+  const successHeading = str(formSection, 'success_heading', 'Requirement Submitted!');
+  const successText = str(formSection, 'success_text', 'Thanks — your requirement has been received. We will review it and contact you shortly.');
+  const successButtonLabel = str(formSection, 'success_button_label', 'Continue on WhatsApp');
+  const nameLabel = str(formSection, 'name_label', 'Full Name *');
+  const namePlaceholder = str(formSection, 'name_placeholder', 'Your full name');
+  const phoneLabel = str(formSection, 'phone_label', 'Phone *');
+  const phonePlaceholder = str(formSection, 'phone_placeholder', '03xx-xxxxxxx');
+  const whatsappLabel = str(formSection, 'whatsapp_label', 'WhatsApp (if different)');
+  const whatsappPlaceholder = str(formSection, 'whatsapp_placeholder', '03xx-xxxxxxx');
+  const emailLabel = str(formSection, 'email_label', 'Email (optional)');
+  const emailPlaceholder = str(formSection, 'email_placeholder', 'your@email.com');
+  const categoryLabel = str(formSection, 'category_label', 'Service Category *');
+  const categoryOptions = arr<string>(formSection, 'category_options');
+  const resolvedCategoryOptions = categoryOptions.length ? categoryOptions : ['Printing & Photocopy','Student Services','Customized Printing','NADRA / Biometric','Legal Documentation','Business Documentation','Other'];
+  const servicePlaceholder = str(formSection, 'service_placeholder', 'Select a service...');
+  const uploadLabel = str(formSection, 'upload_label', 'Upload File');
+  const uploadPrompt = str(formSection, 'upload_prompt', 'Drop your file here or click to browse');
+  const maxFileText = str(formSection, 'max_file_text', 'Max 20MB');
+  const quantityLabel = str(formSection, 'quantity_label', 'Quantity');
+  const quantityPlaceholder = str(formSection, 'quantity_placeholder', 'e.g. 50 copies');
+  const printingTypeLabel = str(formSection, 'printing_type_label', 'Printing Type');
+  const printingTypeOptions = arr<string>(formSection, 'printing_type_options');
+  const resolvedPrintingTypeOptions = printingTypeOptions.length ? printingTypeOptions : ['Color','Black & White','Not Applicable'];
+  const paperLabel = str(formSection, 'paper_label', 'Paper / Material');
+  const paperPlaceholder = str(formSection, 'paper_placeholder', 'e.g. Plain, Glossy, Card Stock');
+  const sizeLabel = str(formSection, 'size_label', 'Size');
+  const sizePlaceholder = str(formSection, 'size_placeholder', 'e.g. A4, A3, Custom');
+  const specialLabel = str(formSection, 'special_label', 'Special Requirements');
+  const specialPlaceholder = str(formSection, 'special_placeholder', 'Binding, lamination, spiral, etc.');
+  const messageLabel = str(formSection, 'message_label', 'Additional Message');
+  const messagePlaceholder = str(formSection, 'message_placeholder', 'Any other details or instructions...');
+  const submitLabel = str(formSection, 'submit_label', 'Submit Requirement →');
+  const sendingLabel = str(formSection, 'sending_label', 'Submitting…');
+  const errorText = str(formSection, 'error_text', 'Submission failed. Please try again.');
+  const heroFileTypes = arr<string>(formSection, 'hero_file_types');
+  const resolvedHeroFileTypes = heroFileTypes.length ? heroFileTypes : ['PDF', 'DOC / DOCX', 'JPG / PNG', 'PPT / PPTX'];
+  const fileChangeText = str(formSection, 'file_change_text', 'Click to change');
+  const orderCtaHeading1 = str(finalCtaSection, 'heading_line1', 'Ready to Get');
+  const orderCtaHeading2 = str(finalCtaSection, 'heading_line2', 'Started?');
+  const orderCtaWaLabel = str(finalCtaSection, 'wa_label', 'WhatsApp Us');
+  const orderCtaPrimaryLabel = str(finalCtaSection, 'primary_label', 'Contact Us');
+  const orderCtaPrimaryUrl = str(finalCtaSection, 'primary_url', '/contact');
+  const orderCtaPhoneLabel = str(finalCtaSection, 'phone_label', 'Call Us');
 
   const [form, setForm] = useState({
     name: '', phone: '', whatsapp: '', email: '',
@@ -108,7 +173,7 @@ export default function OrderOnline() {
       });
       setSubmitted(true);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Submission failed. Please try again.');
+      setSubmitError(error instanceof Error ? error.message : errorText);
     } finally {
       setSending(false);
     }
@@ -174,11 +239,11 @@ export default function OrderOnline() {
           <motion.nav className="flex items-center gap-2 mb-8"
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' as const }}>
-            <Link to="/" className="text-[13px] font-medium text-white/60 bg-white/10 px-3 py-1 rounded-full hover:bg-white/15 transition-colors">Home</Link>
+            <Link to="/" className="text-[13px] font-medium text-white/60 bg-white/10 px-3 py-1 rounded-full hover:bg-white/15 transition-colors">{pageLabel('breadcrumb_home', 'Home')}</Link>
             <svg className="w-3 h-3 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <span className="text-[13px] font-medium text-white/40 bg-white/8 px-3 py-1 rounded-full">Order Online</span>
+            <span className="text-[13px] font-medium text-white/40 bg-white/8 px-3 py-1 rounded-full">{pageLabel('breadcrumb_order_online', 'Order Online')}</span>
           </motion.nav>
 
           <motion.p className="text-[11px] font-bold tracking-[0.22em] text-[#00AEEF] uppercase mb-4"
@@ -206,7 +271,7 @@ export default function OrderOnline() {
           <motion.div className="flex flex-wrap gap-2"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55, duration: 0.5 }}>
-            {['PDF', 'DOC / DOCX', 'JPG / PNG', 'PPT / PPTX'].map((ext, i) => (
+            {resolvedHeroFileTypes.map((ext, i) => (
               <span key={i} className="text-[12px] font-semibold px-3.5 py-1.5 rounded-full"
                 style={{ background: 'rgba(0,174,239,0.15)', border: '1px solid rgba(0,174,239,0.28)', color: 'rgba(255,255,255,0.80)' }}>
                 {ext}
@@ -315,19 +380,13 @@ export default function OrderOnline() {
                 viewport={inView}
                 className="bg-[#EEF7FF] rounded-2xl p-6"
               >
-                <p className="font-bold text-[#090B0D] text-[15px] mb-4">Accepted Files</p>
+                <p className="font-bold text-[#090B0D] text-[15px] mb-4">{acceptedFilesHeading}</p>
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {[
-                    { ext: 'PDF', color: 'text-red-600', bg: 'bg-red-50 border-red-200' },
-                    { ext: 'DOC', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' },
-                    { ext: 'JPG', color: 'text-green-600', bg: 'bg-green-50 border-green-200' },
-                    { ext: 'PNG', color: 'text-green-600', bg: 'bg-green-50 border-green-200' },
-                    { ext: 'PPT', color: 'text-orange-600', bg: 'bg-orange-50 border-orange-200' },
-                  ].map((f, i) => (
-                    <span key={i} className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border ${f.color} ${f.bg}`}>{f.ext}</span>
+                  {resolvedAcceptedFileTypes.map((ext, i) => (
+                    <span key={i} className="text-[11px] font-bold px-2.5 py-1 rounded-lg border text-[#071A2B] bg-white border-[#dce6ff]">{ext}</span>
                   ))}
                 </div>
-                <p className="text-[12px] text-[#090B0D]/50">Other formats accepted — describe in message.</p>
+                <p className="text-[12px] text-[#090B0D]/50">{acceptedFilesNote}</p>
               </motion.div>
 
               {/* Panel 2: Prefer WhatsApp */}
@@ -338,19 +397,19 @@ export default function OrderOnline() {
                 viewport={inView}
                 className="bg-[#EEF7FF] rounded-2xl p-6 border-l-4 border-[#00AEEF]"
               >
-                <p className="font-bold text-[#090B0D] text-[15px] mb-2">Prefer WhatsApp?</p>
+                <p className="font-bold text-[#090B0D] text-[15px] mb-2">{whatsappPanelHeading}</p>
                 <p className="text-[13px] text-[#090B0D]/55 mb-4 leading-relaxed">
-                  Send your file directly on WhatsApp for the fastest response.
+                  {whatsappPanelText}
                 </p>
                 <motion.a
-                  href="https://wa.me/923312478337"
+                  href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ y: -3 }}
                   className="inline-flex items-center justify-center gap-2 w-full bg-[#25D366] text-white font-semibold text-[14px] px-4 py-2.5 rounded-xl hover:bg-[#1eb857] transition-all"
                 >
                   <WhatsAppIcon />
-                  Send on WhatsApp
+                  {whatsappButtonLabel}
                 </motion.a>
               </motion.div>
 
@@ -362,13 +421,9 @@ export default function OrderOnline() {
                 viewport={inView}
                 className="bg-[#EEF7FF] rounded-2xl p-6"
               >
-                <p className="font-bold text-[#090B0D] text-[15px] mb-4">You Can Send:</p>
+                <p className="font-bold text-[#090B0D] text-[15px] mb-4">{sendItemsHeading}</p>
                 <ul className="space-y-2.5">
-                  {[
-                    'Assignment', 'PDF Document', 'Photograph',
-                    'Design File', 'Printing File',
-                    'Customized Requirement', 'Bulk Order Requirement',
-                  ].map((item, i) => (
+                  {resolvedSendItems.map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
                       <div className="w-4 h-4 rounded-full bg-[#00AEEF]/12 flex items-center justify-center flex-shrink-0">
                         <svg className="w-2.5 h-2.5 text-[#00AEEF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -393,7 +448,7 @@ export default function OrderOnline() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 <p className="text-[11px] text-[#090B0D]/40 leading-relaxed">
-                  Your files are used only to prepare your order and are not shared with third parties.
+                  {privacyText}
                 </p>
               </motion.div>
             </div>
@@ -413,46 +468,46 @@ export default function OrderOnline() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-[#090B0D] mb-3">Requirement Submitted!</h3>
+                    <h3 className="text-2xl font-bold text-[#090B0D] mb-3">{successHeading}</h3>
                     <p className="text-[#090B0D]/55 text-[15px] mb-8 leading-relaxed max-w-sm">
-                      We'll contact you to confirm details before processing your order.
+                      {successText}
                     </p>
                     <motion.a
-                      href="https://wa.me/923312478337"
+                      href={waHref}
                       target="_blank"
                       rel="noopener noreferrer"
                       whileHover={{ y: -3 }}
                       className="inline-flex items-center gap-2 bg-[#25D366] text-white font-semibold text-[15px] px-7 py-3.5 rounded-xl hover:bg-[#1eb857] transition-all"
                     >
                       <WhatsAppIcon />
-                      Continue on WhatsApp
+                      {successButtonLabel}
                     </motion.a>
                   </div>
                 ) : (
                   <>
-                    <h2 className="text-xl font-bold text-[#090B0D] mb-6">Your Order Requirement</h2>
+                    <h2 className="text-xl font-bold text-[#090B0D] mb-6">{formHeading}</h2>
                     <form onSubmit={handleSubmit} className="space-y-5">
                       {/* Row 1: Name + Phone */}
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Full Name *</label>
+                          <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{nameLabel}</label>
                           <input
                             type="text"
                             required
                             value={form.name}
                             onChange={e => setForm({ ...form, name: e.target.value })}
-                            placeholder="Your full name"
+                            placeholder={namePlaceholder}
                             className={inputClass}
                           />
                         </div>
                         <div>
-                          <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Phone *</label>
+                          <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{phoneLabel}</label>
                           <input
                             type="tel"
                             required
                             value={form.phone}
                             onChange={e => setForm({ ...form, phone: e.target.value })}
-                            placeholder="03xx-xxxxxxx"
+                            placeholder={phonePlaceholder}
                             className={inputClass}
                           />
                         </div>
@@ -461,22 +516,22 @@ export default function OrderOnline() {
                       {/* Row 2: WhatsApp + Email */}
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">WhatsApp <span className="text-[#090B0D]/30">(if different)</span></label>
+                          <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{whatsappLabel}</label>
                           <input
                             type="tel"
                             value={form.whatsapp}
                             onChange={e => setForm({ ...form, whatsapp: e.target.value })}
-                            placeholder="03xx-xxxxxxx"
+                            placeholder={whatsappPlaceholder}
                             className={inputClass}
                           />
                         </div>
                         <div>
-                          <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Email <span className="text-[#090B0D]/30">(optional)</span></label>
+                          <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{emailLabel}</label>
                           <input
                             type="email"
                             value={form.email}
                             onChange={e => setForm({ ...form, email: e.target.value })}
-                            placeholder="your@email.com"
+                            placeholder={emailPlaceholder}
                             className={inputClass}
                           />
                         </div>
@@ -484,27 +539,21 @@ export default function OrderOnline() {
 
                       {/* Service Category */}
                       <div>
-                        <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Service Category *</label>
+                        <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{categoryLabel}</label>
                         <select
                           required
                           value={form.category}
                           onChange={e => handleCategoryChange(e.target.value)}
                           className={inputClass}
                         >
-                          <option value="">Select a service...</option>
-                          <option>Printing &amp; Photocopy</option>
-                          <option>Student Services</option>
-                          <option>Customized Printing</option>
-                          <option>NADRA / Biometric</option>
-                          <option>Legal Documentation</option>
-                          <option>Business Documentation</option>
-                          <option>Other</option>
+                          <option value="">{servicePlaceholder}</option>
+                          {resolvedCategoryOptions.map(option => <option key={option}>{option}</option>)}
                         </select>
                       </div>
 
                       {/* File Upload */}
                       <div>
-                        <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Upload File</label>
+                        <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{uploadLabel}</label>
                         <label
                           htmlFor="file-input"
                           className="flex flex-col items-center justify-center border-2 border-dashed border-[#c8d6f0] rounded-2xl p-10 text-center hover:border-[#071A2B] hover:bg-[#EEF7FF] transition-all cursor-pointer group"
@@ -518,7 +567,7 @@ export default function OrderOnline() {
                               </div>
                               <div className="text-left">
                                 <p className="text-[14px] font-semibold text-[#071A2B] truncate max-w-[240px]">{file.name}</p>
-                                <p className="text-[12px] text-[#090B0D]/40">{(file.size / 1024).toFixed(0)} KB — Click to change</p>
+                                <p className="text-[12px] text-[#090B0D]/40">{(file.size / 1024).toFixed(0)} KB — {fileChangeText}</p>
                               </div>
                             </div>
                           ) : (
@@ -531,10 +580,10 @@ export default function OrderOnline() {
                               >
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                               </svg>
-                              <p className="text-[15px] font-medium text-[#090B0D]/60 mb-1">Drop your file here or click to browse</p>
-                              <p className="text-[12px] text-[#090B0D]/35 mb-4">Max 20MB</p>
+                              <p className="text-[15px] font-medium text-[#090B0D]/60 mb-1">{uploadPrompt}</p>
+                              <p className="text-[12px] text-[#090B0D]/35 mb-4">{maxFileText}</p>
                               <div className="flex flex-wrap justify-center gap-2">
-                                {['PDF', 'DOC', 'JPG', 'PNG', 'PPT'].map((ext, i) => (
+                                {resolvedAcceptedFileTypes.map((ext, i) => (
                                   <span
                                     key={i}
                                     className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#00AEEF]/8 text-[#071A2B] border border-[#00AEEF]/15"
@@ -568,25 +617,26 @@ export default function OrderOnline() {
                             {/* Row: Quantity + Printing Type */}
                             <div className="grid sm:grid-cols-2 gap-4">
                               <div>
-                                <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Quantity</label>
+                                <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{quantityLabel}</label>
                                 <input
                                   type="text"
                                   value={form.quantity}
                                   onChange={e => setForm({ ...form, quantity: e.target.value })}
-                                  placeholder="e.g. 50 copies"
+                                  placeholder={quantityPlaceholder}
                                   className={inputClass}
                                 />
                               </div>
                               <div>
-                                <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Printing Type</label>
+                                <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{printingTypeLabel}</label>
                                 <select
                                   value={form.printingType}
                                   onChange={e => setForm({ ...form, printingType: e.target.value })}
                                   className={inputClass}
                                 >
-                                  <option value="color">Color</option>
-                                  <option value="bw">Black &amp; White</option>
-                                  <option value="not-applicable">Not Applicable</option>
+                                  {resolvedPrintingTypeOptions.map((label, i) => {
+                                    const value = i === 0 ? 'color' : i === 1 ? 'bw' : 'not-applicable';
+                                    return <option key={label} value={value}>{label}</option>;
+                                  })}
                                 </select>
                               </div>
                             </div>
@@ -594,22 +644,22 @@ export default function OrderOnline() {
                             {/* Row: Paper + Size */}
                             <div className="grid sm:grid-cols-2 gap-4">
                               <div>
-                                <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Paper / Material</label>
+                                <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{paperLabel}</label>
                                 <input
                                   type="text"
                                   value={form.paper}
                                   onChange={e => setForm({ ...form, paper: e.target.value })}
-                                  placeholder="e.g. Plain, Glossy, Card Stock"
+                                  placeholder={paperPlaceholder}
                                   className={inputClass}
                                 />
                               </div>
                               <div>
-                                <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Size</label>
+                                <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{sizeLabel}</label>
                                 <input
                                   type="text"
                                   value={form.size}
                                   onChange={e => setForm({ ...form, size: e.target.value })}
-                                  placeholder="e.g. A4, A3, Custom"
+                                  placeholder={sizePlaceholder}
                                   className={inputClass}
                                 />
                               </div>
@@ -617,12 +667,12 @@ export default function OrderOnline() {
 
                             {/* Special Requirements */}
                             <div>
-                              <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Special Requirements</label>
+                              <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{specialLabel}</label>
                               <input
                                 type="text"
                                 value={form.special}
                                 onChange={e => setForm({ ...form, special: e.target.value })}
-                                placeholder="Binding, lamination, spiral, etc."
+                                placeholder={specialPlaceholder}
                                 className={inputClass}
                               />
                             </div>
@@ -632,12 +682,12 @@ export default function OrderOnline() {
 
                       {/* Message */}
                       <div>
-                        <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">Additional Message</label>
+                        <label className="block text-[13px] font-medium text-[#090B0D]/55 mb-1.5">{messageLabel}</label>
                         <textarea
                           rows={4}
                           value={form.message}
                           onChange={e => setForm({ ...form, message: e.target.value })}
-                          placeholder="Any other details or instructions..."
+                          placeholder={messagePlaceholder}
                           className={`${inputClass} resize-none`}
                         />
                       </div>
@@ -647,7 +697,7 @@ export default function OrderOnline() {
                         <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-[#090B0D]/25" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
-                        Your files and information are used only to process your order. We don't share them with third parties.
+                        {privacyText}
                       </p>
 
                       {/* Submit */}
@@ -658,7 +708,7 @@ export default function OrderOnline() {
                         whileHover={{ y: -3 }}
                         className="w-full bg-gradient-to-r from-[#071A2B] to-[#00AEEF] text-white font-semibold text-[16px] px-6 py-4 rounded-xl hover:from-[#0b263d] hover:to-[#00AEEF] transition-all"
                       >
-                        {sending ? 'Submitting…' : 'Submit Requirement →'}
+                        {sending ? sendingLabel : submitLabel}
                       </motion.button>
                     </form>
                   </>
@@ -696,8 +746,8 @@ export default function OrderOnline() {
             whileInView="show"
             viewport={inView}
           >
-            <span className="text-white">Ready to Get </span>
-            <span className="text-[#00AEEF]">Started?</span>
+            <span className="text-white">{orderCtaHeading1} </span>
+            <span className="text-[#00AEEF]">{orderCtaHeading2}</span>
           </motion.h2>
           <motion.div
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
@@ -708,22 +758,22 @@ export default function OrderOnline() {
           >
             <motion.a
               variants={fadeUp}
-              href="https://wa.me/923312478337"
+              href={waHref}
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ y: -3 }}
               className="inline-flex items-center gap-2 bg-[#25D366] text-white font-semibold text-[15px] px-7 py-3.5 rounded-xl hover:bg-[#1eb857] transition-all"
             >
               <WhatsAppIcon />
-              WhatsApp Us
+              {orderCtaWaLabel}
             </motion.a>
             <motion.div variants={fadeUp}>
-              <Link to="/contact">
+              <Link to={orderCtaPrimaryUrl}>
                 <motion.span
                   whileHover={{ y: -3 }}
                   className="inline-flex items-center gap-2 border-2 border-[#00AEEF] text-[#00AEEF] font-semibold text-[15px] px-7 py-3.5 rounded-xl hover:bg-[#00AEEF] hover:text-white transition-all cursor-pointer"
                 >
-                  Contact Us
+                  {orderCtaPrimaryLabel}
                 </motion.span>
               </Link>
             </motion.div>
@@ -737,7 +787,7 @@ export default function OrderOnline() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
-              Call Us
+              {orderCtaPhoneLabel}
             </motion.a>
           </motion.div>
         </div>

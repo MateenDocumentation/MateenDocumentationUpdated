@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import logo from '../assets/logo.webp';
 import { useCms } from '../cms/CmsContext';
+import { useCmsSection, arr } from '../cms/useCmsPage';
 
 const WaIcon = () => (
   <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
@@ -33,6 +34,10 @@ const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
 export default function Footer() {
   const { footerSettings, siteSettings } = useCms();
+  const sharedLabelsSection = useCmsSection('/shared', 'shared_labels');
+  type SharedLabel = { key: string; value: string };
+  const sharedLabels = arr<SharedLabel>(sharedLabelsSection, 'items');
+  const sharedLabel = (key: string, fallback: string) => sharedLabels.find(item => item.key === key)?.value?.trim() || fallback;
 
   // Merge CMS data with fallbacks
   const tagline = footerSettings?.tagline ?? 'Where Printing Meets Documentation';
@@ -46,6 +51,15 @@ export default function Footer() {
   const copyrightText = footerSettings?.copyright_text ?? `© ${new Date().getFullYear()} Mateen Documentation. All Rights Reserved.`;
   const developerCredit = footerSettings?.developer_credit ?? 'BrandBugs';
   const developerUrl = footerSettings?.developer_url ?? 'https://www.brandbugs.net';
+  const trustedSinceLabel = sharedLabel('footer_trusted_since', 'Trusted since');
+  const servicesHeading = sharedLabel('footer_services_heading', 'Services');
+  const allServicesLabel = sharedLabel('footer_all_services', 'All 12 Services →');
+  const quickLinksHeading = sharedLabel('footer_quick_links_heading', 'Quick Links');
+  const contactHeading = sharedLabel('footer_contact_heading', 'Contact');
+  const privacyLabel = sharedLabel('footer_privacy', 'Privacy Policy');
+  const termsLabel = sharedLabel('footer_terms', 'Terms & Conditions');
+  const developedByLabel = sharedLabel('footer_developed_by', 'Designed and Developed by');
+  const summaryLine = sharedLabel('footer_summary', 'Printing · Documentation · Biometric · Public Facilitation · Customized Printing · Cards · Stationery · Business Services');
 
   // CMS links (filter enabled, fallback to defaults)
   const rawServiceLinks = footerSettings?.service_links?.filter(l => l.enabled !== false) ?? [];
@@ -86,7 +100,7 @@ export default function Footer() {
             <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.55)' }}>
               {description}
             </p>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40 mb-6">Trusted since {trustedSince}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/40 mb-6">{trustedSinceLabel} {trustedSince}</p>
             <div className="flex gap-2">
               <a href={waHref} target="_blank" rel="noopener noreferrer"
                 className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors"
@@ -108,7 +122,7 @@ export default function Footer() {
 
           {/* ── Services column ── */}
           <motion.div variants={fadeUp}>
-            <p className="font-semibold text-xs uppercase tracking-[0.18em] mb-6" style={{ color: 'rgba(255,255,255,0.35)' }}>Services</p>
+            <p className="font-semibold text-xs uppercase tracking-[0.18em] mb-6" style={{ color: 'rgba(255,255,255,0.35)' }}>{servicesHeading}</p>
             <ul className="space-y-3">
               {serviceLinks.map(s => (
                 <li key={s.url}>
@@ -120,7 +134,7 @@ export default function Footer() {
               ))}
               <li>
                 <Link to="/services" className="text-sm font-semibold transition-colors hover:text-white" style={{ color: '#00AEEF' }}>
-                  All 12 Services →
+                  {allServicesLabel}
                 </Link>
               </li>
             </ul>
@@ -128,7 +142,7 @@ export default function Footer() {
 
           {/* ── Quick Links column ── */}
           <motion.div variants={fadeUp}>
-            <p className="font-semibold text-xs uppercase tracking-[0.18em] mb-6" style={{ color: 'rgba(255,255,255,0.35)' }}>Quick Links</p>
+            <p className="font-semibold text-xs uppercase tracking-[0.18em] mb-6" style={{ color: 'rgba(255,255,255,0.35)' }}>{quickLinksHeading}</p>
             <ul className="space-y-3">
               {quickLinks.map(l => (
                 <li key={l.url}>
@@ -143,7 +157,7 @@ export default function Footer() {
 
           {/* ── Contact column ── */}
           <motion.div variants={fadeUp}>
-            <p className="font-semibold text-xs uppercase tracking-[0.18em] mb-6" style={{ color: 'rgba(255,255,255,0.35)' }}>Contact</p>
+            <p className="font-semibold text-xs uppercase tracking-[0.18em] mb-6" style={{ color: 'rgba(255,255,255,0.35)' }}>{contactHeading}</p>
             <address className="not-italic space-y-4">
               <div className="flex gap-3">
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" aria-label="Open Mateen Documentation location in Google Maps" className="flex gap-3 items-start hover:opacity-80 transition-opacity">
@@ -184,12 +198,12 @@ export default function Footer() {
               {copyrightText}
             </p>
             <div className="flex items-center gap-5">
-              <Link to="/privacy-policy" className="text-xs transition-colors hover:text-white" style={{ color: 'rgba(255,255,255,0.42)' }}>Privacy Policy</Link>
-              <Link to="/terms-and-conditions" className="text-xs transition-colors hover:text-white" style={{ color: 'rgba(255,255,255,0.42)' }}>Terms &amp; Conditions</Link>
+              <Link to="/privacy-policy" className="text-xs transition-colors hover:text-white" style={{ color: 'rgba(255,255,255,0.42)' }}>{privacyLabel}</Link>
+              <Link to="/terms-and-conditions" className="text-xs transition-colors hover:text-white" style={{ color: 'rgba(255,255,255,0.42)' }}>{termsLabel}</Link>
             </div>
           </div>
           <p className="text-center text-[10px] mt-3" style={{ color: 'rgba(255,255,255,0.28)' }}>
-            Designed and Developed by{' '}
+            {developedByLabel}{' '}
             <a
               href={developerUrl}
               target="_blank"
@@ -201,7 +215,7 @@ export default function Footer() {
             </a>
           </p>
           <p className="text-center text-[10px] mt-3" style={{ color: 'rgba(255,255,255,0.15)' }}>
-            Printing · Documentation · Biometric · Public Facilitation · Customized Printing · Cards · Stationery · Business Services
+            {summaryLine}
           </p>
         </div>
       </div>
