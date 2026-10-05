@@ -280,7 +280,7 @@ export default function ServicePage({
   // Apply CMS values with prop fallbacks
   const resolvedTitle = (cmsService?.title?.trim() || title);
   const resolvedIntro = (cmsService?.description?.trim() || intro);
-  const resolvedHeroImage = (cmsService?.image_url?.trim() || heroImage);
+  const resolvedHeroImage = (str(heroSection, 'image_url', '') || str(heroSection, 'background_image_url', '') || cmsService?.image_url?.trim() || heroImage);
   const resolvedHeroSubtitle = str(heroSection, 'subtitle', heroSubtitle);
   const resolvedNote = str(heroSection, 'note', note ?? '');
   const resolvedCtaWhatsApp = str(heroSection, 'wa_message', '');

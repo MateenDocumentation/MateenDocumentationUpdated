@@ -353,9 +353,12 @@ function SectionEditModal({
             {'note' in c && <Field label="Important note" value={str(c.note)} onChange={v => setContent('note', v)} textarea />}
             {'wa_message' in c && <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />}
             {'background_image_url' in c && <MediaPicker label="Hero background image" value={str(c.background_image_url)} onChange={v => setContent('background_image_url', v)} accept="image" help="Background behind the hero content." />}
+            {!('background_image_url' in c) && !('video_url' in c) && (
+              <MediaPicker label="Hero image" value={str(c.image_url)} onChange={v => setContent('image_url', v)} accept="image" help="Main image shown in the live hero section." />
+            )}
             {'video_url' in c && <MediaPicker label="Hero video" value={str(c.video_url)} onChange={v => setContent('video_url', v)} accept="video" />}
             {'video_poster' in c && <MediaPicker label="Hero video poster" value={str(c.video_poster)} onChange={v => setContent('video_poster', v)} accept="image" />}
-            {'image_url' in c && <MediaPicker label="Hero fallback image" value={str(c.image_url)} onChange={v => setContent('image_url', v)} accept="image" />}
+            {'image_url' in c && ('video_url' in c) && <MediaPicker label="Hero fallback image" value={str(c.image_url)} onChange={v => setContent('image_url', v)} accept="image" />}
             {'alt_text' in c && <Field label="Alt text" value={str(c.alt_text)} onChange={v => setContent('alt_text', v)} />}
           </>)}
 
@@ -458,10 +461,16 @@ function SectionEditModal({
           </>)}
 
           {/* About: Audiences / Principles */}
-          {(section.type === 'audiences' || section.type === 'principles') && (<>
+          {section.type === 'audiences' && (<>
             <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
             <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
-            <JsonArrayEditor label="Items" value={c.items} onChange={v => setContent('items', v)} />
+            <ObjectListEditor label="Audience items" value={c.items} template={{ label: '', desc: '' }} onChange={v => setContent('items', v)} />
+          </>)}
+
+          {section.type === 'principles' && (<>
+            <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <ObjectListEditor label="Approach items" value={c.items} template={{ title: '', desc: '' }} onChange={v => setContent('items', v)} />
           </>)}
 
           {/* About: Location */}
@@ -483,7 +492,7 @@ function SectionEditModal({
 
           {/* Service detail: services list */}
           {section.type === 'services_list' && (
-            <JsonArrayEditor label="Available services" value={c.items} onChange={v => setContent('items', v)} />
+            <ObjectListEditor label="Available services" value={c.items} template={{ name: '', desc: '' }} onChange={v => setContent('items', v)} />
           )}
 
           {/* Service detail: how steps */}
@@ -493,7 +502,7 @@ function SectionEditModal({
 
           {/* Service detail: related */}
           {section.type === 'related' && (
-            <JsonArrayEditor label="Related services" value={c.items} onChange={v => setContent('items', v)} />
+            <ObjectListEditor label="Related services" value={c.items} template={{ label: '', to: '' }} onChange={v => setContent('items', v)} />
           )}
 
           {/* Legal pages */}
@@ -556,8 +565,15 @@ function SectionEditModal({
             <Field label="Button URL" value={str(c.button_url)} onChange={v => setContent('button_url', v)} />
           </>)}
 
+
+          {section.type === 'services_grid' && (<>
+            {'eyebrow' in c && <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />}
+            {'heading' in c && <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />}
+            <ObjectListEditor label="Service cards" value={c.items} template={{ title: '', eyebrow: '', desc: '', image: '', to: '' }} onChange={v => setContent('items', v)} mediaKeys={['image']} />
+          </>)}
+
           {/* Generic JSON for complex types */}
-          {['cards', 'services_grid', 'features', 'gallery', 'faq', 'contact'].includes(section.type) && (
+          {['cards', 'features', 'gallery', 'faq', 'contact'].includes(section.type) && (
             <div>
               <p className="text-xs font-semibold text-gray-600 mb-1.5">Content (JSON)</p>
               <textarea
@@ -580,6 +596,66 @@ function SectionEditModal({
           <button onClick={() => onSave(section)} className="px-5 py-2 text-sm font-bold text-white bg-[#071A2B] rounded-xl hover:bg-[#0f2d47] transition-colors">Save Section</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ObjectListEditor({
+  label,
+  value,
+  template,
+  mediaKeys = [],
+  onChange,
+}: {
+  label: string;
+  value: unknown;
+  template: Record<string, unknown>;
+  mediaKeys?: string[];
+  onChange: (value: Record<string, unknown>[]) => void;
+}) {
+  const items = objectArray(value);
+  const pretty = (key: string) => key.replace(/_/g, ' ').replace(/\b\w/g, m => m.toUpperCase());
+  const update = (index: number, key: string, next: unknown) => {
+    const copy = items.map((item, i) => i === index ? { ...item, [key]: next } : item);
+    onChange(copy);
+  };
+  const remove = (index: number) => onChange(items.filter((_, i) => i !== index));
+  const add = () => onChange([...items, { ...template }]);
+  const move = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= items.length) return;
+    const copy = [...items];
+    [copy[index], copy[target]] = [copy[target], copy[index]];
+    onChange(copy);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-600">{label}</p>
+        <button type="button" onClick={add} className="px-3 py-1.5 rounded-lg bg-[#EEF7FF] text-[#071A2B] text-xs font-bold hover:bg-blue-100">+ Add item</button>
+      </div>
+      {items.map((item, index) => {
+        const keys = Array.from(new Set([...Object.keys(template), ...Object.keys(item)]));
+        return (
+          <div key={index} className="rounded-xl border border-gray-200 p-3 space-y-3 bg-gray-50/50">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold text-gray-500">Item {index + 1}</span>
+              <div className="flex items-center gap-1">
+                <button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↑</button>
+                <button type="button" onClick={() => move(index, 1)} disabled={index === items.length - 1} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↓</button>
+                <button type="button" onClick={() => remove(index)} className="px-2 py-1 text-xs text-red-600 border border-red-200 rounded">Remove</button>
+              </div>
+            </div>
+            {keys.map(key => mediaKeys.includes(key) ? (
+              <MediaPicker key={key} label={pretty(key)} value={str(item[key])} onChange={v => update(index, key, v)} accept="image" />
+            ) : (
+              <Field key={key} label={pretty(key)} value={str(item[key])} onChange={v => update(index, key, v)} textarea={key === 'desc' || key === 'description'} />
+            ))}
+          </div>
+        );
+      })}
+      {!items.length && <p className="text-[11px] text-gray-400">No items yet. Click “Add item”.</p>}
     </div>
   );
 }
