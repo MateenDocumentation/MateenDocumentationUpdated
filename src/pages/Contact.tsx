@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { submitInquiry } from '../lib/submitInquiry';
 import { resolveCmsMedia, useCms } from '../cms/CmsContext';
-import { useCmsSection, str } from '../cms/useCmsPage';
+import { useCmsSection, str, arr } from '../cms/useCmsPage';
 
 const inView = { once: true, margin: '-80px' };
 const fadeUp = {
@@ -17,6 +17,11 @@ const stagger = {
 } as const;
 
 export default function Contact() {
+  const sharedLabelsSection = useCmsSection('/shared', 'shared_labels');
+  type SharedLabel = { key: string; value: string };
+  const sharedLabels = arr<SharedLabel>(sharedLabelsSection, 'items');
+  const sharedLabelMap = Object.fromEntries(sharedLabels.map(item => [item.key, item.value]));
+  const pageLabel = (key: string, fallback: string) => sharedLabelMap[key] || fallback;
   const { siteSettings, mediaAssets } = useCms();
   const media = (url: string) => resolveCmsMedia(mediaAssets, url);
   const contactHero = useCmsSection('/contact', 'hero');
@@ -29,9 +34,49 @@ export default function Contact() {
   const heroBackgroundImage = media(str(contactHero, 'background_image_url', 'https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=1600&h=700&fit=crop&auto=format'));
 
   const contactInfoSection = useCmsSection('/contact', 'contact_info');
+  const formSection = useCmsSection('/contact', 'form_config');
+  const finalCtaSection = useCmsSection('/contact', 'final_cta');
   const reachUsHeading = str(contactInfoSection, 'reach_us_heading', 'Reach Us');
   const hoursLabel = str(contactInfoSection, 'hours_label', 'Opening Hours');
   const hoursText = str(contactInfoSection, 'hours_text', 'Open daily — visit us during business hours.');
+  const heroCallLabel = str(contactInfoSection, 'hero_call_label', 'Call');
+  const heroWhatsappLabel = str(contactInfoSection, 'hero_whatsapp_label', 'WhatsApp');
+  const addressLabel = str(contactInfoSection, 'address_label', 'Address');
+  const phoneLabelText = str(contactInfoSection, 'phone_label', 'Phone');
+  const whatsappLabelText = str(contactInfoSection, 'whatsapp_label', 'WhatsApp');
+  const emailLabelText = str(contactInfoSection, 'email_label', 'Email');
+  const directionsLabel = str(contactInfoSection, 'directions_label', 'Get Directions');
+  const directWhatsappLabel = str(contactInfoSection, 'direct_whatsapp_label', 'WhatsApp Us');
+  const locationEyebrow = str(contactInfoSection, 'location_eyebrow', 'FIND US');
+  const locationHeading = str(contactInfoSection, 'location_heading', 'Visit Our Centre');
+  const mapTitle = str(contactInfoSection, 'map_title', 'H Block, North Nazimabad');
+  const mapHelper = str(contactInfoSection, 'map_helper', 'Tap to open in Google Maps');
+  const mapButtonLabel = str(contactInfoSection, 'map_button_label', 'Open Maps');
+  const contactFormHeading = str(formSection, 'form_heading', 'Send Us a Message');
+  const contactSuccessHeading = str(formSection, 'success_heading', 'Message Sent!');
+  const contactSuccessText = str(formSection, 'success_text', 'Thanks — your message has been received. We will get back to you shortly.');
+  const contactSuccessButton = str(formSection, 'success_button_label', 'Continue on WhatsApp');
+  const contactNameLabel = str(formSection, 'name_label', 'Full Name *');
+  const contactNamePlaceholder = str(formSection, 'name_placeholder', 'Your full name');
+  const contactPhoneLabel = str(formSection, 'phone_label', 'Phone *');
+  const contactPhonePlaceholder = str(formSection, 'phone_placeholder', '03xx-xxxxxxx');
+  const contactEmailLabel = str(formSection, 'email_label', 'Email (optional)');
+  const contactEmailPlaceholder = str(formSection, 'email_placeholder', 'your@email.com');
+  const contactServiceLabel = str(formSection, 'service_label', 'Service');
+  const contactServicePlaceholder = str(formSection, 'service_placeholder', 'Select a service...');
+  const contactServiceOptions = arr<string>(formSection, 'service_options');
+  const resolvedContactServiceOptions = contactServiceOptions.length ? contactServiceOptions : ['Printing & Photocopy','Student Services','Customized Printing','NADRA / Biometric','Legal Documentation','Business Documentation','Other'];
+  const contactMessageLabel = str(formSection, 'message_label', 'Message');
+  const contactMessagePlaceholder = str(formSection, 'message_placeholder', 'How can we help you?');
+  const contactSubmitLabel = str(formSection, 'submit_label', 'Send Message →');
+  const contactSendingLabel = str(formSection, 'sending_label', 'Sending…');
+  const contactErrorText = str(formSection, 'error_text', 'Submission failed. Please try again.');
+  const contactCtaHeading1 = str(finalCtaSection, 'heading_line1', 'Get It Done.');
+  const contactCtaHeading2 = str(finalCtaSection, 'heading_line2', 'Today.');
+  const contactCtaWaLabel = str(finalCtaSection, 'wa_label', 'WhatsApp Us');
+  const contactCtaPrimaryLabel = str(finalCtaSection, 'primary_label', 'Order Online');
+  const contactCtaPrimaryUrl = str(finalCtaSection, 'primary_url', '/order-online');
+  const contactCtaPhoneLabel = str(finalCtaSection, 'phone_label', 'Call Now');
 
   const phone = siteSettings?.phone ?? '+923312478337';
   const wa = siteSettings?.whatsapp ?? '923312478337';
@@ -63,7 +108,7 @@ export default function Contact() {
       });
       setSubmitted(true);
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Submission failed. Please try again.');
+      setSubmitError(error instanceof Error ? error.message : contactErrorText);
     } finally {
       setSending(false);
     }
@@ -144,7 +189,7 @@ export default function Contact() {
             <svg className="w-3 h-3 text-[#00AEEF]/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            <span className="text-[13px] font-medium text-white/60 bg-white/8 px-3 py-1 rounded-full">Contact</span>
+            <span className="text-[13px] font-medium text-white/60 bg-white/8 px-3 py-1 rounded-full">{pageLabel('breadcrumb_contact', 'Contact')}</span>
           </motion.nav>
 
           <motion.p
@@ -191,7 +236,7 @@ export default function Contact() {
               <svg className="w-4 h-4 text-[#00AEEF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
-              Call
+              {heroCallLabel}
             </a>
             <a
               href={waHref}
@@ -202,7 +247,7 @@ export default function Contact() {
               <svg className="w-4 h-4 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
               </svg>
-              WhatsApp
+              {heroWhatsappLabel}
             </a>
             <a href={mapsUrl} target="_blank" rel="noopener noreferrer" aria-label="Open Mateen Documentation location in Google Maps" className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/16 border border-white/15 text-white/80 text-[13px] font-medium px-4 py-2 rounded-full transition-all">
               <svg className="w-4 h-4 text-[#00AEEF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -252,7 +297,7 @@ export default function Contact() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                     ),
-                    label: 'Address',
+                    label: addressLabel,
                     value: address,
                     href: mapsUrl,
                     color: 'text-[#00AEEF]',
@@ -264,7 +309,7 @@ export default function Contact() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     ),
-                    label: 'Phone',
+                    label: phoneLabelText,
                     value: phone,
                     href: telHref,
                     color: 'text-[#00AEEF]',
@@ -276,7 +321,7 @@ export default function Contact() {
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                       </svg>
                     ),
-                    label: 'WhatsApp',
+                    label: whatsappLabelText,
                     value: phone,
                     href: waHref,
                     color: 'text-[#25D366]',
@@ -288,7 +333,7 @@ export default function Contact() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     ),
-                    label: 'Email',
+                    label: emailLabelText,
                     value: email,
                     href: `mailto:${email}`,
                     color: 'text-[#00AEEF]',
@@ -331,7 +376,7 @@ export default function Contact() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                   </svg>
-                  Get Directions
+                  {directionsLabel}
                 </motion.a>
                 <motion.a
                   variants={fadeUp}
@@ -344,7 +389,7 @@ export default function Contact() {
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                   </svg>
-                  WhatsApp Us
+                  {directWhatsappLabel}
                 </motion.a>
                 <motion.a
                   variants={fadeUp}
@@ -375,9 +420,9 @@ export default function Contact() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-3">Message Sent!</h3>
+                    <h3 className="text-2xl font-bold text-white mb-3">{contactSuccessHeading}</h3>
                     <p className="text-white/60 text-[15px] mb-8 leading-relaxed max-w-xs">
-                      Thank you! Your message has been submitted successfully. We’ll contact you shortly.
+                      {contactSuccessText}
                     </p>
                     <motion.a
                       href={waHref}
@@ -389,71 +434,65 @@ export default function Contact() {
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                       </svg>
-                      Continue on WhatsApp
+                      {contactSuccessButton}
                     </motion.a>
                   </div>
                 ) : (
                   <>
-                    <h2 className="text-2xl font-bold text-white mb-6">Send Us a Message</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">{contactFormHeading}</h2>
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div>
-                        <label className="block text-[13px] font-medium text-white/60 mb-1.5">Full Name *</label>
+                        <label className="block text-[13px] font-medium text-white/60 mb-1.5">{contactNameLabel}</label>
                         <input
                           type="text"
                           required
                           value={form.name}
                           onChange={e => setForm({ ...form, name: e.target.value })}
-                          placeholder="Your full name"
+                          placeholder={contactNamePlaceholder}
                           className="border border-[#dde3f0]/30 rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:border-[#00AEEF] focus:ring-2 focus:ring-[#00AEEF]/20 w-full bg-white/95 text-[#090B0D] placeholder:text-[#090B0D]/30"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-[13px] font-medium text-white/60 mb-1.5">Phone *</label>
+                          <label className="block text-[13px] font-medium text-white/60 mb-1.5">{contactPhoneLabel}</label>
                           <input
                             type="tel"
                             required
                             value={form.phone}
                             onChange={e => setForm({ ...form, phone: e.target.value })}
-                            placeholder="03xx-xxxxxxx"
+                            placeholder={contactPhonePlaceholder}
                             className="border border-[#dde3f0]/30 rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:border-[#00AEEF] focus:ring-2 focus:ring-[#00AEEF]/20 w-full bg-white/95 text-[#090B0D] placeholder:text-[#090B0D]/30"
                           />
                         </div>
                         <div>
-                          <label className="block text-[13px] font-medium text-white/60 mb-1.5">Email <span className="text-white/30">(optional)</span></label>
+                          <label className="block text-[13px] font-medium text-white/60 mb-1.5">{contactEmailLabel}</label>
                           <input
                             type="email"
                             value={form.email}
                             onChange={e => setForm({ ...form, email: e.target.value })}
-                            placeholder="your@email.com"
+                            placeholder={contactEmailPlaceholder}
                             className="border border-[#dde3f0]/30 rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:border-[#00AEEF] focus:ring-2 focus:ring-[#00AEEF]/20 w-full bg-white/95 text-[#090B0D] placeholder:text-[#090B0D]/30"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[13px] font-medium text-white/60 mb-1.5">Service</label>
+                        <label className="block text-[13px] font-medium text-white/60 mb-1.5">{contactServiceLabel}</label>
                         <select
                           value={form.service}
                           onChange={e => setForm({ ...form, service: e.target.value })}
                           className="border border-[#dde3f0]/30 rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:border-[#00AEEF] focus:ring-2 focus:ring-[#00AEEF]/20 w-full bg-white/95 text-[#090B0D]"
                         >
-                          <option value="">Select a service...</option>
-                          <option>Printing &amp; Photocopy</option>
-                          <option>Student Services</option>
-                          <option>Customized Printing</option>
-                          <option>NADRA / Biometric</option>
-                          <option>Legal Documentation</option>
-                          <option>Business Documentation</option>
-                          <option>Other</option>
+                          <option value="">{contactServicePlaceholder}</option>
+                          {resolvedContactServiceOptions.map(option => <option key={option}>{option}</option>)}
                         </select>
                       </div>
                       <div>
-                        <label className="block text-[13px] font-medium text-white/60 mb-1.5">Message</label>
+                        <label className="block text-[13px] font-medium text-white/60 mb-1.5">{contactMessageLabel}</label>
                         <textarea
                           rows={4}
                           value={form.message}
                           onChange={e => setForm({ ...form, message: e.target.value })}
-                          placeholder="How can we help you?"
+                          placeholder={contactMessagePlaceholder}
                           className="border border-[#dde3f0]/30 rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:border-[#00AEEF] focus:ring-2 focus:ring-[#00AEEF]/20 w-full bg-white/95 text-[#090B0D] placeholder:text-[#090B0D]/30 resize-none"
                         />
                       </div>
@@ -464,7 +503,7 @@ export default function Contact() {
                         whileHover={{ y: -3 }}
                         className="w-full bg-gradient-to-r from-[#071A2B] to-[#00AEEF] text-white font-semibold text-[15px] px-6 py-3.5 rounded-xl hover:from-[#0b263d] hover:to-[#00AEEF] transition-all"
                       >
-                        {sending ? 'Sending…' : 'Send Message →'}
+                        {sending ? contactSendingLabel : contactSubmitLabel}
                       </motion.button>
                     </form>
                   </>
@@ -482,13 +521,13 @@ export default function Contact() {
             {/* Left */}
             <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={inView}>
               <motion.p variants={fadeUp} className="text-[11px] font-bold tracking-[0.2em] text-[#00AEEF] uppercase mb-3">
-                FIND US
+                {locationEyebrow}
               </motion.p>
               <motion.h2 variants={fadeUp} className="text-3xl font-bold text-[#090B0D] mb-6">
-                Visit Our Centre
+                {locationHeading}
               </motion.h2>
               <motion.div variants={fadeUp} className="space-y-3 text-[15px] text-[#090B0D]/70 leading-relaxed">
-                <p className="font-semibold text-[#090B0D]">Mateen Documentation</p>
+                <p className="font-semibold text-[#090B0D]">{siteSettings?.business_name ?? 'Mateen Documentation'}</p>
                 <a href={mapsUrl} target="_blank" rel="noopener noreferrer" aria-label="Open Mateen Documentation location in Google Maps" className="hover:text-[#071A2B] transition-colors">
                   {address}
                 </a>
@@ -511,14 +550,14 @@ export default function Contact() {
                     </svg>
                   </div>
                   <div className="text-center">
-                    <p className="text-white font-semibold text-[15px]">H Block, North Nazimabad</p>
-                    <p className="text-white/40 text-[13px] mt-1">Tap to open in Google Maps</p>
+                    <p className="text-white font-semibold text-[15px]">{mapTitle}</p>
+                    <p className="text-white/40 text-[13px] mt-1">{mapHelper}</p>
                   </div>
                   <div className="inline-flex items-center gap-2 border border-[#00AEEF]/40 text-[#00AEEF] text-[13px] font-medium px-4 py-2 rounded-full group-hover:border-[#00AEEF] transition-colors">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
-                    Open Maps
+                    {mapButtonLabel}
                   </div>
                 </div>
               </a>
@@ -560,8 +599,8 @@ export default function Contact() {
             whileInView="show"
             viewport={inView}
           >
-            <span className="text-white">Get It Done. </span>
-            <span className="text-[#00AEEF]">Today.</span>
+            <span className="text-white">{contactCtaHeading1} </span>
+            <span className="text-[#00AEEF]">{contactCtaHeading2}</span>
           </motion.h2>
           <motion.div
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
@@ -584,7 +623,7 @@ export default function Contact() {
               WhatsApp Us
             </motion.a>
             <motion.div variants={fadeUp}>
-              <Link to="/order-online">
+              <Link to={contactCtaPrimaryUrl}>
                 <motion.span
                   whileHover={{ y: -3 }}
                   className="inline-flex items-center gap-2 border-2 border-[#00AEEF] text-[#00AEEF] font-semibold text-[15px] px-7 py-3.5 rounded-xl hover:bg-[#00AEEF] hover:text-white transition-all"

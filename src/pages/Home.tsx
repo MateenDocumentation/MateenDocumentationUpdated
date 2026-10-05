@@ -136,12 +136,35 @@ const benefits = [
   { title: 'Community Location', body: 'H Block North Nazimabad, near Saifee College — central, accessible, known.' },
 ];
 
+function BenefitIcon({ name }: { name: string }) {
+  const common = { className: 'w-6 h-6', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor', strokeWidth: 1.8 };
+  switch (name) {
+    case 'upload':
+      return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>;
+    case 'student':
+      return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>;
+    case 'business':
+      return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0V8.706c0-1.081-.768-2.015-1.837-2.175M3.75 14.15V8.706c0-1.081.768-2.015 1.837-2.175M8.25 6.144V5.25A2.25 2.25 0 0110.5 3h3a2.25 2.25 0 012.25 2.25v.894" /></svg>;
+    case 'custom':
+      return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814" /></svg>;
+    case 'location':
+      return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+    default:
+      return <svg {...common}><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2 7-7 7 7 2 2M5 10v10h14V10" /></svg>;
+  }
+}
+
 export default function Home() {
   // ── CMS hero content (falls back to hardcoded when no CMS data exists) ──
   const heroSection = useCmsSection('/', 'hero');
   const { headerSettings, siteSettings, cmsServices, mediaAssets } = useCms();
   const media = (url: string) => resolveCmsMedia(mediaAssets, url);
   const serviceImage = (slug: string, fallback: string) => cmsServices.find(service => service.slug === slug)?.image_url?.trim() || media(fallback);
+  const sharedLabelsSection = useCmsSection('/shared', 'shared_labels');
+  type SharedLabel = { key: string; value: string };
+  const sharedLabels = arr<SharedLabel>(sharedLabelsSection, 'items');
+  const sharedLabelMap = Object.fromEntries(sharedLabels.map(item => [item.key, item.value]));
+  const homeLabel = (key: string, fallback: string) => sharedLabelMap[key] || fallback;
 
   const rawHeading = str(heroSection, 'heading', '');
   const heroParts = rawHeading.split('\n');
@@ -239,6 +262,66 @@ export default function Home() {
     { title: 'Businesses &\nOrganizations', description: 'Bulk printing, business documentation, letterheads, rubber stamps and branding for offices and enterprises.', tags: ['Bulk Printing', 'Letterheads', 'Branding', 'Business Docs'], image: media('https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=700&h=1160&fit=crop&auto=format'), image_alt: 'Business professionals in meeting' },
   ];
   const resolvedServePanels = cmsServePanels.length ? cmsServePanels : defaultServePanels;
+
+  // ── Services Showcase CMS ──
+  const servicesShowcaseSection = useCmsSection('/', 'services_showcase');
+  const servicesShowcaseEyebrow = str(servicesShowcaseSection, 'eyebrow', 'All Services');
+  const servicesShowcaseHeading = str(servicesShowcaseSection, 'heading', 'Everything In One Place');
+  const servicesPopularBadge = str(servicesShowcaseSection, 'popular_badge', 'Most Popular');
+  const servicesFeaturedLinkLabel = str(servicesShowcaseSection, 'featured_link_label', 'Explore Service');
+  const servicesMediumLinkLabel = str(servicesShowcaseSection, 'medium_link_label', 'Learn more');
+  const servicesSmallLinkLabel = str(servicesShowcaseSection, 'small_link_label', 'Details');
+  const servicesViewAllLabel = str(servicesShowcaseSection, 'view_all_label', 'View All 12 Services');
+  const servicesViewAllUrl = str(servicesShowcaseSection, 'view_all_url', '/services');
+  const showcaseSlugs = arr<string>(servicesShowcaseSection, 'service_slugs');
+  const resolvedShowcaseSlugs = showcaseSlugs.length ? showcaseSlugs : [
+    'printing-photocopy',
+    'student-assignment-services',
+    'customized-printing',
+    'nadra-biometric-public-facilitation',
+    'legal-documentation',
+    'business-documentation',
+  ];
+  const showcaseService = (slug: string, fallback: { title: string; tag: string; description: string; image: string; to: string }) => {
+    const cms = cmsServices.find(service => service.slug === slug);
+    return {
+      title: cms?.title?.trim() || fallback.title,
+      tag: cms?.tag?.trim() || fallback.tag,
+      description: cms?.description?.trim() || fallback.description,
+      image: cms?.image_url?.trim() || media(fallback.image),
+      to: `/services/${slug}`,
+    };
+  };
+
+  const featuredShowcaseService = showcaseService(resolvedShowcaseSlugs[0] || 'printing-photocopy', { title: 'Printing & Photocopy', tag: 'Core Service', description: 'Color, B&W, photo paper, sticker, vinyl, lamination, binding & more.', image: 'https://images.unsplash.com/photo-1715059382493-213b706e95f3?w=700&h=1100&fit=crop&auto=format', to: '/services/printing-photocopy' });
+
+  // ── Why Us CMS ──
+  const whySection = useCmsSection('/', 'why_us');
+  const whyEyebrow = str(whySection, 'eyebrow', 'Why Us');
+  const whyHeading1 = str(whySection, 'heading_line1', 'Why Choose');
+  const whyHeading2 = str(whySection, 'heading_line2', 'Mateen Documentation?');
+  const whyDescription = str(whySection, 'description', 'One centre for everything — printing, documentation, facilitation, student services and customized products.');
+  type WhyItem = { n: string; title: string; body: string; icon_key: string };
+  const defaultWhyItems: WhyItem[] = [
+    { n: '01', title: 'All Under One Roof', body: 'Printing, documentation, NADRA facilitation, customized products — one visit, zero running around.', icon_key: 'home' },
+    { n: '02', title: 'Online File Submission', body: 'Send your file via WhatsApp or the order form — no need to come in person for standard jobs.', icon_key: 'upload' },
+    { n: '03', title: 'Student Friendly', body: 'Dedicated support for assignments, thesis, projects and last-minute submission requirements.', icon_key: 'student' },
+    { n: '04', title: 'Business Friendly', body: 'Bulk printing, business documentation, letterheads, stamps and branding — handled professionally.', icon_key: 'business' },
+    { n: '05', title: 'Customized Solutions', body: 'Mugs, frames, PVC cards, stickers, banners — personalized items for gifts, events and brands.', icon_key: 'custom' },
+    { n: '06', title: 'Central Location', body: 'H Block, North Nazimabad, near Saifee College — accessible, known, and community-embedded.', icon_key: 'location' },
+  ];
+  const cmsWhyItems = arr<WhyItem>(whySection, 'items');
+  const resolvedWhyItems = cmsWhyItems.length ? cmsWhyItems : defaultWhyItems;
+  const whyImage = str(whySection, 'image_url', '') || media('https://images.unsplash.com/photo-1685609241440-f14d86cea774?w=500&h=800&fit=crop&auto=format');
+  const whyImageAlt = str(whySection, 'image_alt', 'Staff assisting customer with documents');
+  const whyImageHeading = str(whySection, 'image_heading', 'Trusted by the community');
+  const whyImageSubtext = str(whySection, 'image_subtext', "North Nazimabad's multi-service print centre");
+  const whyCtaHeading = str(whySection, 'cta_heading', 'Ready to get started?');
+  const whyWaLabel = str(whySection, 'wa_label', 'WhatsApp Us');
+  const whyWaMsg = str(whySection, 'wa_message', '');
+  const whyWaHref = whyWaMsg ? `${waBase}?text=${encodeURIComponent(whyWaMsg)}` : waBase;
+  const whyOrderLabel = str(whySection, 'order_label', 'Order Online');
+  const whyOrderUrl = str(whySection, 'order_url', '/order-online');
 
   // ── Final CTA CMS ──
   const finalCtaSection = useCmsSection('/', 'final_cta');
@@ -486,7 +569,7 @@ export default function Home() {
                     <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#00AEEF] opacity-40" />
                     <span className="relative inline-flex size-2 rounded-full bg-[#00AEEF]" />
                   </span>
-                  <span className="text-[9px] font-bold tracking-[0.18em] text-white/75">PRINTING IN PROGRESS</span>
+                  <span className="text-[9px] font-bold tracking-[0.18em] text-white/75">{homeLabel('home_printing_progress', 'PRINTING IN PROGRESS')}</span>
                   <span className="flex h-1.5 w-16 overflow-hidden rounded-full" aria-hidden="true">
                     <span className="flex-1 bg-[#00AEEF]" />
                     <span className="flex-1 bg-[#EC008C]" />
@@ -640,7 +723,7 @@ export default function Home() {
                     <svg className="w-3 h-3 flex-shrink-0" style={{ color: '#071A2B' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span className="text-[10px] font-bold" style={{ color: '#071A2B' }}>Scan & Copy</span>
+                    <span className="text-[10px] font-bold" style={{ color: '#071A2B' }}>{homeLabel('home_scan_copy', 'Scan & Copy')}</span>
                   </div>
                 </motion.div>
 
@@ -661,7 +744,7 @@ export default function Home() {
                     <svg className="w-3 h-3 flex-shrink-0" style={{ color: '#071A2B' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span className="text-[10px] font-bold" style={{ color: '#071A2B' }}>Photo & Gloss Prints</span>
+                    <span className="text-[10px] font-bold" style={{ color: '#071A2B' }}>{homeLabel('home_photo_gloss', 'Photo & Gloss Prints')}</span>
                   </div>
                 </motion.div>
 
@@ -680,8 +763,8 @@ export default function Home() {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-[12.5px] font-black leading-none whitespace-nowrap" style={{ color: '#0a1428' }}>A4 • A3 • Color • B&W</div>
-                    <div className="text-[10px] font-medium mt-1 whitespace-nowrap" style={{ color: 'rgba(7,26,43,0.50)' }}>Lamination · Binding · Gloss</div>
+                    <div className="text-[12.5px] font-black leading-none whitespace-nowrap" style={{ color: '#0a1428' }}>{homeLabel('home_print_formats', 'A4 • A3 • Color • B&W')}</div>
+                    <div className="text-[10px] font-medium mt-1 whitespace-nowrap" style={{ color: 'rgba(7,26,43,0.50)' }}>{homeLabel('home_finishing', 'Lamination · Binding · Gloss')}</div>
                   </div>
                 </motion.div>
 
@@ -692,7 +775,7 @@ export default function Home() {
                   variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.94 } } }}
                 >
                   <div className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0 animate-pulse" />
-                  <span className="text-[11px] font-bold whitespace-nowrap" style={{ color: '#071A2B' }}>Same-Day Ready</span>
+                  <span className="text-[11px] font-bold whitespace-nowrap" style={{ color: '#071A2B' }}>{homeLabel('home_same_day', 'Same-Day Ready')}</span>
                 </motion.div>
 
               </motion.div>
@@ -705,7 +788,7 @@ export default function Home() {
                 {/* Eyebrow */}
                 <motion.div variants={fadeUp} className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-[2.5px] bg-[#071A2B] rounded-full" />
-                  <span className="text-[#071A2B] text-[10.5px] font-black tracking-[0.26em] uppercase">Core Service</span>
+                  <span className="text-[#071A2B] text-[10.5px] font-black tracking-[0.26em] uppercase">{homeLabel('home_core_service', 'Core Service')}</span>
                 </motion.div>
 
                 {/* Heading */}
@@ -777,7 +860,7 @@ export default function Home() {
               {/* Eyebrow */}
               <motion.div variants={fadeUp} className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-[2.5px] rounded-full" style={{ background: '#071A2B' }} />
-                <span className="text-[10.5px] font-black tracking-[0.26em] uppercase" style={{ color: '#071A2B' }}>For Students</span>
+                <span className="text-[10.5px] font-black tracking-[0.26em] uppercase" style={{ color: '#071A2B' }}>{homeLabel('home_for_students', 'For Students')}</span>
               </motion.div>
 
               {/* Heading */}
@@ -860,7 +943,7 @@ export default function Home() {
                       src={str(academicSection, 'image_main', '') || media('https://images.unsplash.com/photo-1468779036391-52341f60b55d?w=640&h=700&fit=crop&auto=format')} />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center" style={{ height: '32px' }}>
-                    <span className="text-[10px] font-semibold tracking-wide" style={{ color: 'rgba(7,26,43,0.52)' }}>Project Folders & Reports</span>
+                    <span className="text-[10px] font-semibold tracking-wide" style={{ color: 'rgba(7,26,43,0.52)' }}>{homeLabel('home_project_folders', 'Project Folders & Reports')}</span>
                   </div>
                 </div>
                 {/* Paper tab tag pinned at top */}
@@ -868,7 +951,7 @@ export default function Home() {
                   <svg className="w-3 h-3 flex-shrink-0" style={{ color: '#071A2B' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
-                  <span className="text-[10px] font-black" style={{ color: '#071A2B' }}>Thesis & Reports</span>
+                  <span className="text-[10px] font-black" style={{ color: '#071A2B' }}>{homeLabel('home_thesis_reports', 'Thesis & Reports')}</span>
                 </div>
               </motion.div>
 
@@ -887,14 +970,14 @@ export default function Home() {
                       src={str(academicSection, 'image_secondary', '') || media('https://images.unsplash.com/photo-1631557777127-6495c07ba6b9?w=440&h=360&fit=crop&auto=format')} />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center" style={{ height: '26px' }}>
-                    <span className="text-[9.5px] font-semibold" style={{ color: 'rgba(7,26,43,0.48)' }}>Assignments & Reports</span>
+                    <span className="text-[9.5px] font-semibold" style={{ color: 'rgba(7,26,43,0.48)' }}>{homeLabel('home_assignments_reports', 'Assignments & Reports')}</span>
                   </div>
                 </div>
                 <div className="absolute -top-3 left-4 flex items-center gap-1 rounded-full px-2.5 py-1" style={{ background: '#EEF7FF', border: '1px solid rgba(7,26,43,0.18)' }}>
                   <svg className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#071A2B' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span className="text-[9px] font-black" style={{ color: '#071A2B' }}>Assignment</span>
+                  <span className="text-[9px] font-black" style={{ color: '#071A2B' }}>{homeLabel('home_assignment_label', 'Assignment')}</span>
                 </div>
               </motion.div>
 
@@ -912,14 +995,14 @@ export default function Home() {
                       src={str(academicSection, 'image_tertiary', '') || media('https://images.unsplash.com/photo-1772396867158-e26d9e6256b2?w=440&h=480&fit=crop&auto=format')} />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center" style={{ height: '26px' }}>
-                    <span className="text-[9.5px] font-semibold" style={{ color: 'rgba(7,26,43,0.48)' }}>Editing & Formatting</span>
+                    <span className="text-[9.5px] font-semibold" style={{ color: 'rgba(7,26,43,0.48)' }}>{homeLabel('home_editing_formatting', 'Editing & Formatting')}</span>
                   </div>
                 </div>
                 <div className="absolute -top-3 left-4 flex items-center gap-1 rounded-full px-2.5 py-1" style={{ background: '#EEF7FF', border: '1px solid rgba(7,26,43,0.18)' }}>
                   <svg className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#071A2B' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
-                  <span className="text-[9px] font-black" style={{ color: '#071A2B' }}>Typing</span>
+                  <span className="text-[9px] font-black" style={{ color: '#071A2B' }}>{homeLabel('home_typing_label', 'Typing')}</span>
                 </div>
               </motion.div>
 
@@ -938,14 +1021,14 @@ export default function Home() {
                       src={str(academicSection, 'image_wide', '') || media('https://images.unsplash.com/photo-1773453219454-9940ac4256cf?w=600&h=320&fit=crop&auto=format')} />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center" style={{ height: '26px' }}>
-                    <span className="text-[9.5px] font-semibold" style={{ color: 'rgba(7,26,43,0.48)' }}>Spiral & Ring Binding</span>
+                    <span className="text-[9.5px] font-semibold" style={{ color: 'rgba(7,26,43,0.48)' }}>{homeLabel('home_spiral_binding', 'Spiral & Ring Binding')}</span>
                   </div>
                 </div>
                 <div className="absolute -top-3 left-4 flex items-center gap-1 rounded-full px-2.5 py-1" style={{ background: '#EEF7FF', border: '1px solid rgba(7,26,43,0.18)' }}>
                   <svg className="w-2.5 h-2.5 flex-shrink-0" style={{ color: '#071A2B' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-[9px] font-black" style={{ color: '#071A2B' }}>Binding</span>
+                  <span className="text-[9px] font-black" style={{ color: '#071A2B' }}>{homeLabel('home_binding_label', 'Binding')}</span>
                 </div>
               </motion.div>
 
@@ -964,8 +1047,8 @@ export default function Home() {
                     </svg>
                   </div>
                   <div>
-                    <div className="text-[12px] font-black whitespace-nowrap" style={{ color: '#0a1428' }}>Print • Bind • Submit</div>
-                    <div className="text-[10px] font-medium whitespace-nowrap mt-0.5" style={{ color: 'rgba(30,40,80,0.46)' }}>Ready for Submission</div>
+                    <div className="text-[12px] font-black whitespace-nowrap" style={{ color: '#0a1428' }}>{homeLabel('home_print_bind_submit', 'Print • Bind • Submit')}</div>
+                    <div className="text-[10px] font-medium whitespace-nowrap mt-0.5" style={{ color: 'rgba(30,40,80,0.46)' }}>{homeLabel('home_ready_submission', 'Ready for Submission')}</div>
                   </div>
                 </div>
               </motion.div>
@@ -983,7 +1066,7 @@ export default function Home() {
           <motion.div className="text-center mb-20 lg:mb-28" variants={staggerSlow} initial="hidden" whileInView="show" viewport={inView}>
             <motion.div variants={fadeUp} className="inline-flex items-center gap-3 mb-5">
               <div className="w-6 h-[2px] rounded-full bg-[#071A2B]" />
-              <span className="text-[10.5px] font-black tracking-[0.26em] uppercase text-[#071A2B]">Process</span>
+              <span className="text-[10.5px] font-black tracking-[0.26em] uppercase text-[#071A2B]">{homeLabel('home_process_label', 'Process')}</span>
               <div className="w-6 h-[2px] rounded-full bg-[#071A2B]" />
             </motion.div>
             <motion.h2 variants={fadeUp} className="font-bold text-[#08122a] leading-tight"
@@ -1162,7 +1245,7 @@ export default function Home() {
               {/* Eyebrow */}
               <motion.div variants={fadeUp} className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-[2px] rounded-full" style={{ background: 'rgba(60,100,230,0.80)' }} />
-                <span className="text-[10.5px] font-black tracking-[0.28em] uppercase" style={{ color: '#5a84f0' }}>Customized Printing</span>
+                <span className="text-[10.5px] font-black tracking-[0.28em] uppercase" style={{ color: '#5a84f0' }}>{homeLabel('home_customized_label', 'Customized Printing')}</span>
               </motion.div>
 
               {/* Heading */}
@@ -1239,7 +1322,7 @@ export default function Home() {
                   src={str(customizedSection, 'image_main', '') || media('https://images.unsplash.com/photo-1680337673561-531bca1cf5b7?w=560&h=700&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, transparent 50%, rgba(6,12,31,0.60) 100%)' }} />
                 <div className="absolute bottom-4 left-4 right-4">
-                  <div className="text-white font-bold text-[12px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Photo Mugs & Gifts</div>
+                  <div className="text-white font-bold text-[12px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>{homeLabel('home_photo_mugs', 'Photo Mugs & Gifts')}</div>
                 </div>
               </motion.div>
 
@@ -1256,7 +1339,7 @@ export default function Home() {
                   src={str(customizedSection, 'image_2', '') || media('https://images.unsplash.com/photo-1718670013921-2f144aba173a?w=480&h=320&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(6,12,31,0.65) 100%)' }} />
                 <div className="absolute bottom-3 left-3 right-3">
-                  <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Business Cards & Letterheads</div>
+                  <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>{homeLabel('home_business_cards', 'Business Cards & Letterheads')}</div>
                 </div>
               </motion.div>
 
@@ -1273,7 +1356,7 @@ export default function Home() {
                   src={str(customizedSection, 'image_3', '') || media('https://images.unsplash.com/photo-1572512083030-840a84affc83?w=480&h=320&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(6,12,31,0.60) 100%)' }} />
                 <div className="absolute bottom-3 left-3 right-3">
-                  <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Photo Frames & Prints</div>
+                  <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>{homeLabel('home_photo_frames', 'Photo Frames & Prints')}</div>
                 </div>
               </motion.div>
 
@@ -1290,7 +1373,7 @@ export default function Home() {
                   src={str(customizedSection, 'image_4', '') || media('https://images.unsplash.com/photo-1780444078356-5ca1e9efe6b8?w=440&h=300&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 35%, rgba(6,12,31,0.68) 100%)' }} />
                 <div className="absolute bottom-3 left-3 right-3">
-                  <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Custom Stickers & Labels</div>
+                  <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>{homeLabel('home_custom_stickers', 'Custom Stickers & Labels')}</div>
                 </div>
               </motion.div>
 
@@ -1307,7 +1390,7 @@ export default function Home() {
                   src={str(customizedSection, 'image_5', '') || media('https://images.unsplash.com/photo-1617912760717-06f3976cf18c?w=400&h=280&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 30%, rgba(6,12,31,0.62) 100%)' }} />
                 <div className="absolute bottom-3 left-3 right-3">
-                  <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Branded Merchandise</div>
+                  <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>{homeLabel('home_branded_merch', 'Branded Merchandise')}</div>
                 </div>
               </motion.div>
 
@@ -1325,7 +1408,7 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
                   </div>
-                  <span className="text-[12px] font-bold italic whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.88)' }}>Your Idea, Printed.</span>
+                  <span className="text-[12px] font-bold italic whitespace-nowrap" style={{ color: 'rgba(255,255,255,0.88)' }}>{homeLabel('home_your_idea_printed', 'Your Idea, Printed.')}</span>
                 </div>
               </motion.div>
 
@@ -1350,7 +1433,7 @@ export default function Home() {
       <section className="py-24 lg:py-32 overflow-hidden relative" style={{ background: '#EEF7FF' }}>
         {/* Large faint watermark */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-          <span className="text-[clamp(80px,16vw,200px)] font-black tracking-widest leading-none" style={{ color: 'rgba(7,26,43,0.035)', letterSpacing: '0.2em' }}>SERVICES</span>
+          <span className="text-[clamp(80px,16vw,200px)] font-black tracking-widest leading-none" style={{ color: 'rgba(7,26,43,0.035)', letterSpacing: '0.2em' }}>{homeLabel('home_services_watermark', 'SERVICES')}</span>
         </div>
         {/* Connecting blue path SVG */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice">
@@ -1362,8 +1445,8 @@ export default function Home() {
 
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 relative z-10">
           <motion.div className="text-center mb-16" variants={staggerSlow} initial="hidden" whileInView="show" viewport={inView}>
-            <motion.p variants={fadeUp} className="text-[#00AEEF] font-bold text-xs tracking-[0.22em] uppercase mb-3">All Services</motion.p>
-            <motion.h2 variants={fadeUp} className="text-4xl lg:text-5xl font-bold text-[#090B0D]">Everything In One Place</motion.h2>
+            <motion.p variants={fadeUp} className="text-[#00AEEF] font-bold text-xs tracking-[0.22em] uppercase mb-3">{servicesShowcaseEyebrow}</motion.p>
+            <motion.h2 variants={fadeUp} className="text-4xl lg:text-5xl font-bold text-[#090B0D]">{servicesShowcaseHeading}</motion.h2>
           </motion.div>
 
           {/* Asymmetric service universe: flexbox columns on desktop */}
@@ -1373,14 +1456,14 @@ export default function Home() {
             <motion.div variants={fadeUp} className="group relative rounded-3xl overflow-hidden cursor-pointer h-[420px] lg:h-auto w-full lg:w-[42%] flex-shrink-0"
               whileHover={{ y: -4, transition: { duration: 0.28 } }}>
               <img loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                alt="Printing & Photocopy" src={serviceImage('printing-photocopy', 'https://images.unsplash.com/photo-1715059382493-213b706e95f3?w=700&h=1100&fit=crop&auto=format')} />
+                alt={featuredShowcaseService.title} src={featuredShowcaseService.image} />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050c28]/90 via-[#071A2B]/40 to-transparent" />
               <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                <span className="inline-flex items-center gap-1.5 mb-3 w-fit rounded-full px-3 py-1 text-[10px] font-black tracking-widest uppercase" style={{ background: 'rgba(0,174,239,0.22)', color: '#8fa8f0', border: '1px solid rgba(0,174,239,0.3)' }}>Most Popular</span>
-                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">Printing & Photocopy</h3>
-                <p className="text-white/60 text-sm mb-5 max-w-xs leading-relaxed">Color, B&W, photo paper, sticker, vinyl, lamination, binding & more.</p>
-                <Link to="/services/printing-photocopy" className="inline-flex items-center gap-2 font-bold text-sm text-white group-hover:text-[#8fa8f0] transition-colors btn-arrow">
-                  Explore Service <span className="arrow-icon">→</span>
+                <span className="inline-flex items-center gap-1.5 mb-3 w-fit rounded-full px-3 py-1 text-[10px] font-black tracking-widest uppercase" style={{ background: 'rgba(0,174,239,0.22)', color: '#8fa8f0', border: '1px solid rgba(0,174,239,0.3)' }}>{servicesPopularBadge}</span>
+                <h3 className="text-2xl lg:text-3xl font-bold text-white mb-2">{featuredShowcaseService.title}</h3>
+                <p className="text-white/60 text-sm mb-5 max-w-xs leading-relaxed">{featuredShowcaseService.description}</p>
+                <Link to={featuredShowcaseService.to} className="inline-flex items-center gap-2 font-bold text-sm text-white group-hover:text-[#8fa8f0] transition-colors btn-arrow">
+                  {servicesFeaturedLinkLabel} <span className="arrow-icon">→</span>
                 </Link>
               </div>
             </motion.div>
@@ -1388,21 +1471,21 @@ export default function Home() {
             {/* ── CENTER: Two stacked medium cards ── */}
             <div className="flex flex-col gap-4 flex-shrink-0 lg:w-[34%]">
               {[
-                { label: 'Student Assignments', sub: 'Typing, formatting, binding and projects.', img: serviceImage('student-assignment-services', 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&h=480&fit=crop&auto=format'), to: '/services/student-assignment-services', tag: 'Academic' },
-                { label: 'Customized Printing', sub: 'Mugs, cards, stickers, frames and more.', img: serviceImage('customized-printing', 'https://images.unsplash.com/photo-1682339374155-6fdc4869a75b?w=700&h=480&fit=crop&auto=format'), to: '/services/customized-printing', tag: 'Gifts & Branding' },
+                showcaseService(resolvedShowcaseSlugs[1] || 'student-assignment-services', { title: 'Student Assignments', tag: 'Academic', description: 'Typing, formatting, binding and projects.', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&h=480&fit=crop&auto=format', to: '/services/student-assignment-services' }),
+                showcaseService(resolvedShowcaseSlugs[2] || 'customized-printing', { title: 'Customized Printing', tag: 'Gifts & Branding', description: 'Mugs, cards, stickers, frames and more.', image: 'https://images.unsplash.com/photo-1682339374155-6fdc4869a75b?w=700&h=480&fit=crop&auto=format', to: '/services/customized-printing' }),
               ].map(card => (
-                <motion.div key={card.label} variants={fadeUp}
+                <motion.div key={card.title} variants={fadeUp}
                   className="group relative rounded-3xl overflow-hidden cursor-pointer flex-1 h-[200px] lg:h-auto"
                   whileHover={{ y: -4, transition: { duration: 0.25 } }}>
                   <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
-                    alt={card.label} src={card.img} />
+                    alt={card.title} src={card.image} />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050c28]/88 via-[#071A2B]/50 to-transparent" />
                   <div className="absolute inset-0 p-6 flex flex-col justify-end">
                     <span className="text-[#8fa8f0] text-[10px] font-black tracking-widest uppercase mb-1.5">{card.tag}</span>
-                    <h3 className="text-xl font-bold text-white mb-1">{card.label}</h3>
-                    <p className="text-white/55 text-xs mb-3">{card.sub}</p>
+                    <h3 className="text-xl font-bold text-white mb-1">{card.title}</h3>
+                    <p className="text-white/55 text-xs mb-3">{card.description}</p>
                     <Link to={card.to} className="text-white/75 hover:text-white font-bold text-xs btn-arrow inline-flex items-center gap-1 transition-colors">
-                      Learn more <span className="arrow-icon">→</span>
+                      {servicesMediumLinkLabel} <span className="arrow-icon">→</span>
                     </Link>
                   </div>
                 </motion.div>
@@ -1412,22 +1495,22 @@ export default function Home() {
             {/* ── RIGHT: Three tall narrow cards ── */}
             <div className="flex flex-col gap-4 flex-shrink-0 lg:w-[24%]">
               {[
-                { label: 'NADRA & Biometric', sub: 'Public facilitation', img: serviceImage('nadra-biometric-public-facilitation', 'https://images.unsplash.com/photo-1585079374502-415f8516dcc3?w=400&h=400&fit=crop&auto=format'), to: '/services/nadra-biometric-public-facilitation', tag: 'Facilitation' },
-                { label: 'Legal Documentation', sub: 'Affidavits & attestation', img: serviceImage('legal-documentation', 'https://images.unsplash.com/photo-1583521214690-73421a1829a9?w=400&h=400&fit=crop&auto=format'), to: '/services/legal-documentation', tag: 'Documents' },
-                { label: 'Business Services', sub: 'Registration & branding', img: serviceImage('business-documentation', 'https://images.unsplash.com/photo-1775163024488-e88e4a71179f?w=400&h=400&fit=crop&auto=format'), to: '/services/business-documentation', tag: 'Enterprise' },
+                showcaseService(resolvedShowcaseSlugs[3] || 'nadra-biometric-public-facilitation', { title: 'NADRA & Biometric', tag: 'Facilitation', description: 'Public facilitation', image: 'https://images.unsplash.com/photo-1585079374502-415f8516dcc3?w=400&h=400&fit=crop&auto=format', to: '/services/nadra-biometric-public-facilitation' }),
+                showcaseService(resolvedShowcaseSlugs[4] || 'legal-documentation', { title: 'Legal Documentation', tag: 'Documents', description: 'Affidavits & attestation', image: 'https://images.unsplash.com/photo-1583521214690-73421a1829a9?w=400&h=400&fit=crop&auto=format', to: '/services/legal-documentation' }),
+                showcaseService(resolvedShowcaseSlugs[5] || 'business-documentation', { title: 'Business Services', tag: 'Enterprise', description: 'Registration & branding', image: 'https://images.unsplash.com/photo-1775163024488-e88e4a71179f?w=400&h=400&fit=crop&auto=format', to: '/services/business-documentation' }),
               ].map(card => (
-                <motion.div key={card.label} variants={fadeUp}
+                <motion.div key={card.title} variants={fadeUp}
                   className="group relative rounded-3xl overflow-hidden cursor-pointer flex-1 h-[160px] lg:h-auto"
                   whileHover={{ y: -4, transition: { duration: 0.25 } }}>
                   <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
-                    alt={card.label} src={card.img} />
+                    alt={card.title} src={card.image} />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050c28]/90 to-[#090B0D]/25" />
                   <div className="absolute inset-0 p-5 flex flex-col justify-end">
                     <span className="text-[#8fa8f0] text-[9px] font-black tracking-widest uppercase mb-1">{card.tag}</span>
-                    <h3 className="text-sm font-bold text-white mb-0.5 leading-snug">{card.label}</h3>
-                    <p className="text-white/45 text-[10px] mb-2">{card.sub}</p>
+                    <h3 className="text-sm font-bold text-white mb-0.5 leading-snug">{card.title}</h3>
+                    <p className="text-white/45 text-[10px] mb-2">{card.description}</p>
                     <Link to={card.to} className="text-white/65 hover:text-white font-bold text-[10px] btn-arrow inline-flex items-center gap-0.5 transition-colors">
-                      Details <span className="arrow-icon">→</span>
+                      {servicesSmallLinkLabel} <span className="arrow-icon">→</span>
                     </Link>
                   </div>
                 </motion.div>
@@ -1436,9 +1519,9 @@ export default function Home() {
           </motion.div>
 
           <motion.div className="text-center mt-10" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={inView}>
-            <Link to="/services"
+            <Link to={servicesViewAllUrl}
               className="inline-flex items-center gap-2 border-2 border-[#071A2B] text-[#071A2B] hover:bg-[#071A2B] hover:text-white font-bold px-8 py-3.5 rounded-2xl transition-all btn-arrow">
-              View All 12 Services <span className="arrow-icon">→</span>
+              {servicesViewAllLabel} <span className="arrow-icon">→</span>
             </Link>
           </motion.div>
         </div>
@@ -1452,12 +1535,12 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 relative z-10">
           {/* Centered heading */}
           <motion.div className="text-center mb-16 max-w-3xl mx-auto" variants={staggerSlow} initial="hidden" whileInView="show" viewport={inView}>
-            <motion.p variants={fadeUp} className="text-[#00AEEF] font-bold text-xs tracking-[0.22em] uppercase mb-4">Why Us</motion.p>
+            <motion.p variants={fadeUp} className="text-[#00AEEF] font-bold text-xs tracking-[0.22em] uppercase mb-4">{whyEyebrow}</motion.p>
             <motion.h2 variants={fadeUp} className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#090B0D] mb-5 leading-[1.05] tracking-tight">
-              Why Choose<br />Mateen Documentation?
+              {whyHeading1}<br />{whyHeading2}
             </motion.h2>
             <motion.p variants={fadeUp} className="text-gray-500 leading-relaxed text-lg">
-              One centre for everything — printing, documentation, facilitation, student services and customized products.
+              {whyDescription}
             </motion.p>
           </motion.div>
 
@@ -1469,63 +1552,7 @@ export default function Home() {
               className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4"
               variants={stagger} initial="hidden" whileInView="show" viewport={inView}
             >
-              {[
-                {
-                  n: '01', title: 'All Under One Roof',
-                  body: 'Printing, documentation, NADRA facilitation, customized products — one visit, zero running around.',
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                  ), bg: '#EEF7FF',
-                },
-                {
-                  n: '02', title: 'Online File Submission',
-                  body: 'Send your file via WhatsApp or the order form — no need to come in person for standard jobs.',
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                  ), bg: '#EEF7FF',
-                },
-                {
-                  n: '03', title: 'Student Friendly',
-                  body: 'Dedicated support for assignments, thesis, projects and last-minute submission requirements.',
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  ), bg: '#EEF7FF',
-                },
-                {
-                  n: '04', title: 'Business Friendly',
-                  body: 'Bulk printing, business documentation, letterheads, stamps and branding — handled professionally.',
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z" />
-                    </svg>
-                  ), bg: '#EEF7FF',
-                },
-                {
-                  n: '05', title: 'Customized Solutions',
-                  body: 'Mugs, frames, PVC cards, stickers, banners — personalized items for gifts, events and brands.',
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
-                    </svg>
-                  ), bg: '#EEF7FF',
-                },
-                {
-                  n: '06', title: 'Central Location',
-                  body: 'H Block, North Nazimabad, near Saifee College — accessible, known, and community-embedded.',
-                  icon: (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  ), bg: '#EEF7FF',
-                },
-              ].map((b, i) => (
+              {resolvedWhyItems.map((b, i) => (
                 <motion.div key={b.title} variants={fadeUp}
                   className="group relative p-6 rounded-2xl overflow-hidden isolate border border-gray-100/80 hover:border-[#071A2B]/20 hover:shadow-lg transition-all duration-300 cursor-default"
                   style={{ background: i % 2 === 0 ? '#EEF7FF' : '#EEF7FF' }}
@@ -1535,8 +1562,8 @@ export default function Home() {
                   <div className="absolute top-4 right-5 text-[11px] font-black tracking-widest" style={{ color: 'rgba(7,26,43,0.10)' }}>{b.n}</div>
                   {/* Icon */}
                   <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-colors duration-300 group-hover:bg-[#071A2B] group-hover:text-white"
-                    style={{ background: b.bg, color: '#071A2B' }}>
-                    {b.icon}
+                    style={{ background: '#EEF7FF', color: '#071A2B' }}>
+                    <BenefitIcon name={b.icon_key} />
                   </div>
                   <div className="font-bold text-[#090B0D] mb-1.5 text-base">{b.title}</div>
                   <div className="text-gray-500 text-sm leading-relaxed">{b.body}</div>
@@ -1551,24 +1578,24 @@ export default function Home() {
               {/* Tall image */}
               <div className="relative rounded-3xl overflow-hidden flex-1 shadow-xl">
                 <img loading="lazy" className="w-full h-full object-cover"
-                  alt="Staff assisting customer with documents" src={media('https://images.unsplash.com/photo-1685609241440-f14d86cea774?w=500&h=800&fit=crop&auto=format')} />
+                  alt={whyImageAlt} src={whyImage} />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#071A2B]/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
-                  <div className="text-white font-bold text-sm mb-1">Trusted by the community</div>
-                  <div className="text-white/55 text-xs">North Nazimabad's multi-service print centre</div>
+                  <div className="text-white font-bold text-sm mb-1">{whyImageHeading}</div>
+                  <div className="text-white/55 text-xs">{whyImageSubtext}</div>
                 </div>
               </div>
               {/* CTA card */}
               <div className="bg-[#071A2B] rounded-2xl p-5">
-                <div className="text-white font-bold text-sm mb-2">Ready to get started?</div>
+                <div className="text-white font-bold text-sm mb-2">{whyCtaHeading}</div>
                 <div className="flex flex-col gap-2">
-                  <a href="https://wa.me/923312478337" target="_blank" rel="noopener noreferrer"
+                  <a href={whyWaHref} target="_blank" rel="noopener noreferrer"
                     className="bg-[#25D366] text-white font-bold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors hover:bg-[#1ebc5a]">
-                    <WaIcon /> WhatsApp Us
+                    <WaIcon /> {whyWaLabel}
                   </a>
-                  <Link to="/order-online"
+                  <Link to={whyOrderUrl}
                     className="border border-white/20 text-white font-bold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center transition-colors hover:bg-white/10">
-                    Order Online
+                    {whyOrderLabel}
                   </Link>
                 </div>
               </div>
@@ -1581,7 +1608,7 @@ export default function Home() {
       <section className="py-24 lg:py-32 overflow-hidden relative bg-white">
         {/* Faint watermark */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-          <span className="text-[clamp(64px,12vw,160px)] font-black tracking-[0.3em] leading-none" style={{ color: 'rgba(7,26,43,0.028)' }}>COMMUNITY</span>
+          <span className="text-[clamp(64px,12vw,160px)] font-black tracking-[0.3em] leading-none" style={{ color: 'rgba(7,26,43,0.028)' }}>{homeLabel('home_community_watermark', 'COMMUNITY')}</span>
         </div>
 
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 relative z-10">
@@ -1745,7 +1772,7 @@ export default function Home() {
             <motion.div variants={fadeUp} className="flex items-center justify-center gap-3 mb-8">
               <div className="h-px w-12 rounded-full" style={{ background: 'rgba(0,174,239,0.40)' }} />
               <p className="font-bold text-xs tracking-[0.28em] uppercase" style={{ color: '#00AEEF' }}>
-                Visit Us · WhatsApp · Order Online
+                {homeLabel('home_final_cta_eyebrow', 'Visit Us · WhatsApp · Order Online')}
               </p>
               <div className="h-px w-12 rounded-full" style={{ background: 'rgba(0,174,239,0.40)' }} />
             </motion.div>

@@ -171,32 +171,32 @@ const servicesPanels = [
 /* ── Audience cards data ───────────────────────────── */
 const audiences = [
   {
-    icon: <BookIcon className="w-6 h-6" />,
+    icon_key: 'book',
     label: 'Students',
     desc: 'School, college and university students for assignment printing, thesis, projects and academic submissions.',
   },
   {
-    icon: <PeopleIcon className="w-6 h-6" />,
+    icon_key: 'people',
     label: 'Individuals & Families',
     desc: 'Personal documentation, photographs, ID facilitation, frames and everyday printing needs.',
   },
   {
-    icon: <BuildingIcon className="w-6 h-6" />,
+    icon_key: 'building',
     label: 'Schools & Colleges',
     desc: 'Bulk institutional printing, stationery, forms, and documentation support for educational institutions.',
   },
   {
-    icon: <BriefcaseIcon className="w-6 h-6" />,
+    icon_key: 'briefcase',
     label: 'Businesses & Offices',
     desc: 'Business documents, letterheads, visiting cards, rubber stamps and corporate printing.',
   },
   {
-    icon: <GlobeIcon className="w-6 h-6" />,
+    icon_key: 'globe',
     label: 'General Public',
     desc: 'NADRA facilitation, biometric assistance, legal documents and everyday service needs.',
   },
   {
-    icon: <OrgIcon className="w-6 h-6" />,
+    icon_key: 'organization',
     label: 'Organizations',
     desc: 'Large-volume printing, customized branded materials and official documentation.',
   },
@@ -205,17 +205,17 @@ const audiences = [
 /* ── Approach principles ───────────────────────────── */
 const principles = [
   {
-    icon: <TargetIcon className="w-7 h-7" />,
+    icon_key: 'target',
     title: 'Convenience',
     desc: 'All services at one location. No running between providers — printing, documentation, biometric and customized products together.',
   },
   {
-    icon: <GlobeIcon className="w-7 h-7" />,
+    icon_key: 'globe',
     title: 'Accessibility',
     desc: 'Online ordering means you can send your files from home, university or office. Walk in or order ahead.',
   },
   {
-    icon: <SlidersIcon className="w-7 h-7" />,
+    icon_key: 'sliders',
     title: 'Customized Solutions',
     desc: 'Every customer has unique requirements. We accommodate specific sizes, quantities, materials and formats.',
   },
@@ -227,13 +227,33 @@ const serviceTags = ['Printing', 'Documentation', 'Biometric', 'Customized', 'St
 /* ═══════════════════════════════════════════════════ */
 /*  ABOUT PAGE                                         */
 /* ═══════════════════════════════════════════════════ */
+function AboutIcon({ iconKey, className = 'w-6 h-6' }: { iconKey: string; className?: string }) {
+  switch (iconKey) {
+    case 'book': return <BookIcon className={className} />;
+    case 'people': return <PeopleIcon className={className} />;
+    case 'building': return <BuildingIcon className={className} />;
+    case 'briefcase': return <BriefcaseIcon className={className} />;
+    case 'globe': return <GlobeIcon className={className} />;
+    case 'organization': return <OrgIcon className={className} />;
+    case 'target': return <TargetIcon className={className} />;
+    case 'sliders': return <SlidersIcon className={className} />;
+    default: return <GlobeIcon className={className} />;
+  }
+}
+
 export default function About() {
+  const sharedLabelsSection = useCmsSection('/shared', 'shared_labels');
+  type SharedLabel = { key: string; value: string };
+  const sharedLabels = arr<SharedLabel>(sharedLabelsSection, 'items');
+  const sharedLabelMap = Object.fromEntries(sharedLabels.map(item => [item.key, item.value]));
+  const pageLabel = (key: string, fallback: string) => sharedLabelMap[key] || fallback;
   const aboutHero = useCmsSection('/about', 'hero');
   const whoSection = useCmsSection('/about', 'who_we_are');
   const servicesSection = useCmsSection('/about', 'services_grid');
   const audiencesSection = useCmsSection('/about', 'audiences');
   const principlesSection = useCmsSection('/about', 'principles');
   const locationSection = useCmsSection('/about', 'location');
+  const finalCtaSection = useCmsSection('/about', 'final_cta');
   const { siteSettings, headerSettings, mediaAssets } = useCms();
   const media = (url: string) => resolveCmsMedia(mediaAssets, url);
 
@@ -252,13 +272,13 @@ export default function About() {
   const cmsPanels = arr<ServicePanelItem>(servicesSection, 'items');
   const resolvedPanels = (cmsPanels.length ? cmsPanels : servicesPanels).map(panel => ({ ...panel, image: media(panel.image) }));
 
-  type AudienceItem = { label: string; desc: string };
+  type AudienceItem = { label: string; desc: string; icon_key?: string };
   const cmsAudienceItems = arr<AudienceItem>(audiencesSection, 'items');
   const resolvedAudiences = cmsAudienceItems.length
     ? audiences.map((a, i) => ({ ...a, ...(cmsAudienceItems[i] ?? {}) }))
     : audiences;
 
-  type PrincipleItem = { title: string; desc: string };
+  type PrincipleItem = { title: string; desc: string; icon_key?: string };
   const cmsPrincipleItems = arr<PrincipleItem>(principlesSection, 'items');
   const resolvedPrinciples = cmsPrincipleItems.length
     ? principles.map((p, i) => ({ ...p, ...(cmsPrincipleItems[i] ?? {}) }))
@@ -283,6 +303,16 @@ export default function About() {
   const locationHeading = str(locationSection, 'heading', 'Visit Our Centre');
   const locationHours = str(locationSection, 'hours', 'Open daily — visit us for all your printing and documentation needs.');
   const locationAddress = str(locationSection, 'address', siteSettings?.address ?? 'Shop# 1, A&Z Comforts, Near Saifee College, Block-H, North Nazimabad, Karachi');
+  const aboutCtaEyebrow = str(finalCtaSection, 'eyebrow', 'READY WHEN YOU ARE');
+  const aboutCtaHeading1 = str(finalCtaSection, 'heading_line1', 'Come Visit Us');
+  const aboutCtaHeading2 = str(finalCtaSection, 'heading_line2', 'Today.');
+  const aboutCtaWaLabel = str(finalCtaSection, 'wa_label', 'WhatsApp Us');
+  const aboutCtaOrderLabel = str(finalCtaSection, 'primary_label', 'Order Online');
+  const aboutCtaOrderUrl = str(finalCtaSection, 'primary_url', '/order-online');
+  const aboutCtaPhoneLabel = str(finalCtaSection, 'phone_label', 'Call Now');
+  const aboutCtaWaMessage = str(finalCtaSection, 'wa_message', '');
+  const aboutRawWa = headerSettings?.whatsapp ?? siteSettings?.whatsapp ?? '923312478337';
+  const aboutCtaWaHref = `https://wa.me/${aboutRawWa.replace(/[^0-9]/g, '')}${aboutCtaWaMessage ? `?text=${encodeURIComponent(aboutCtaWaMessage)}` : ''}`;
   const locationMapsUrl = str(locationSection, 'maps_url', siteSettings?.maps_url ?? 'https://maps.app.goo.gl/SCs4s2xzNkkBoR5e6');
   const rawWa = headerSettings?.whatsapp ?? siteSettings?.whatsapp ?? '923312478337';
   const rawPhone = headerSettings?.phone ?? siteSettings?.phone ?? '+923312478337';
@@ -346,9 +376,9 @@ export default function About() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
           >
-            <Link to="/" className="text-[#00AEEF] hover:text-white transition-colors">Home</Link>
+            <Link to="/" className="text-[#00AEEF] hover:text-white transition-colors">{pageLabel('breadcrumb_home', 'Home')}</Link>
             <ChevronIcon />
-            <span className="text-[#00AEEF]">About</span>
+            <span className="text-[#00AEEF]">{pageLabel('breadcrumb_about', 'About')}</span>
           </motion.div>
 
           <motion.div
@@ -610,7 +640,7 @@ export default function About() {
                   className="w-11 h-11 rounded-full flex items-center justify-center mb-4 text-white flex-shrink-0"
                   style={{ background: 'linear-gradient(135deg, #071A2B 0%, #00AEEF 100%)' }}
                 >
-                  {audience.icon}
+                  <AboutIcon iconKey={audience.icon_key || 'globe'} className="w-6 h-6" />
                 </div>
                 <h3 className="font-['Sora'] font-bold text-[#090B0D] text-base mb-2">{audience.label}</h3>
                 <p className="font-['Manrope'] text-[#090B0D]/65 text-sm leading-relaxed">{audience.desc}</p>
@@ -672,7 +702,7 @@ export default function About() {
                   className="w-16 h-16 rounded-full flex items-center justify-center mb-6 text-[#EEF7FF] border border-white/15"
                   style={{ background: 'rgba(255,255,255,0.06)', boxShadow: '0 12px 35px rgba(0,0,0,0.2)' }}
                 >
-                  {p.icon}
+                  <AboutIcon iconKey={p.icon_key || 'target'} className="w-7 h-7" />
                 </div>
                 <h3 className="font-['Sora'] font-bold text-white text-xl mb-3">{p.title}</h3>
                 <p className="font-['Manrope'] text-white/60 text-sm leading-relaxed max-w-xs">{p.desc}</p>
@@ -791,7 +821,7 @@ export default function About() {
                     <LocationPinIcon className="w-7 h-7" />
                   </div>
                   <div className="text-center px-4">
-                    <p className="font-['Sora'] font-bold text-white text-sm mb-1">Mateen Documentation</p>
+                    <p className="font-['Sora'] font-bold text-white text-sm mb-1">{siteSettings?.business_name ?? 'Mateen Documentation'}</p>
                     <p className="font-['Manrope'] text-white/60 text-xs leading-snug">
                       {locationAddress}
                     </p>
@@ -852,7 +882,7 @@ export default function About() {
           >
             <div className="h-px w-12 bg-[#00AEEF]/40" />
             <span className="text-[#00AEEF] text-xs font-semibold tracking-[0.22em] uppercase font-['Manrope']">
-              READY WHEN YOU ARE
+              {aboutCtaEyebrow}
             </span>
             <div className="h-px w-12 bg-[#00AEEF]/40" />
           </motion.div>
@@ -866,8 +896,8 @@ export default function About() {
             viewport={inView}
             transition={{ duration: 0.7, ease: 'easeOut', delay: 0.1 }}
           >
-            Come Visit Us{' '}
-            <span style={{ color: '#00AEEF' }}>Today.</span>
+            {aboutCtaHeading1}{' '}
+            <span style={{ color: '#00AEEF' }}>{aboutCtaHeading2}</span>
           </motion.h2>
 
           {/* 3 buttons */}
@@ -880,22 +910,22 @@ export default function About() {
           >
             {/* WhatsApp — green + glow */}
             <a
-              href="https://wa.me/923312478337"
+              href={aboutCtaWaHref}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-semibold font-['Manrope'] text-sm text-white transition-all duration-200 hover:opacity-90 hover:scale-[1.03]"
               style={{ background: '#25D366', boxShadow: '0 8px 32px rgba(37,211,102,0.35)' }}
             >
               <WaIcon />
-              WhatsApp Us
+              {aboutCtaWaLabel}
             </a>
             {/* Order Online — blue gradient */}
             <Link
-              to="/order-online"
+              to={aboutCtaOrderUrl}
               className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full font-semibold font-['Manrope'] text-sm text-white transition-all duration-200 hover:opacity-90 hover:scale-[1.03]"
               style={{ background: 'linear-gradient(135deg, #071A2B 0%, #00AEEF 100%)', boxShadow: '0 8px 32px rgba(0,174,239,0.4)' }}
             >
-              Order Online
+              {aboutCtaOrderLabel}
             </Link>
             {/* Call Now — frosted */}
             <a
@@ -907,7 +937,7 @@ export default function About() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
               </svg>
-              Call Now
+              {aboutCtaPhoneLabel}
             </a>
           </motion.div>
 

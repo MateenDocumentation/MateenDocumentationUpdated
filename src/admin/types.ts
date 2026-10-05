@@ -146,7 +146,13 @@ export type SectionType =
   | 'how_steps'
   | 'related'
   | 'rich_text'
-  | 'services_page';
+  | 'services_page'
+  | 'why_us'
+  | 'help_cta'
+  | 'form_config'
+  | 'shared_labels'
+  | 'group_list'
+  | 'services_showcase';
 
 export interface PageSection {
   id: string;

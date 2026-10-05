@@ -36,6 +36,12 @@ const SECTION_TYPES: { type: SectionType; label: string; icon: string }[] = [
   { type: 'related', label: 'Related Services', icon: '🔗' },
   { type: 'rich_text', label: 'Legal Content', icon: '📄' },
   { type: 'services_page', label: 'Services Page', icon: '🧰' },
+  { type: 'why_us', label: 'Why Us', icon: '⭐' },
+  { type: 'help_cta', label: 'Help CTA', icon: '🆘' },
+  { type: 'form_config', label: 'Form Configuration', icon: '🧾' },
+  { type: 'shared_labels', label: 'Shared Labels', icon: '🏷️' },
+  { type: 'group_list', label: 'Grouped List', icon: '🗂️' },
+  { type: 'services_showcase', label: 'Services Showcase', icon: '🌐' },
 ];
 
 export default function PageEditor() {
@@ -351,6 +357,8 @@ function SectionEditModal({
             {'cta_tertiary_text' in c && <Field label="Tertiary CTA text" value={str(c.cta_tertiary_text)} onChange={v => setContent('cta_tertiary_text', v)} />}
             {'cta_tertiary_url' in c && <Field label="Tertiary CTA URL" value={str(c.cta_tertiary_url)} onChange={v => setContent('cta_tertiary_url', v)} />}
             {'note' in c && <Field label="Important note" value={str(c.note)} onChange={v => setContent('note', v)} textarea />}
+            {'breadcrumb' in c && <Field label="Breadcrumb label" value={str(c.breadcrumb)} onChange={v => setContent('breadcrumb', v)} />}
+            {'cta_label' in c && <Field label="Order CTA label" value={str(c.cta_label)} onChange={v => setContent('cta_label', v)} />}
             {'wa_message' in c && <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />}
             {'background_image_url' in c && <MediaPicker label="Hero background image" value={str(c.background_image_url)} onChange={v => setContent('background_image_url', v)} accept="image" help="Background behind the hero content." />}
             {!('background_image_url' in c) && !('video_url' in c) && (
@@ -464,13 +472,13 @@ function SectionEditModal({
           {section.type === 'audiences' && (<>
             <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
             <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
-            <ObjectListEditor label="Audience items" value={c.items} template={{ label: '', desc: '' }} onChange={v => setContent('items', v)} />
+            <ObjectListEditor label="Audience items" value={c.items} template={{ label: '', desc: '', icon_key: 'globe' }} onChange={v => setContent('items', v)} />
           </>)}
 
           {section.type === 'principles' && (<>
             <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
             <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
-            <ObjectListEditor label="Approach items" value={c.items} template={{ title: '', desc: '' }} onChange={v => setContent('items', v)} />
+            <ObjectListEditor label="Approach items" value={c.items} template={{ title: '', desc: '', icon_key: 'target' }} onChange={v => setContent('items', v)} />
           </>)}
 
           {/* About: Location */}
@@ -486,8 +494,21 @@ function SectionEditModal({
           {/* Contact information */}
           {section.type === 'contact_info' && (<>
             <Field label="Reach us heading" value={str(c.reach_us_heading)} onChange={v => setContent('reach_us_heading', v)} />
+            <Field label="Hero call label" value={str(c.hero_call_label)} onChange={v => setContent('hero_call_label', v)} />
+            <Field label="Hero WhatsApp label" value={str(c.hero_whatsapp_label)} onChange={v => setContent('hero_whatsapp_label', v)} />
+            <Field label="Address label" value={str(c.address_label)} onChange={v => setContent('address_label', v)} />
+            <Field label="Phone label" value={str(c.phone_label)} onChange={v => setContent('phone_label', v)} />
+            <Field label="WhatsApp label" value={str(c.whatsapp_label)} onChange={v => setContent('whatsapp_label', v)} />
+            <Field label="Email label" value={str(c.email_label)} onChange={v => setContent('email_label', v)} />
             <Field label="Opening hours label" value={str(c.hours_label)} onChange={v => setContent('hours_label', v)} />
             <Field label="Opening hours text" value={str(c.hours_text)} onChange={v => setContent('hours_text', v)} textarea />
+            <Field label="Directions button label" value={str(c.directions_label)} onChange={v => setContent('directions_label', v)} />
+            <Field label="Direct WhatsApp button label" value={str(c.direct_whatsapp_label)} onChange={v => setContent('direct_whatsapp_label', v)} />
+            <Field label="Location eyebrow" value={str(c.location_eyebrow)} onChange={v => setContent('location_eyebrow', v)} />
+            <Field label="Location heading" value={str(c.location_heading)} onChange={v => setContent('location_heading', v)} />
+            <Field label="Map title" value={str(c.map_title)} onChange={v => setContent('map_title', v)} />
+            <Field label="Map helper text" value={str(c.map_helper)} onChange={v => setContent('map_helper', v)} />
+            <Field label="Map button label" value={str(c.map_button_label)} onChange={v => setContent('map_button_label', v)} />
           </>)}
 
           {/* Service detail: services list */}
@@ -505,11 +526,109 @@ function SectionEditModal({
             <ObjectListEditor label="Related services" value={c.items} template={{ label: '', to: '' }} onChange={v => setContent('items', v)} />
           )}
 
+          {/* Home: Why Us */}
+          {section.type === 'why_us' && (<>
+            <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
+            <Field label="Heading line 1" value={str(c.heading_line1)} onChange={v => setContent('heading_line1', v)} />
+            <Field label="Heading line 2" value={str(c.heading_line2)} onChange={v => setContent('heading_line2', v)} />
+            <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
+            <ObjectListEditor label="Benefits" value={c.items} template={{ n: '', title: '', body: '', icon_key: 'home' }} onChange={v => setContent('items', v)} />
+            <MediaPicker label="Side image" value={str(c.image_url)} onChange={v => setContent('image_url', v)} accept="image" />
+            <Field label="Side image alt text" value={str(c.image_alt)} onChange={v => setContent('image_alt', v)} />
+            <Field label="Image card heading" value={str(c.image_heading)} onChange={v => setContent('image_heading', v)} />
+            <Field label="Image card subtext" value={str(c.image_subtext)} onChange={v => setContent('image_subtext', v)} />
+            <Field label="CTA card heading" value={str(c.cta_heading)} onChange={v => setContent('cta_heading', v)} />
+            <Field label="WhatsApp button label" value={str(c.wa_label)} onChange={v => setContent('wa_label', v)} />
+            <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />
+            <Field label="Order button label" value={str(c.order_label)} onChange={v => setContent('order_label', v)} />
+            <Field label="Order button URL" value={str(c.order_url)} onChange={v => setContent('order_url', v)} />
+          </>)}
+
+          {section.type === 'help_cta' && (<>
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
+            <Field label="Primary button label" value={str(c.primary_label)} onChange={v => setContent('primary_label', v)} />
+            <Field label="Primary button URL" value={str(c.primary_url)} onChange={v => setContent('primary_url', v)} />
+            <Field label="Secondary button label" value={str(c.secondary_label)} onChange={v => setContent('secondary_label', v)} />
+            <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />
+          </>)}
+
+          {section.type === 'form_config' && (<>
+            {'form_heading' in c && <Field label="Form heading" value={str(c.form_heading)} onChange={v => setContent('form_heading', v)} />}
+            {'success_heading' in c && <Field label="Success heading" value={str(c.success_heading)} onChange={v => setContent('success_heading', v)} />}
+            {'success_text' in c && <Field label="Success message" value={str(c.success_text)} onChange={v => setContent('success_text', v)} textarea />}
+            {'success_button_label' in c && <Field label="Success button label" value={str(c.success_button_label)} onChange={v => setContent('success_button_label', v)} />}
+            {'name_label' in c && <Field label="Name field label" value={str(c.name_label)} onChange={v => setContent('name_label', v)} />}
+            {'name_placeholder' in c && <Field label="Name placeholder" value={str(c.name_placeholder)} onChange={v => setContent('name_placeholder', v)} />}
+            {'phone_label' in c && <Field label="Phone field label" value={str(c.phone_label)} onChange={v => setContent('phone_label', v)} />}
+            {'phone_placeholder' in c && <Field label="Phone placeholder" value={str(c.phone_placeholder)} onChange={v => setContent('phone_placeholder', v)} />}
+            {'whatsapp_label' in c && <Field label="WhatsApp field label" value={str(c.whatsapp_label)} onChange={v => setContent('whatsapp_label', v)} />}
+            {'whatsapp_placeholder' in c && <Field label="WhatsApp placeholder" value={str(c.whatsapp_placeholder)} onChange={v => setContent('whatsapp_placeholder', v)} />}
+            {'email_label' in c && <Field label="Email field label" value={str(c.email_label)} onChange={v => setContent('email_label', v)} />}
+            {'email_placeholder' in c && <Field label="Email placeholder" value={str(c.email_placeholder)} onChange={v => setContent('email_placeholder', v)} />}
+            {'service_label' in c && <Field label="Service field label" value={str(c.service_label)} onChange={v => setContent('service_label', v)} />}
+            {'service_placeholder' in c && <Field label="Service placeholder" value={str(c.service_placeholder)} onChange={v => setContent('service_placeholder', v)} />}
+            {'service_options' in c && <StringListEditor label="Service options" value={stringArray(c.service_options)} onChange={v => setContent('service_options', v)} />}
+            {'message_label' in c && <Field label="Message field label" value={str(c.message_label)} onChange={v => setContent('message_label', v)} />}
+            {'message_placeholder' in c && <Field label="Message placeholder" value={str(c.message_placeholder)} onChange={v => setContent('message_placeholder', v)} />}
+            {'submit_label' in c && <Field label="Submit button label" value={str(c.submit_label)} onChange={v => setContent('submit_label', v)} />}
+            {'sending_label' in c && <Field label="Sending button label" value={str(c.sending_label)} onChange={v => setContent('sending_label', v)} />}
+            {'error_text' in c && <Field label="Error message" value={str(c.error_text)} onChange={v => setContent('error_text', v)} textarea />}
+            {'hero_file_types' in c && <StringListEditor label="Hero file type chips" value={stringArray(c.hero_file_types)} onChange={v => setContent('hero_file_types', v)} />}
+            {'file_change_text' in c && <Field label="Selected file change text" value={str(c.file_change_text)} onChange={v => setContent('file_change_text', v)} />}
+            {'accepted_files_heading' in c && <Field label="Accepted files heading" value={str(c.accepted_files_heading)} onChange={v => setContent('accepted_files_heading', v)} />}
+            {'accepted_file_types' in c && <StringListEditor label="Accepted file types" value={stringArray(c.accepted_file_types)} onChange={v => setContent('accepted_file_types', v)} />}
+            {'accepted_files_note' in c && <Field label="Accepted files note" value={str(c.accepted_files_note)} onChange={v => setContent('accepted_files_note', v)} textarea />}
+            {'whatsapp_panel_heading' in c && <Field label="WhatsApp panel heading" value={str(c.whatsapp_panel_heading)} onChange={v => setContent('whatsapp_panel_heading', v)} />}
+            {'whatsapp_panel_text' in c && <Field label="WhatsApp panel text" value={str(c.whatsapp_panel_text)} onChange={v => setContent('whatsapp_panel_text', v)} textarea />}
+            {'whatsapp_button_label' in c && <Field label="WhatsApp button label" value={str(c.whatsapp_button_label)} onChange={v => setContent('whatsapp_button_label', v)} />}
+            {'send_items_heading' in c && <Field label="You can send heading" value={str(c.send_items_heading)} onChange={v => setContent('send_items_heading', v)} />}
+            {'send_items' in c && <StringListEditor label="You can send" value={stringArray(c.send_items)} onChange={v => setContent('send_items', v)} />}
+            {'privacy_text' in c && <Field label="Privacy/helper text" value={str(c.privacy_text)} onChange={v => setContent('privacy_text', v)} textarea />}
+            {'category_label' in c && <Field label="Category label" value={str(c.category_label)} onChange={v => setContent('category_label', v)} />}
+            {'category_options' in c && <StringListEditor label="Category options" value={stringArray(c.category_options)} onChange={v => setContent('category_options', v)} />}
+            {'upload_label' in c && <Field label="Upload field label" value={str(c.upload_label)} onChange={v => setContent('upload_label', v)} />}
+            {'upload_prompt' in c && <Field label="Upload prompt" value={str(c.upload_prompt)} onChange={v => setContent('upload_prompt', v)} />}
+            {'max_file_text' in c && <Field label="Max file text" value={str(c.max_file_text)} onChange={v => setContent('max_file_text', v)} />}
+            {'quantity_label' in c && <Field label="Quantity label" value={str(c.quantity_label)} onChange={v => setContent('quantity_label', v)} />}
+            {'quantity_placeholder' in c && <Field label="Quantity placeholder" value={str(c.quantity_placeholder)} onChange={v => setContent('quantity_placeholder', v)} />}
+            {'printing_type_label' in c && <Field label="Printing type label" value={str(c.printing_type_label)} onChange={v => setContent('printing_type_label', v)} />}
+            {'printing_type_options' in c && <StringListEditor label="Printing type options" value={stringArray(c.printing_type_options)} onChange={v => setContent('printing_type_options', v)} />}
+            {'paper_label' in c && <Field label="Paper/material label" value={str(c.paper_label)} onChange={v => setContent('paper_label', v)} />}
+            {'paper_placeholder' in c && <Field label="Paper/material placeholder" value={str(c.paper_placeholder)} onChange={v => setContent('paper_placeholder', v)} />}
+            {'size_label' in c && <Field label="Size label" value={str(c.size_label)} onChange={v => setContent('size_label', v)} />}
+            {'size_placeholder' in c && <Field label="Size placeholder" value={str(c.size_placeholder)} onChange={v => setContent('size_placeholder', v)} />}
+            {'special_label' in c && <Field label="Special requirements label" value={str(c.special_label)} onChange={v => setContent('special_label', v)} />}
+            {'special_placeholder' in c && <Field label="Special requirements placeholder" value={str(c.special_placeholder)} onChange={v => setContent('special_placeholder', v)} />}
+          </>)}
+
+          {section.type === 'shared_labels' && (
+            <ObjectListEditor label="Editable labels" value={c.items} template={{ key: '', value: '' }} onChange={v => setContent('items', v)} />
+          )}
+
+          {section.type === 'group_list' && (<>
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <Field label="Icon key" value={str(c.icon_key)} onChange={v => setContent('icon_key', v)} />
+            <StringListEditor label="Items" value={stringArray(c.items)} onChange={v => setContent('items', v)} />
+          </>)}
+
+          {section.type === 'services_showcase' && (<>
+            <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <Field label="Popular badge" value={str(c.popular_badge)} onChange={v => setContent('popular_badge', v)} />
+            <Field label="Featured link label" value={str(c.featured_link_label)} onChange={v => setContent('featured_link_label', v)} />
+            <Field label="Medium card link label" value={str(c.medium_link_label)} onChange={v => setContent('medium_link_label', v)} />
+            <Field label="Small card link label" value={str(c.small_link_label)} onChange={v => setContent('small_link_label', v)} />
+            <Field label="View all button label" value={str(c.view_all_label)} onChange={v => setContent('view_all_label', v)} />
+            <Field label="View all URL" value={str(c.view_all_url)} onChange={v => setContent('view_all_url', v)} />
+            <StringListEditor label="Showcase service slugs (order)" value={stringArray(c.service_slugs)} onChange={v => setContent('service_slugs', v)} />
+          </>)}
+
           {/* Legal pages */}
           {section.type === 'rich_text' && (<>
             <Field label="Page title" value={str(c.page_title)} onChange={v => setContent('page_title', v)} />
             <Field label="Introduction" value={str(c.introduction)} onChange={v => setContent('introduction', v)} textarea />
-            <JsonArrayEditor label="Content sections" value={c.sections} onChange={v => setContent('sections', v)} />
+            <LegalSectionsEditor value={c.sections} onChange={v => setContent('sections', v)} />
           </>)}
 
           {/* Services page custom settings */}
@@ -660,6 +779,42 @@ function ObjectListEditor({
   );
 }
 
+function LegalSectionsEditor({ value, onChange }: { value: unknown; onChange: (value: Record<string, unknown>[]) => void }) {
+  const items = objectArray(value);
+  const update = (index: number, key: string, next: unknown) => onChange(items.map((item, i) => i === index ? { ...item, [key]: next } : item));
+  const move = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= items.length) return;
+    const copy = [...items];
+    [copy[index], copy[target]] = [copy[target], copy[index]];
+    onChange(copy);
+  };
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-600">Content sections</p>
+        <button type="button" onClick={() => onChange([...items, { title: '', paragraphs: [], bullets: [], afterParagraphs: [] }])} className="px-3 py-1.5 rounded-lg bg-[#EEF7FF] text-[#071A2B] text-xs font-bold hover:bg-blue-100">+ Add section</button>
+      </div>
+      {items.map((item, index) => (
+        <div key={index} className="rounded-xl border border-gray-200 p-4 bg-gray-50/50 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-bold text-gray-500">Section {index + 1}</span>
+            <div className="flex gap-1">
+              <button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↑</button>
+              <button type="button" onClick={() => move(index, 1)} disabled={index === items.length - 1} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↓</button>
+              <button type="button" onClick={() => onChange(items.filter((_, i) => i !== index))} className="px-2 py-1 text-xs text-red-600 border border-red-200 rounded">Remove</button>
+            </div>
+          </div>
+          <Field label="Section title" value={str(item.title)} onChange={v => update(index, 'title', v)} />
+          <StringListEditor label="Paragraphs" value={stringArray(item.paragraphs)} onChange={v => update(index, 'paragraphs', v)} />
+          <StringListEditor label="Bullet points" value={stringArray(item.bullets)} onChange={v => update(index, 'bullets', v)} />
+          <StringListEditor label="Paragraphs after bullets" value={stringArray(item.afterParagraphs)} onChange={v => update(index, 'afterParagraphs', v)} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function JsonArrayEditor({ label, value, onChange }: { label: string; value: unknown; onChange: (value: unknown[]) => void }) {
   const initial = Array.isArray(value) ? value : [];
   const [draft, setDraft] = useState(JSON.stringify(initial, null, 2));
@@ -781,6 +936,12 @@ function getDefaultContent(type: SectionType): Record<string, unknown> {
     related: { items: [] },
     rich_text: { page_title: '', introduction: '', sections: [] },
     services_page: { items: [] },
+    why_us: { eyebrow: '', heading_line1: '', heading_line2: '', description: '', items: [] },
+    help_cta: { heading: '', description: '', primary_label: '', primary_url: '', secondary_label: '', wa_message: '' },
+    form_config: {},
+    shared_labels: { items: [] },
+    group_list: { heading: '', icon_key: '', items: [] },
+    services_showcase: { eyebrow: '', heading: '', popular_badge: '', featured_link_label: '', medium_link_label: '', small_link_label: '', view_all_label: '', view_all_url: '/services', service_slugs: [] },
 
     heading: { text: '', level: 'h2' },
     text: { text: '' },
