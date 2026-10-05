@@ -18,6 +18,13 @@ const SECTION_TYPES: { type: SectionType; label: string; icon: string }[] = [
   { type: 'gallery', label: 'Gallery', icon: '🎨' },
   { type: 'faq', label: 'FAQ', icon: '❓' },
   { type: 'contact', label: 'Contact Block', icon: '📬' },
+  { type: 'service_strip', label: 'Service Strip', icon: '🧩' },
+  { type: 'printing_feature', label: 'Printing Feature', icon: '🖨️' },
+  { type: 'academic_feature', label: 'Academic Feature', icon: '🎓' },
+  { type: 'how_it_works', label: 'How It Works', icon: '🪜' },
+  { type: 'customized_printing', label: 'Customized Printing', icon: '🎨' },
+  { type: 'who_we_serve', label: 'Who We Serve', icon: '👥' },
+  { type: 'final_cta', label: 'Final CTA', icon: '📣' },
 ];
 
 export default function PageEditor() {
@@ -314,14 +321,86 @@ function SectionEditModal({
             <Field label="Subheading" value={str(c.subheading)} onChange={v => setContent('subheading', v)} />
             <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
             <Field label="Badge text" value={str(c.badge)} onChange={v => setContent('badge', v)} />
-            <Field label="CTA primary label" value={str(c.cta_primary_label)} onChange={v => setContent('cta_primary_label', v)} />
-            <Field label="CTA primary URL" value={str(c.cta_primary_url)} onChange={v => setContent('cta_primary_url', v)} />
-            <Field label="CTA secondary label" value={str(c.cta_secondary_label)} onChange={v => setContent('cta_secondary_label', v)} />
-            <Field label="CTA secondary URL" value={str(c.cta_secondary_url)} onChange={v => setContent('cta_secondary_url', v)} />
+            <Field label="Primary CTA text" value={str(c.cta_primary_text) || str(c.cta_primary_label)} onChange={v => setContent('cta_primary_text', v)} />
+            <Field label="Primary CTA URL" value={str(c.cta_primary_url)} onChange={v => setContent('cta_primary_url', v)} />
+            <Field label="Secondary CTA text" value={str(c.cta_secondary_text) || str(c.cta_secondary_label)} onChange={v => setContent('cta_secondary_text', v)} />
+            <Field label="Secondary CTA URL" value={str(c.cta_secondary_url)} onChange={v => setContent('cta_secondary_url', v)} />
+            <Field label="Tertiary CTA text" value={str(c.cta_tertiary_text)} onChange={v => setContent('cta_tertiary_text', v)} />
+            <Field label="Tertiary CTA URL" value={str(c.cta_tertiary_url)} onChange={v => setContent('cta_tertiary_url', v)} />
             <Field label="Video URL" value={str(c.video_url)} onChange={v => setContent('video_url', v)} />
             <Field label="Video poster URL" value={str(c.video_poster)} onChange={v => setContent('video_poster', v)} />
             <Field label="Image URL (fallback)" value={str(c.image_url)} onChange={v => setContent('image_url', v)} />
             <Field label="Alt text" value={str(c.alt_text)} onChange={v => setContent('alt_text', v)} />
+          </>)}
+
+          {/* Home: Service Strip */}
+          {section.type === 'service_strip' && (
+            <ServiceStripEditor
+              items={objectArray(c.items)}
+              onChange={items => setContent('items', items)}
+            />
+          )}
+
+          {/* Home: Printing Feature */}
+          {section.type === 'printing_feature' && (<>
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
+            <StringListEditor label="Checklist items" value={stringArray(c.checklist)} onChange={v => setContent('checklist', v)} />
+            <Field label="CTA label" value={str(c.cta_label)} onChange={v => setContent('cta_label', v)} />
+            <Field label="CTA URL" value={str(c.cta_url)} onChange={v => setContent('cta_url', v)} />
+          </>)}
+
+          {/* Home: Academic Feature */}
+          {section.type === 'academic_feature' && (<>
+            <Field label="Heading line 1" value={str(c.heading_line1)} onChange={v => setContent('heading_line1', v)} />
+            <Field label="Heading line 2" value={str(c.heading_line2)} onChange={v => setContent('heading_line2', v)} />
+            <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
+            <StringListEditor label="Checklist items" value={stringArray(c.checklist)} onChange={v => setContent('checklist', v)} />
+            <Field label="CTA label" value={str(c.cta_label)} onChange={v => setContent('cta_label', v)} />
+            <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />
+          </>)}
+
+          {/* Home: How It Works */}
+          {section.type === 'how_it_works' && (<>
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <Field label="Subtitle" value={str(c.subtitle)} onChange={v => setContent('subtitle', v)} textarea />
+            <HowStepsEditor
+              steps={objectArray(c.steps)}
+              onChange={steps => setContent('steps', steps)}
+            />
+            <Field label="CTA label" value={str(c.cta_label)} onChange={v => setContent('cta_label', v)} />
+            <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />
+          </>)}
+
+          {/* Home: Customized Printing */}
+          {section.type === 'customized_printing' && (<>
+            <Field label="Heading line 1" value={str(c.heading_line1)} onChange={v => setContent('heading_line1', v)} />
+            <Field label="Heading line 2" value={str(c.heading_line2)} onChange={v => setContent('heading_line2', v)} />
+            <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
+            <StringListEditor label="Items" value={stringArray(c.items)} onChange={v => setContent('items', v)} />
+            <Field label="CTA label" value={str(c.cta_label)} onChange={v => setContent('cta_label', v)} />
+            <Field label="CTA URL" value={str(c.cta_url)} onChange={v => setContent('cta_url', v)} />
+          </>)}
+
+          {/* Home: Who We Serve */}
+          {section.type === 'who_we_serve' && (<>
+            <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <ServePanelsEditor
+              panels={objectArray(c.panels)}
+              onChange={panels => setContent('panels', panels)}
+            />
+          </>)}
+
+          {/* Home: Final CTA */}
+          {section.type === 'final_cta' && (<>
+            <Field label="Heading line 1" value={str(c.heading_line1)} onChange={v => setContent('heading_line1', v)} />
+            <Field label="Heading line 2" value={str(c.heading_line2)} onChange={v => setContent('heading_line2', v)} />
+            <Field label="Subline" value={str(c.subline)} onChange={v => setContent('subline', v)} textarea />
+            <Field label="WhatsApp button label" value={str(c.wa_label)} onChange={v => setContent('wa_label', v)} />
+            <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />
+            <Field label="Phone button label" value={str(c.phone_label)} onChange={v => setContent('phone_label', v)} />
+            <StringListEditor label="Service tags" value={stringArray(c.service_tags)} onChange={v => setContent('service_tags', v)} />
           </>)}
 
           {/* Heading */}
@@ -404,7 +483,77 @@ function str(v: unknown): string { return typeof v === 'string' ? v : ''; }
 
 function getDefaultContent(type: SectionType): Record<string, unknown> {
   const defaults: Record<SectionType, Record<string, unknown>> = {
-    hero: { heading: '', subheading: '', description: '', badge: '', cta_primary_label: '', cta_primary_url: '', video_url: '', alt_text: '' },
+    hero: {
+      heading: '',
+      subheading: '',
+      description: '',
+      badge: '',
+      cta_primary_text: '',
+      cta_primary_url: '',
+      cta_secondary_text: '',
+      cta_secondary_url: '',
+      cta_tertiary_text: '',
+      cta_tertiary_url: '',
+      video_url: '',
+      video_poster: '',
+      image_url: '',
+      alt_text: '',
+    },
+
+    service_strip: {
+      items: [],
+    },
+
+    printing_feature: {
+      heading: '',
+      description: '',
+      checklist: [],
+      cta_label: '',
+      cta_url: '',
+    },
+
+    academic_feature: {
+      heading_line1: '',
+      heading_line2: '',
+      description: '',
+      checklist: [],
+      cta_label: '',
+      wa_message: '',
+    },
+
+    how_it_works: {
+      heading: '',
+      subtitle: '',
+      steps: [],
+      cta_label: '',
+      wa_message: '',
+    },
+
+    customized_printing: {
+      heading_line1: '',
+      heading_line2: '',
+      description: '',
+      items: [],
+      cta_label: '',
+      cta_url: '',
+    },
+
+    who_we_serve: {
+      eyebrow: '',
+      heading: '',
+      panels: [],
+    },
+
+    final_cta: {
+      heading_line1: '',
+      heading_line2: '',
+      subline: '',
+      wa_label: '',
+      wa_message: '',
+      phone_label: '',
+      service_tags: [],
+    },
+
     heading: { text: '', level: 'h2' },
     text: { text: '' },
     image: { url: '', alt: '', caption: '' },
@@ -444,6 +593,137 @@ function Field({ label, value, onChange, placeholder, textarea }: {
           className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#071A2B]/15 focus:border-[#071A2B] transition-colors"
         />
       )}
+    </div>
+  );
+}
+
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+}
+
+function objectArray(value: unknown): Record<string, unknown>[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is Record<string, unknown> => !!item && typeof item === 'object' && !Array.isArray(item))
+    : [];
+}
+
+function StringListEditor({ label, value, onChange }: {
+  label: string;
+  value: string[];
+  onChange: (value: string[]) => void;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</label>
+      <textarea
+        value={value.join('\n')}
+        onChange={e => onChange(e.target.value.split('\n').map(v => v.trim()).filter(Boolean))}
+        rows={5}
+        placeholder="One item per line"
+        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#071A2B]/15 focus:border-[#071A2B] transition-colors resize-none"
+      />
+      <p className="text-[11px] text-gray-400 mt-1">Enter one item per line.</p>
+    </div>
+  );
+}
+
+function ServiceStripEditor({ items, onChange }: {
+  items: Record<string, unknown>[];
+  onChange: (items: Record<string, unknown>[]) => void;
+}) {
+  const update = (index: number, key: 'label' | 'url', value: string) => {
+    const next = items.map((item, i) => i === index ? { ...item, [key]: value } : item);
+    onChange(next);
+  };
+  const add = () => onChange([...items, { label: '', url: '' }]);
+  const remove = (index: number) => onChange(items.filter((_, i) => i !== index));
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-600">Service strip items</p>
+        <button type="button" onClick={add} className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 hover:bg-gray-50">+ Add item</button>
+      </div>
+      {items.map((item, index) => (
+        <div key={index} className="rounded-xl border border-gray-100 p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-gray-500">Item {index + 1}</span>
+            <button type="button" onClick={() => remove(index)} className="text-xs text-red-500">Remove</button>
+          </div>
+          <Field label="Label" value={str(item.label)} onChange={v => update(index, 'label', v)} />
+          <Field label="URL" value={str(item.url)} onChange={v => update(index, 'url', v)} />
+        </div>
+      ))}
+      {items.length === 0 && <p className="text-xs text-gray-400">No items yet.</p>}
+    </div>
+  );
+}
+
+function HowStepsEditor({ steps, onChange }: {
+  steps: Record<string, unknown>[];
+  onChange: (steps: Record<string, unknown>[]) => void;
+}) {
+  const update = (index: number, key: 'n' | 'title' | 'body', value: string) => {
+    const next = steps.map((step, i) => i === index ? { ...step, [key]: value } : step);
+    onChange(next);
+  };
+  const add = () => onChange([...steps, { n: String(steps.length + 1).padStart(2, '0'), title: '', body: '' }]);
+  const remove = (index: number) => onChange(steps.filter((_, i) => i !== index));
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-600">Process steps</p>
+        <button type="button" onClick={add} className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 hover:bg-gray-50">+ Add step</button>
+      </div>
+      {steps.map((step, index) => (
+        <div key={index} className="rounded-xl border border-gray-100 p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-gray-500">Step {index + 1}</span>
+            <button type="button" onClick={() => remove(index)} className="text-xs text-red-500">Remove</button>
+          </div>
+          <Field label="Number" value={str(step.n)} onChange={v => update(index, 'n', v)} />
+          <Field label="Title" value={str(step.title)} onChange={v => update(index, 'title', v)} />
+          <Field label="Body" value={str(step.body)} onChange={v => update(index, 'body', v)} textarea />
+        </div>
+      ))}
+      {steps.length === 0 && <p className="text-xs text-gray-400">No steps yet.</p>}
+    </div>
+  );
+}
+
+function ServePanelsEditor({ panels, onChange }: {
+  panels: Record<string, unknown>[];
+  onChange: (panels: Record<string, unknown>[]) => void;
+}) {
+  const update = (index: number, key: string, value: unknown) => {
+    const next = panels.map((panel, i) => i === index ? { ...panel, [key]: value } : panel);
+    onChange(next);
+  };
+  const add = () => onChange([...panels, { title: '', description: '', tags: [], image: '', image_alt: '' }]);
+  const remove = (index: number) => onChange(panels.filter((_, i) => i !== index));
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-600">Audience panels</p>
+        <button type="button" onClick={add} className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-gray-200 hover:bg-gray-50">+ Add panel</button>
+      </div>
+      {panels.map((panel, index) => (
+        <div key={index} className="rounded-xl border border-gray-100 p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-gray-500">Panel {index + 1}</span>
+            <button type="button" onClick={() => remove(index)} className="text-xs text-red-500">Remove</button>
+          </div>
+          <Field label="Title" value={str(panel.title)} onChange={v => update(index, 'title', v)} />
+          <Field label="Description" value={str(panel.description)} onChange={v => update(index, 'description', v)} textarea />
+          <StringListEditor label="Tags" value={stringArray(panel.tags)} onChange={v => update(index, 'tags', v)} />
+          <Field label="Image URL" value={str(panel.image)} onChange={v => update(index, 'image', v)} />
+          <Field label="Image alt text" value={str(panel.image_alt)} onChange={v => update(index, 'image_alt', v)} />
+        </div>
+      ))}
+      {panels.length === 0 && <p className="text-xs text-gray-400">No panels yet.</p>}
     </div>
   );
 }

@@ -118,6 +118,13 @@ export interface PublishResult {
 
 export type SectionType =
   | 'hero'
+  | 'service_strip'
+  | 'printing_feature'
+  | 'academic_feature'
+  | 'how_it_works'
+  | 'customized_printing'
+  | 'who_we_serve'
+  | 'final_cta'
   | 'heading'
   | 'text'
   | 'image'
