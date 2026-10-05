@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { submitInquiry } from '../lib/submitInquiry';
-import { useCms } from '../cms/CmsContext';
+import { resolveCmsMedia, useCms } from '../cms/CmsContext';
 import { useCmsSection, str } from '../cms/useCmsPage';
 
 const inView = { once: true, margin: '-80px' };
@@ -17,7 +17,8 @@ const stagger = {
 } as const;
 
 export default function Contact() {
-  const { siteSettings } = useCms();
+  const { siteSettings, mediaAssets } = useCms();
+  const media = (url: string) => resolveCmsMedia(mediaAssets, url);
   const contactHero = useCmsSection('/contact', 'hero');
 
   const heroTitle1 = str(contactHero, 'title_line1', 'Visit, Call, WhatsApp');
@@ -76,7 +77,7 @@ export default function Contact() {
       >
         {/* Background image */}
         <img
-          src="https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=1600&h=700&fit=crop&auto=format"
+          src={media('https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=1600&h=700&fit=crop&auto=format')}
           alt=""
           aria-hidden="true"
           width={1600}

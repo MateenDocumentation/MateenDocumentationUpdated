@@ -56,6 +56,7 @@ async function fetchCmsData() {
       publishedPages,
       allSections,
       cmsServices,
+      mediaAssets,
     ] = await Promise.all([
       get('site_settings', '?limit=1'),
       get('header_settings', '?limit=1'),
@@ -70,6 +71,7 @@ async function fetchCmsData() {
       // All sections ordered by page_id + order_index
       get('page_sections', '?is_visible=eq.true&order=order_index.asc&select=id,page_id,type,label,order_index,is_visible,content'),
       get('services', '?is_active=eq.true&order=order_index.asc'),
+      get('media_assets', '?select=id,public_url,source_url,type,alt_text,title'),
     ]);
 
     // Build pageSections map: slug → sections[]
@@ -93,12 +95,13 @@ async function fetchCmsData() {
       publishedPages,
       pageSections,
       cmsServices,
+      mediaAssets,
     };
 
     console.log(
       `[prerender] CMS data loaded: ${seoSettings.length} SEO entries, ` +
       `${customScripts.length} scripts, ${publishedPages.length} published pages, ` +
-      `${allSections.length} sections, ${cmsServices.length} services.`
+      `${allSections.length} sections, ${cmsServices.length} services, ${mediaAssets.length} media assets.`
     );
     return cmsData;
   } catch (err) {
@@ -122,6 +125,7 @@ function buildPublicSnapshot(data) {
     navigationItems: data.navigationItems,
     pageSections: data.pageSections,
     cmsServices: data.cmsServices,
+    mediaAssets: data.mediaAssets,
   };
 }
 
@@ -173,6 +177,7 @@ function seoTags(pathname) {
   const twTitle = cms?.twitter_title || title;
   const twDesc = cms?.twitter_description || description;
   const twImage = cms?.twitter_image || socialImage;
+  const faviconUrl = cmsData?.siteSettings?.favicon_url || '/favicon.png';
 
   const schema = cms?.custom_jsonld
     ? cms.custom_jsonld.replace(/</g, '\\u003c')
@@ -207,7 +212,8 @@ function seoTags(pathname) {
     <meta name="robots" content="${robotsValue}" />
     <meta name="googlebot" content="${robotsValue}" />
     <link rel="canonical" href="${canonicalUrl}" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="icon" href="${faviconUrl}" />
+    <link rel="apple-touch-icon" href="${faviconUrl}" />
     <meta property="og:title" content="${escapeHtml(ogTitle)}" />
     <meta property="og:description" content="${escapeHtml(ogDesc)}" />
     <meta property="og:url" content="${canonicalUrl}" />

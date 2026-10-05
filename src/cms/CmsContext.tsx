@@ -13,6 +13,7 @@ export interface SiteSettings {
   address: string;
   maps_url: string;
   logo_url?: string | null;
+  favicon_url?: string | null;
 }
 
 export interface HeaderSettings {
@@ -133,6 +134,21 @@ export interface CmsService {
   is_active: boolean;
 }
 
+
+export interface CmsMediaAsset {
+  id: string;
+  public_url: string;
+  source_url?: string | null;
+  type: 'image' | 'video' | 'svg';
+  alt_text?: string | null;
+  title?: string | null;
+}
+
+export function resolveCmsMedia(mediaAssets: CmsMediaAsset[], sourceUrl: string): string {
+  if (!sourceUrl) return sourceUrl;
+  return mediaAssets.find(asset => asset.source_url === sourceUrl)?.public_url || sourceUrl;
+}
+
 // ─── Full CMS data shape ─────────────────────────────────────────────────────
 
 export interface CmsData {
@@ -149,6 +165,8 @@ export interface CmsData {
   pageSections: Record<string, PageSection[]>;
   /** All active services from the services table */
   cmsServices: CmsService[];
+  /** Public Media Library assets used to resolve imported website media */
+  mediaAssets: CmsMediaAsset[];
 }
 
 // ─── Safe public snapshot (serialized into HTML, sent to browser) ────────────
@@ -161,6 +179,7 @@ export interface CmsPublicSnapshot {
   navigationItems: NavigationItem[];
   pageSections: Record<string, PageSection[]>;
   cmsServices: CmsService[];
+  mediaAssets: CmsMediaAsset[];
 }
 
 // ─── Context ───────────────────────────────────────────────────────────────
@@ -177,6 +196,7 @@ const defaultCmsData: CmsData = {
   publishedPages: [],
   pageSections: {},
   cmsServices: [],
+  mediaAssets: [],
 };
 
 const CmsContext = createContext<CmsData>(defaultCmsData);

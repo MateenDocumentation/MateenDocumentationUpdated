@@ -5,7 +5,7 @@ import Layout from '../components/Layout';
 import heroPrinterPoster from '../imports/mateen_hero_printer_poster.webp';
 import heroPrinterVideo from '../imports/mateen_hero_printer_preview_16x9.mp4';
 import { useCmsSection, str, arr } from '../cms/useCmsPage';
-import { useCms } from '../cms/CmsContext';
+import { resolveCmsMedia, useCms } from '../cms/CmsContext';
 
 /* ── Motion variants ──────────────────────────────── */
 const fadeUp = {
@@ -139,7 +139,9 @@ const benefits = [
 export default function Home() {
   // ── CMS hero content (falls back to hardcoded when no CMS data exists) ──
   const heroSection = useCmsSection('/', 'hero');
-  const { headerSettings, siteSettings } = useCms();
+  const { headerSettings, siteSettings, cmsServices, mediaAssets } = useCms();
+  const media = (url: string) => resolveCmsMedia(mediaAssets, url);
+  const serviceImage = (slug: string, fallback: string) => cmsServices.find(service => service.slug === slug)?.image_url?.trim() || media(fallback);
 
   const rawHeading = str(heroSection, 'heading', '');
   const heroParts = rawHeading.split('\n');
@@ -158,6 +160,7 @@ export default function Home() {
   const heroPosterSrc = str(heroSection, 'video_poster', '') || heroPrinterPoster;
   const heroImageSrc = str(heroSection, 'image_url', '') || heroPosterSrc;
   const heroAltText = str(heroSection, 'alt_text', 'Professional printer producing paper output');
+  const heroBackgroundSrc = str(heroSection, 'background_image_url', '') || media('https://images.unsplash.com/photo-1503694978374-8a2fa686963a?w=1800&h=1100&fit=crop&auto=format&q=82');
 
   // CMS phone/wa with fallbacks
   const rawWa = headerSettings?.whatsapp ?? siteSettings?.whatsapp ?? '923312478337';
@@ -231,9 +234,9 @@ export default function Home() {
   type ServePanel = { title: string; description: string; tags: string[]; image: string; image_alt: string };
   const cmsServePanels = arr<ServePanel>(whoServeSection, 'panels');
   const defaultServePanels: ServePanel[] = [
-    { title: 'Students', description: 'From assignments and thesis to final-year projects — typing, formatting, printing and binding handled with care.', tags: ['Assignments', 'Printing', 'Binding', 'Projects'], image: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=700&h=1160&fit=crop&auto=format', image_alt: 'Student with laptop studying' },
-    { title: 'Families &\nIndividuals', description: 'Public facilitation, NADRA assistance, documentation and custom-printed items for everyday personal needs.', tags: ['Documentation', 'NADRA', 'Public Facilitation', 'Custom Print'], image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=700&h=1160&fit=crop&auto=format', image_alt: 'Family at a documentation centre' },
-    { title: 'Businesses &\nOrganizations', description: 'Bulk printing, business documentation, letterheads, rubber stamps and branding for offices and enterprises.', tags: ['Bulk Printing', 'Letterheads', 'Branding', 'Business Docs'], image: 'https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=700&h=1160&fit=crop&auto=format', image_alt: 'Business professionals in meeting' },
+    { title: 'Students', description: 'From assignments and thesis to final-year projects — typing, formatting, printing and binding handled with care.', tags: ['Assignments', 'Printing', 'Binding', 'Projects'], image: media('https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=700&h=1160&fit=crop&auto=format'), image_alt: 'Student with laptop studying' },
+    { title: 'Families &\nIndividuals', description: 'Public facilitation, NADRA assistance, documentation and custom-printed items for everyday personal needs.', tags: ['Documentation', 'NADRA', 'Public Facilitation', 'Custom Print'], image: media('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=700&h=1160&fit=crop&auto=format'), image_alt: 'Family at a documentation centre' },
+    { title: 'Businesses &\nOrganizations', description: 'Bulk printing, business documentation, letterheads, rubber stamps and branding for offices and enterprises.', tags: ['Bulk Printing', 'Letterheads', 'Branding', 'Business Docs'], image: media('https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=700&h=1160&fit=crop&auto=format'), image_alt: 'Business professionals in meeting' },
   ];
   const resolvedServePanels = cmsServePanels.length ? cmsServePanels : defaultServePanels;
 
@@ -295,7 +298,7 @@ export default function Home() {
             width={1800}
             height={1100}
             fetchPriority="high"
-            src="https://images.unsplash.com/photo-1503694978374-8a2fa686963a?w=1800&h=1100&fit=crop&auto=format&q=82"
+            src={heroBackgroundSrc}
           />
           {/* Strong dark navy overlay */}
           <div className="absolute inset-0" style={{ background: 'linear-gradient(105deg, rgba(7,26,43,0.96) 0%, rgba(7,26,43,0.88) 42%, rgba(7,26,43,0.55) 70%, rgba(7,26,43,0.4) 100%)' }} />
@@ -615,7 +618,7 @@ export default function Home() {
                 >
                   <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                     alt="Professional printing machine producing paper"
-                    src="https://images.unsplash.com/photo-1650094980833-7373de26feb6?w=600&h=1100&fit=crop&auto=format" />
+                    src={str(printingSection, 'image_main', '') || media('https://images.unsplash.com/photo-1650094980833-7373de26feb6?w=600&h=1100&fit=crop&auto=format')} />
                   {/* Very light vignette only */}
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 60%, rgba(10,22,64,0.10) 100%)' }} />
                 </motion.div>
@@ -630,7 +633,7 @@ export default function Home() {
                 >
                   <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
                     alt="CMYK color calibration test sheet"
-                    src="https://images.unsplash.com/photo-1715154470884-1c2be0b0129f?w=540&h=900&fit=crop&auto=format&q=85" />
+                    src={str(printingSection, 'image_color', '') || media('https://images.unsplash.com/photo-1715154470884-1c2be0b0129f?w=540&h=900&fit=crop&auto=format&q=85')} />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 55%, rgba(10,22,64,0.08) 100%)' }} />
                   {/* Frosted white pill tag */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full px-3 py-1.5 whitespace-nowrap" style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
@@ -651,7 +654,7 @@ export default function Home() {
                 >
                   <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
                     alt="Printed color swatches and paper samples"
-                    src="https://images.unsplash.com/photo-1581079289196-67865ea83118?w=820&h=440&fit=crop&auto=format&q=85" />
+                    src={str(printingSection, 'image_detail', '') || media('https://images.unsplash.com/photo-1581079289196-67865ea83118?w=820&h=440&fit=crop&auto=format&q=85')} />
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(to left, transparent 50%, rgba(10,22,64,0.05) 100%)' }} />
                   {/* Frosted pill top-right inside landscape */}
                   <div className="absolute top-3.5 right-4 flex items-center gap-1.5 rounded-full px-3 py-1.5" style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', boxShadow: '0 2px 10px rgba(0,0,0,0.08)' }}>
@@ -854,7 +857,7 @@ export default function Home() {
                   <div className="w-full h-full overflow-hidden" style={{ borderRadius: '12px' }}>
                     <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                       alt="Stacked academic project folders and documents"
-                      src="https://images.unsplash.com/photo-1468779036391-52341f60b55d?w=640&h=700&fit=crop&auto=format" />
+                      src={str(academicSection, 'image_main', '') || media('https://images.unsplash.com/photo-1468779036391-52341f60b55d?w=640&h=700&fit=crop&auto=format')} />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center" style={{ height: '32px' }}>
                     <span className="text-[10px] font-semibold tracking-wide" style={{ color: 'rgba(7,26,43,0.52)' }}>Project Folders & Reports</span>
@@ -881,7 +884,7 @@ export default function Home() {
                   <div className="w-full h-full overflow-hidden" style={{ borderRadius: '10px' }}>
                     <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
                       alt="Printed assignment papers stacked"
-                      src="https://images.unsplash.com/photo-1631557777127-6495c07ba6b9?w=440&h=360&fit=crop&auto=format" />
+                      src={str(academicSection, 'image_secondary', '') || media('https://images.unsplash.com/photo-1631557777127-6495c07ba6b9?w=440&h=360&fit=crop&auto=format')} />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center" style={{ height: '26px' }}>
                     <span className="text-[9.5px] font-semibold" style={{ color: 'rgba(7,26,43,0.48)' }}>Assignments & Reports</span>
@@ -906,7 +909,7 @@ export default function Home() {
                   <div className="w-full h-full overflow-hidden" style={{ borderRadius: '10px' }}>
                     <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
                       alt="Open notebook with pen on desk"
-                      src="https://images.unsplash.com/photo-1772396867158-e26d9e6256b2?w=440&h=480&fit=crop&auto=format" />
+                      src={str(academicSection, 'image_tertiary', '') || media('https://images.unsplash.com/photo-1772396867158-e26d9e6256b2?w=440&h=480&fit=crop&auto=format')} />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center" style={{ height: '26px' }}>
                     <span className="text-[9.5px] font-semibold" style={{ color: 'rgba(7,26,43,0.48)' }}>Editing & Formatting</span>
@@ -932,7 +935,7 @@ export default function Home() {
                   <div className="w-full h-full overflow-hidden" style={{ borderRadius: '10px' }}>
                     <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
                       alt="Spiral bound notebook open"
-                      src="https://images.unsplash.com/photo-1773453219454-9940ac4256cf?w=600&h=320&fit=crop&auto=format" />
+                      src={str(academicSection, 'image_wide', '') || media('https://images.unsplash.com/photo-1773453219454-9940ac4256cf?w=600&h=320&fit=crop&auto=format')} />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-center" style={{ height: '26px' }}>
                     <span className="text-[9.5px] font-semibold" style={{ color: 'rgba(7,26,43,0.48)' }}>Spiral & Ring Binding</span>
@@ -1233,7 +1236,7 @@ export default function Home() {
                 whileHover={{ scale: 1.03, rotate: 0, boxShadow: '0 32px 80px rgba(0,0,0,0.75), 0 0 0 1.5px rgba(90,132,240,0.35)', transition: { duration: 0.3 } }}
               >
                 <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" alt="Custom printed mug"
-                  src="https://images.unsplash.com/photo-1680337673561-531bca1cf5b7?w=560&h=700&fit=crop&auto=format" />
+                  src={str(customizedSection, 'image_main', '') || media('https://images.unsplash.com/photo-1680337673561-531bca1cf5b7?w=560&h=700&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, transparent 50%, rgba(6,12,31,0.60) 100%)' }} />
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="text-white font-bold text-[12px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Photo Mugs & Gifts</div>
@@ -1250,7 +1253,7 @@ export default function Home() {
                 whileHover={{ scale: 1.04, rotate: 0, boxShadow: '0 24px 56px rgba(0,0,0,0.70), 0 0 0 1.5px rgba(90,132,240,0.30)', transition: { duration: 0.3 } }}
               >
                 <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.07]" alt="Printed business cards"
-                  src="https://images.unsplash.com/photo-1718670013921-2f144aba173a?w=480&h=320&fit=crop&auto=format" />
+                  src={str(customizedSection, 'image_2', '') || media('https://images.unsplash.com/photo-1718670013921-2f144aba173a?w=480&h=320&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(6,12,31,0.65) 100%)' }} />
                 <div className="absolute bottom-3 left-3 right-3">
                   <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Business Cards & Letterheads</div>
@@ -1267,7 +1270,7 @@ export default function Home() {
                 whileHover={{ scale: 1.04, rotate: 0, boxShadow: '0 22px 56px rgba(0,0,0,0.70), 0 0 0 1.5px rgba(90,132,240,0.28)', transition: { duration: 0.3 } }}
               >
                 <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.07]" alt="Photo frames and printed photos"
-                  src="https://images.unsplash.com/photo-1572512083030-840a84affc83?w=480&h=320&fit=crop&auto=format" />
+                  src={str(customizedSection, 'image_3', '') || media('https://images.unsplash.com/photo-1572512083030-840a84affc83?w=480&h=320&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 40%, rgba(6,12,31,0.60) 100%)' }} />
                 <div className="absolute bottom-3 left-3 right-3">
                   <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Photo Frames & Prints</div>
@@ -1284,7 +1287,7 @@ export default function Home() {
                 whileHover={{ scale: 1.04, rotate: 0, boxShadow: '0 20px 52px rgba(0,0,0,0.70), 0 0 0 1.5px rgba(90,132,240,0.28)', transition: { duration: 0.3 } }}
               >
                 <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.07]" alt="Custom sticker labels"
-                  src="https://images.unsplash.com/photo-1780444078356-5ca1e9efe6b8?w=440&h=300&fit=crop&auto=format" />
+                  src={str(customizedSection, 'image_4', '') || media('https://images.unsplash.com/photo-1780444078356-5ca1e9efe6b8?w=440&h=300&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 35%, rgba(6,12,31,0.68) 100%)' }} />
                 <div className="absolute bottom-3 left-3 right-3">
                   <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Custom Stickers & Labels</div>
@@ -1301,7 +1304,7 @@ export default function Home() {
                 whileHover={{ scale: 1.04, rotate: 0, boxShadow: '0 18px 48px rgba(0,0,0,0.65), 0 0 0 1.5px rgba(90,132,240,0.25)', transition: { duration: 0.3 } }}
               >
                 <img loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.07]" alt="Branded merchandise"
-                  src="https://images.unsplash.com/photo-1617912760717-06f3976cf18c?w=400&h=280&fit=crop&auto=format" />
+                  src={str(customizedSection, 'image_5', '') || media('https://images.unsplash.com/photo-1617912760717-06f3976cf18c?w=400&h=280&fit=crop&auto=format')} />
                 <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 30%, rgba(6,12,31,0.62) 100%)' }} />
                 <div className="absolute bottom-3 left-3 right-3">
                   <div className="text-white font-bold text-[11px]" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}>Branded Merchandise</div>
@@ -1370,7 +1373,7 @@ export default function Home() {
             <motion.div variants={fadeUp} className="group relative rounded-3xl overflow-hidden cursor-pointer h-[420px] lg:h-auto w-full lg:w-[42%] flex-shrink-0"
               whileHover={{ y: -4, transition: { duration: 0.28 } }}>
               <img loading="lazy" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                alt="Printing & Photocopy" src="https://images.unsplash.com/photo-1715059382493-213b706e95f3?w=700&h=1100&fit=crop&auto=format" />
+                alt="Printing & Photocopy" src={serviceImage('printing-photocopy', 'https://images.unsplash.com/photo-1715059382493-213b706e95f3?w=700&h=1100&fit=crop&auto=format')} />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050c28]/90 via-[#071A2B]/40 to-transparent" />
               <div className="absolute inset-0 p-8 flex flex-col justify-end">
                 <span className="inline-flex items-center gap-1.5 mb-3 w-fit rounded-full px-3 py-1 text-[10px] font-black tracking-widest uppercase" style={{ background: 'rgba(0,174,239,0.22)', color: '#8fa8f0', border: '1px solid rgba(0,174,239,0.3)' }}>Most Popular</span>
@@ -1385,8 +1388,8 @@ export default function Home() {
             {/* ── CENTER: Two stacked medium cards ── */}
             <div className="flex flex-col gap-4 flex-shrink-0 lg:w-[34%]">
               {[
-                { label: 'Student Assignments', sub: 'Typing, formatting, binding and projects.', img: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&h=480&fit=crop&auto=format', to: '/services/student-assignment-services', tag: 'Academic' },
-                { label: 'Customized Printing', sub: 'Mugs, cards, stickers, frames and more.', img: 'https://images.unsplash.com/photo-1682339374155-6fdc4869a75b?w=700&h=480&fit=crop&auto=format', to: '/services/customized-printing', tag: 'Gifts & Branding' },
+                { label: 'Student Assignments', sub: 'Typing, formatting, binding and projects.', img: serviceImage('student-assignment-services', 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&h=480&fit=crop&auto=format'), to: '/services/student-assignment-services', tag: 'Academic' },
+                { label: 'Customized Printing', sub: 'Mugs, cards, stickers, frames and more.', img: serviceImage('customized-printing', 'https://images.unsplash.com/photo-1682339374155-6fdc4869a75b?w=700&h=480&fit=crop&auto=format'), to: '/services/customized-printing', tag: 'Gifts & Branding' },
               ].map(card => (
                 <motion.div key={card.label} variants={fadeUp}
                   className="group relative rounded-3xl overflow-hidden cursor-pointer flex-1 h-[200px] lg:h-auto"
@@ -1409,9 +1412,9 @@ export default function Home() {
             {/* ── RIGHT: Three tall narrow cards ── */}
             <div className="flex flex-col gap-4 flex-shrink-0 lg:w-[24%]">
               {[
-                { label: 'NADRA & Biometric', sub: 'Public facilitation', img: 'https://images.unsplash.com/photo-1585079374502-415f8516dcc3?w=400&h=400&fit=crop&auto=format', to: '/services/nadra-biometric-public-facilitation', tag: 'Facilitation' },
-                { label: 'Legal Documentation', sub: 'Affidavits & attestation', img: 'https://images.unsplash.com/photo-1583521214690-73421a1829a9?w=400&h=400&fit=crop&auto=format', to: '/services/legal-documentation', tag: 'Documents' },
-                { label: 'Business Services', sub: 'Registration & branding', img: 'https://images.unsplash.com/photo-1775163024488-e88e4a71179f?w=400&h=400&fit=crop&auto=format', to: '/services/business-documentation', tag: 'Enterprise' },
+                { label: 'NADRA & Biometric', sub: 'Public facilitation', img: serviceImage('nadra-biometric-public-facilitation', 'https://images.unsplash.com/photo-1585079374502-415f8516dcc3?w=400&h=400&fit=crop&auto=format'), to: '/services/nadra-biometric-public-facilitation', tag: 'Facilitation' },
+                { label: 'Legal Documentation', sub: 'Affidavits & attestation', img: serviceImage('legal-documentation', 'https://images.unsplash.com/photo-1583521214690-73421a1829a9?w=400&h=400&fit=crop&auto=format'), to: '/services/legal-documentation', tag: 'Documents' },
+                { label: 'Business Services', sub: 'Registration & branding', img: serviceImage('business-documentation', 'https://images.unsplash.com/photo-1775163024488-e88e4a71179f?w=400&h=400&fit=crop&auto=format'), to: '/services/business-documentation', tag: 'Enterprise' },
               ].map(card => (
                 <motion.div key={card.label} variants={fadeUp}
                   className="group relative rounded-3xl overflow-hidden cursor-pointer flex-1 h-[160px] lg:h-auto"
@@ -1548,7 +1551,7 @@ export default function Home() {
               {/* Tall image */}
               <div className="relative rounded-3xl overflow-hidden flex-1 shadow-xl">
                 <img loading="lazy" className="w-full h-full object-cover"
-                  alt="Staff assisting customer with documents" src="https://images.unsplash.com/photo-1685609241440-f14d86cea774?w=500&h=800&fit=crop&auto=format" />
+                  alt="Staff assisting customer with documents" src={media('https://images.unsplash.com/photo-1685609241440-f14d86cea774?w=500&h=800&fit=crop&auto=format')} />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#071A2B]/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
                   <div className="text-white font-bold text-sm mb-1">Trusted by the community</div>

@@ -3,6 +3,10 @@ import { supabase } from '../../lib/supabase';
 import { useToast } from '../components/Toast';
 import { useAuditLog } from '../hooks/useAuditLog';
 import type { MediaAsset } from '../types';
+import { EXISTING_WEBSITE_MEDIA } from '../mediaManifest';
+import logoAsset from '../../assets/logo.webp';
+import heroPosterAsset from '../../imports/mateen_hero_printer_poster.webp';
+import heroVideoAsset from '../../imports/mateen_hero_printer_preview_16x9.mp4';
 
 const BUCKET = 'cms-media';
 const ACCEPT = 'image/jpeg,image/png,image/webp,image/svg+xml,video/mp4,video/webm';
@@ -19,12 +23,40 @@ function getType(mime: string): MediaAsset['type'] {
   return 'image';
 }
 
+function isCmsStorageUrl(url: string) {
+  return url.includes('/storage/v1/object/public/cms-media/');
+}
+
+function looksLikeExternalMedia(url: string, key = '') {
+  if (!/^https?:\/\//i.test(url) || isCmsStorageUrl(url)) return false;
+  const hint = key.toLowerCase();
+  return /image|img|video|poster|logo|favicon|photo|media/.test(hint)
+    || /images\.unsplash\.com/i.test(url)
+    || /\.(?:jpe?g|png|webp|svg|mp4|webm)(?:[?#].*)?$/i.test(url);
+}
+
+function safeFilename(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/-+/g, '-');
+}
+
+function extensionFromMime(mime: string) {
+  if (mime === 'image/jpeg') return 'jpg';
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/webp') return 'webp';
+  if (mime === 'image/svg+xml') return 'svg';
+  if (mime === 'video/mp4') return 'mp4';
+  if (mime === 'video/webm') return 'webm';
+  return 'bin';
+}
+
 export default function MediaLibrary() {
   const toast = useToast();
   const auditLog = useAuditLog();
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [importingExisting, setImportingExisting] = useState(false);
+  const [importProgress, setImportProgress] = useState('');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<MediaAsset | null>(null);
   const [editAlt, setEditAlt] = useState('');
@@ -94,6 +126,267 @@ export default function MediaLibrary() {
     toast('Upload complete');
   }
 
+  async function importOneUrl(sourceUrl: string, preferredFilename: string, title: string, sourceKey = sourceUrl): Promise<MediaAsset | null> {
+    const { data: existing } = await supabase
+      .from('media_assets')
+      .select('*')
+      .eq('source_url', sourceKey)
+      .maybeSingle();
+
+    if (existing) return existing as MediaAsset;
+
+    const response = await fetch(sourceUrl, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Could not download ${preferredFilename} (${response.status})`);
+
+    const blob = await response.blob();
+    const mime = blob.type || (preferredFilename.endsWith('.mp4') ? 'video/mp4' : 'image/jpeg');
+    const rawBase = preferredFilename.replace(/\.[^.]+$/, '');
+    const filename = `${safeFilename(rawBase)}.${extensionFromMime(mime)}`;
+    const storagePath = `website-import/${filename}`;
+
+    let uploadError: { message: string } | null = null;
+    const uploaded = await supabase.storage.from(BUCKET).upload(storagePath, blob, {
+      cacheControl: '31536000',
+      contentType: mime,
+      upsert: false,
+    });
+    uploadError = uploaded.error;
+
+    if (uploadError && !/already exists|duplicate/i.test(uploadError.message)) {
+      throw new Error(`Storage upload failed for ${filename}: ${uploadError.message}`);
+    }
+
+    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
+
+    let width: number | undefined;
+    let height: number | undefined;
+    if (mime.startsWith('image/')) {
+      const file = new File([blob], filename, { type: mime });
+      const dims = await getImageDimensions(file);
+      width = dims.width || undefined;
+      height = dims.height || undefined;
+    }
+
+    const { data: assetData, error: dbErr } = await supabase.from('media_assets').insert({
+      filename,
+      storage_path: storagePath,
+      public_url: urlData.publicUrl,
+      source_url: sourceKey,
+      type: getType(mime),
+      mime_type: mime,
+      size_bytes: blob.size,
+      width,
+      height,
+      alt_text: '',
+      title,
+    }).select().single();
+
+    if (dbErr) {
+      // Another import may have inserted it while we were downloading.
+      const { data: retry } = await supabase.from('media_assets').select('*').eq('source_url', sourceKey).maybeSingle();
+      if (retry) return retry as MediaAsset;
+      throw new Error(`Media database insert failed for ${filename}: ${dbErr.message}`);
+    }
+
+    return assetData as MediaAsset;
+  }
+
+  function collectMediaUrls(value: unknown, keyHint = '', output = new Set<string>()): Set<string> {
+    if (typeof value === 'string') {
+      if (looksLikeExternalMedia(value, keyHint)) output.add(value);
+      return output;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(item => collectMediaUrls(item, keyHint, output));
+      return output;
+    }
+    if (value && typeof value === 'object') {
+      Object.entries(value as Record<string, unknown>).forEach(([key, child]) => collectMediaUrls(child, key, output));
+    }
+    return output;
+  }
+
+  function replaceMediaUrls(value: unknown, urlMap: Map<string, string>, keyHint = ''): unknown {
+    if (typeof value === 'string') {
+      return looksLikeExternalMedia(value, keyHint) ? (urlMap.get(value) ?? value) : value;
+    }
+    if (Array.isArray(value)) return value.map(item => replaceMediaUrls(item, urlMap, keyHint));
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(
+        Object.entries(value as Record<string, unknown>).map(([key, child]) => [key, replaceMediaUrls(child, urlMap, key)])
+      );
+    }
+    return value;
+  }
+
+  async function importExistingWebsiteMedia() {
+    if (importingExisting) return;
+    const ok = confirm(
+      'Import all media currently used by the website into the CMS Media Library?\n\n' +
+      'This copies existing website images/video into Supabase Storage and reconnects CMS media fields. It does not delete your current files.'
+    );
+    if (!ok) return;
+
+    setImportingExisting(true);
+    setImportProgress('Preparing import…');
+
+    const urlMap = new Map<string, string>();
+    const failures: string[] = [];
+    let importedCount = 0;
+    let reusedCount = 0;
+
+    async function safeImport(
+      sourceUrl: string,
+      preferredFilename: string,
+      title: string,
+      sourceKey = sourceUrl
+    ): Promise<MediaAsset | null> {
+      try {
+        const { data: existing } = await supabase
+          .from('media_assets')
+          .select('*')
+          .eq('source_url', sourceKey)
+          .maybeSingle();
+
+        if (existing) {
+          reusedCount += 1;
+          return existing as MediaAsset;
+        }
+
+        const asset = await importOneUrl(sourceUrl, preferredFilename, title, sourceKey);
+        if (asset) importedCount += 1;
+        return asset;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('[media-import] skipped:', sourceKey, error);
+        failures.push(`${preferredFilename}: ${message}`);
+        return null;
+      }
+    }
+
+    try {
+      // 1) Static website image URLs from the source code.
+      for (let i = 0; i < EXISTING_WEBSITE_MEDIA.length; i += 1) {
+        const item = EXISTING_WEBSITE_MEDIA[i];
+        setImportProgress(`Importing website image ${i + 1}/${EXISTING_WEBSITE_MEDIA.length}`);
+        const asset = await safeImport(item.sourceUrl, item.filename, item.title);
+        if (asset) urlMap.set(item.sourceUrl, asset.public_url);
+      }
+
+      // 2) Current service images from Supabase, including any URLs not in source code.
+      setImportProgress('Importing service images…');
+      const { data: services, error: servicesError } = await supabase.from('services').select('id,slug,title,image_url');
+      if (servicesError) throw servicesError;
+      for (const service of services ?? []) {
+        const source = service.image_url as string | null;
+        if (!source || !looksLikeExternalMedia(source, 'image_url')) continue;
+        const asset = await safeImport(source, `service-${service.slug}.jpg`, `${service.title} — service image`);
+        if (asset) {
+          urlMap.set(source, asset.public_url);
+          const { error } = await supabase
+            .from('services')
+            .update({ image_url: asset.public_url, updated_at: new Date().toISOString() })
+            .eq('id', service.id);
+          if (error) failures.push(`service ${service.slug}: ${error.message}`);
+        }
+      }
+
+      // 3) Media URLs already stored inside page section JSON.
+      setImportProgress('Importing page-section media…');
+      const { data: sections, error: sectionsError } = await supabase.from('page_sections').select('id,content');
+      if (sectionsError) throw sectionsError;
+      for (const section of sections ?? []) {
+        const urls = Array.from(collectMediaUrls(section.content));
+        for (const source of urls) {
+          let publicUrl = urlMap.get(source);
+          if (!publicUrl) {
+            const asset = await safeImport(
+              source,
+              `section-${section.id}-${Math.random().toString(36).slice(2, 8)}.jpg`,
+              'CMS section media'
+            );
+            publicUrl = asset?.public_url;
+            if (publicUrl) urlMap.set(source, publicUrl);
+          }
+        }
+        const updatedContent = replaceMediaUrls(section.content, urlMap);
+        const { error } = await supabase
+          .from('page_sections')
+          .update({ content: updatedContent, updated_at: new Date().toISOString() })
+          .eq('id', section.id);
+        if (error) failures.push(`page section ${section.id}: ${error.message}`);
+      }
+
+      // 4) Built-in local media: logo, favicon, hero poster, hero video.
+      setImportProgress('Importing logo, favicon and hero video…');
+      const logo = await safeImport(logoAsset, 'mateen-logo.webp', 'Mateen Documentation logo', 'builtin://mateen-logo');
+      const favicon = await safeImport('/favicon.png', 'mateen-favicon.png', 'Mateen Documentation favicon', 'builtin://mateen-favicon');
+      const heroPoster = await safeImport(heroPosterAsset, 'home-hero-poster.webp', 'Home hero video poster', 'builtin://home-hero-poster');
+      const heroVideo = await safeImport(heroVideoAsset, 'home-hero-video.mp4', 'Home hero video', 'builtin://home-hero-video');
+
+      if (logo || favicon) {
+        const siteUpdate: Record<string, string> = {};
+        if (logo) siteUpdate.logo_url = logo.public_url;
+        if (favicon) siteUpdate.favicon_url = favicon.public_url;
+        const { error } = await supabase.from('site_settings').update(siteUpdate).eq('id', '1');
+        if (error) failures.push(`site settings: ${error.message}`);
+      }
+      if (logo) {
+        const { error } = await supabase.from('header_settings').update({ logo_url: logo.public_url }).eq('id', '1');
+        if (error) failures.push(`header logo: ${error.message}`);
+      }
+
+      // 5) Connect imported hero poster/video to the Home hero CMS section.
+      if (heroPoster || heroVideo) {
+        const { data: homePage } = await supabase.from('pages').select('id').eq('slug', '/').maybeSingle();
+        if (homePage?.id) {
+          const { data: heroRow } = await supabase
+            .from('page_sections')
+            .select('id,content')
+            .eq('page_id', homePage.id)
+            .eq('type', 'hero')
+            .maybeSingle();
+          if (heroRow?.id) {
+            const content = { ...(heroRow.content ?? {}) } as Record<string, unknown>;
+            if (heroVideo) content.video_url = heroVideo.public_url;
+            if (heroPoster) {
+              content.video_poster = heroPoster.public_url;
+              content.image_url = heroPoster.public_url;
+            }
+            const { error } = await supabase
+              .from('page_sections')
+              .update({ content, updated_at: new Date().toISOString() })
+              .eq('id', heroRow.id);
+            if (error) failures.push(`home hero media: ${error.message}`);
+          }
+        }
+      }
+
+      await auditLog('media_import_existing_site', 'media_assets', undefined, {
+        mapped_source_count: urlMap.size,
+        imported_count: importedCount,
+        reused_count: reusedCount,
+        failed_count: failures.length,
+      });
+      await loadAssets();
+
+      if (failures.length > 0) {
+        setImportProgress(`Import finished with ${failures.length} skipped item${failures.length === 1 ? '' : 's'}.`);
+        toast(`Media import finished. ${failures.length} item(s) were skipped; successful items are already linked.`, 'info');
+      } else {
+        setImportProgress(`Import complete — ${importedCount} imported, ${reusedCount} already present.`);
+        toast('Existing website media imported and linked. Click Deploy Changes to publish it.', 'success');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Media import failed';
+      console.error('[media-import]', error);
+      setImportProgress('Import failed');
+      toast(message, 'error');
+    } finally {
+      setImportingExisting(false);
+    }
+  }
+
   async function deleteAsset(asset: MediaAsset) {
     if (!confirm(`Delete "${asset.filename}"? This cannot be undone.`)) return;
     await supabase.storage.from(BUCKET).remove([asset.storage_path]);
@@ -140,8 +433,20 @@ export default function MediaLibrary() {
             className="px-3 py-2 rounded-xl border border-gray-200 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[#071A2B]/15 focus:border-[#071A2B]"
           />
           <button
+            onClick={importExistingWebsiteMedia}
+            disabled={importingExisting || uploading}
+            className="px-4 py-2 bg-[#00AEEF] text-[#071A2B] text-sm font-bold rounded-xl hover:bg-[#20baf0] disabled:opacity-60 transition-colors flex items-center gap-2"
+            title="One-time import of media currently used by the website"
+          >
+            {importingExisting ? (
+              <><div className="w-4 h-4 border-2 border-[#071A2B]/25 border-t-[#071A2B] rounded-full animate-spin" /> Importing…</>
+            ) : (
+              <>Import Website Media</>
+            )}
+          </button>
+          <button
             onClick={() => inputRef.current?.click()}
-            disabled={uploading}
+            disabled={uploading || importingExisting}
             className="px-4 py-2 bg-[#071A2B] text-white text-sm font-bold rounded-xl hover:bg-[#0f2d47] disabled:opacity-60 transition-colors flex items-center gap-2"
           >
             {uploading ? (
@@ -160,6 +465,12 @@ export default function MediaLibrary() {
           />
         </div>
       </div>
+
+      {importProgress && (
+        <div className={`mb-4 rounded-xl border px-4 py-3 text-xs font-semibold ${importProgress === 'Import failed' ? 'bg-red-50 border-red-100 text-red-700' : 'bg-[#EEF7FF] border-[#00AEEF]/20 text-[#071A2B]'}`}>
+          {importProgress}
+        </div>
+      )}
 
       {/* Drop zone hint */}
       <div

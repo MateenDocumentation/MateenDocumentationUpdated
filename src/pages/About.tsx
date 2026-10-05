@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { useCmsSection, str, arr } from '../cms/useCmsPage';
-import { useCms } from '../cms/CmsContext';
+import { resolveCmsMedia, useCms } from '../cms/CmsContext';
 
 /* ── Motion variants ──────────────────────────────── */
 const inView = { once: true, margin: '-80px' };
@@ -234,7 +234,8 @@ export default function About() {
   const audiencesSection = useCmsSection('/about', 'audiences');
   const principlesSection = useCmsSection('/about', 'principles');
   const locationSection = useCmsSection('/about', 'location');
-  const { siteSettings, headerSettings } = useCms();
+  const { siteSettings, headerSettings, mediaAssets } = useCms();
+  const media = (url: string) => resolveCmsMedia(mediaAssets, url);
 
   const heroTitle1 = str(aboutHero, 'title_line1', 'Multiple Services.');
   const heroTitle2 = str(aboutHero, 'title_line2', 'One Convenient Place.');
@@ -248,7 +249,7 @@ export default function About() {
 
   type ServicePanelItem = { title: string; eyebrow: string; desc: string; image: string; to: string };
   const cmsPanels = arr<ServicePanelItem>(servicesSection, 'items');
-  const resolvedPanels = cmsPanels.length ? cmsPanels : servicesPanels;
+  const resolvedPanels = (cmsPanels.length ? cmsPanels : servicesPanels).map(panel => ({ ...panel, image: media(panel.image) }));
 
   type AudienceItem = { label: string; desc: string };
   const cmsAudienceItems = arr<AudienceItem>(audiencesSection, 'items');
@@ -267,7 +268,7 @@ export default function About() {
 
   // Section eyebrows and headings
   const whoEyebrow = str(whoSection, 'eyebrow', 'WHO WE ARE');
-  const whoRightImage = str(whoSection, 'image', 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=700&h=860&fit=crop&auto=format');
+  const whoRightImage = media(str(whoSection, 'image', 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=700&h=860&fit=crop&auto=format'));
   const whoRightImageAlt = str(whoSection, 'image_alt', 'Mateen Documentation Centre — H Block, North Nazimabad');
   const servicesEyebrow = str(servicesSection, 'eyebrow', 'OUR SERVICES');
   const servicesHeading = str(servicesSection, 'heading', 'What We Do');
@@ -300,7 +301,7 @@ export default function About() {
       <section className="relative min-h-[480px] flex items-end overflow-hidden" style={{ background: '#071A2B' }}>
         {/* BG image */}
         <img
-          src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&h=700&fit=crop&auto=format"
+          src={media('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&h=700&fit=crop&auto=format')}
           alt=""
           aria-hidden="true"
           width={1600}

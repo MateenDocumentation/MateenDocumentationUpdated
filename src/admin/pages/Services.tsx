@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../components/Toast';
+import MediaPicker from '../components/MediaPicker';
 import type { Service } from '../types';
 
 export default function ServicesManager() {
@@ -149,7 +150,7 @@ export default function ServicesManager() {
               <Field label="Title" value={editing.title} onChange={v => setEditing(e => e ? { ...e, title: v } : null)} />
               <Field label="Tag / Category" value={editing.tag} onChange={v => setEditing(e => e ? { ...e, tag: v } : null)} />
               <Field label="Description" value={editing.description} onChange={v => setEditing(e => e ? { ...e, description: v } : null)} textarea />
-              <Field label="Image URL" value={editing.image_url ?? ''} onChange={v => setEditing(e => e ? { ...e, image_url: v } : null)} />
+              <MediaPicker label="Service image" value={editing.image_url ?? ''} onChange={v => setEditing(e => e ? { ...e, image_url: v } : null)} accept="image" help="Used on the service listing and service detail hero." />
               {editing.image_url && (
                 <img src={editing.image_url} alt="preview" className="w-full h-32 object-cover rounded-xl border border-gray-100" />
               )}

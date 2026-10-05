@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
+import { resolveCmsMedia, useCms } from '../cms/CmsContext';
 
 const inView = { once: true, margin: '-80px' };
 const fadeUp = {
@@ -122,6 +123,24 @@ const featuredServices = services.filter((s) => s.featured);
 const standardServices = services.filter((s) => !s.featured);
 
 export default function Services() {
+  const { cmsServices, mediaAssets } = useCms();
+  const media = (url: string) => resolveCmsMedia(mediaAssets, url);
+  const resolvedServices = services.map(item => {
+    const slug = item.to.replace(/^\/services\//, '');
+    const cms = cmsServices.find(service => service.slug === slug);
+    return {
+      ...item,
+      title: cms?.title || item.title,
+      tag: cms?.tag || item.tag,
+      desc: cms?.description || item.desc,
+      img: cms?.image_url?.trim() || media(item.img),
+      featured: cms?.is_featured ?? item.featured,
+    };
+  });
+  const resolvedMiniPreviewServices = [resolvedServices[0], resolvedServices[1], resolvedServices[2], resolvedServices[7]];
+  const resolvedFeaturedServices = resolvedServices.filter(s => s.featured);
+  const resolvedStandardServices = resolvedServices.filter(s => !s.featured);
+
   return (
     <Layout
       title="All Services — Mateen Documentation"
@@ -201,7 +220,7 @@ export default function Services() {
               initial="hidden"
               animate="show"
             >
-              {miniPreviewServices.map((s) => (
+              {resolvedMiniPreviewServices.map((s) => (
                 <motion.div
                   key={s.to}
                   variants={fadeUp}
@@ -239,7 +258,7 @@ export default function Services() {
             whileInView="show"
             viewport={inView}
           >
-            {featuredServices.map((s) => (
+            {resolvedFeaturedServices.map((s) => (
               <motion.div
                 key={s.to}
                 variants={fadeUp}
@@ -278,7 +297,7 @@ export default function Services() {
             whileInView="show"
             viewport={inView}
           >
-            {standardServices.map((s) => (
+            {resolvedStandardServices.map((s) => (
               <motion.div
                 key={s.to}
                 variants={fadeUp}

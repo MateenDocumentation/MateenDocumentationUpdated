@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../components/Toast';
+import MediaPicker from '../components/MediaPicker';
 import type { Page, PageSection, SectionType } from '../types';
 
 const SECTION_TYPES: { type: SectionType; label: string; icon: string }[] = [
@@ -332,9 +333,10 @@ function SectionEditModal({
             <Field label="Secondary CTA URL" value={str(c.cta_secondary_url)} onChange={v => setContent('cta_secondary_url', v)} />
             <Field label="Tertiary CTA text" value={str(c.cta_tertiary_text)} onChange={v => setContent('cta_tertiary_text', v)} />
             <Field label="Tertiary CTA URL" value={str(c.cta_tertiary_url)} onChange={v => setContent('cta_tertiary_url', v)} />
-            <Field label="Hero video URL" value={str(c.video_url)} onChange={v => setContent('video_url', v)} placeholder="Leave empty to use the built-in MP4" />
-            <Field label="Hero video poster URL" value={str(c.video_poster)} onChange={v => setContent('video_poster', v)} placeholder="Leave empty to use the built-in poster" />
-            <Field label="Hero fallback image URL" value={str(c.image_url)} onChange={v => setContent('image_url', v)} placeholder="Leave empty to use the video poster" />
+            <MediaPicker label="Hero background image" value={str(c.background_image_url)} onChange={v => setContent('background_image_url', v)} accept="image" help="Background behind the hero content. Leave empty to use the original website image." />
+            <MediaPicker label="Hero video" value={str(c.video_url)} onChange={v => setContent('video_url', v)} accept="video" help="Leave empty to use the built-in MP4 fallback." />
+            <MediaPicker label="Hero video poster" value={str(c.video_poster)} onChange={v => setContent('video_poster', v)} accept="image" help="Poster shown before the video loads." />
+            <MediaPicker label="Hero fallback image" value={str(c.image_url)} onChange={v => setContent('image_url', v)} accept="image" help="Shown when video is unavailable or reduced-motion is enabled." />
             <Field label="Alt text" value={str(c.alt_text)} onChange={v => setContent('alt_text', v)} />
           </>)}
 
@@ -353,6 +355,9 @@ function SectionEditModal({
             <StringListEditor label="Checklist items" value={stringArray(c.checklist)} onChange={v => setContent('checklist', v)} />
             <Field label="CTA label" value={str(c.cta_label)} onChange={v => setContent('cta_label', v)} />
             <Field label="CTA URL" value={str(c.cta_url)} onChange={v => setContent('cta_url', v)} />
+            <MediaPicker label="Printing image — main" value={str(c.image_main)} onChange={v => setContent('image_main', v)} accept="image" />
+            <MediaPicker label="Printing image — color sheet" value={str(c.image_color)} onChange={v => setContent('image_color', v)} accept="image" />
+            <MediaPicker label="Printing image — detail" value={str(c.image_detail)} onChange={v => setContent('image_detail', v)} accept="image" />
           </>)}
 
           {/* Home: Academic Feature */}
@@ -363,6 +368,10 @@ function SectionEditModal({
             <StringListEditor label="Checklist items" value={stringArray(c.checklist)} onChange={v => setContent('checklist', v)} />
             <Field label="CTA label" value={str(c.cta_label)} onChange={v => setContent('cta_label', v)} />
             <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />
+            <MediaPicker label="Academic image — main" value={str(c.image_main)} onChange={v => setContent('image_main', v)} accept="image" />
+            <MediaPicker label="Academic image — secondary" value={str(c.image_secondary)} onChange={v => setContent('image_secondary', v)} accept="image" />
+            <MediaPicker label="Academic image — tertiary" value={str(c.image_tertiary)} onChange={v => setContent('image_tertiary', v)} accept="image" />
+            <MediaPicker label="Academic image — wide" value={str(c.image_wide)} onChange={v => setContent('image_wide', v)} accept="image" />
           </>)}
 
           {/* Home: How It Works */}
@@ -385,6 +394,11 @@ function SectionEditModal({
             <StringListEditor label="Items" value={stringArray(c.items)} onChange={v => setContent('items', v)} />
             <Field label="CTA label" value={str(c.cta_label)} onChange={v => setContent('cta_label', v)} />
             <Field label="CTA URL" value={str(c.cta_url)} onChange={v => setContent('cta_url', v)} />
+            <MediaPicker label="Customized image — main" value={str(c.image_main)} onChange={v => setContent('image_main', v)} accept="image" />
+            <MediaPicker label="Customized image — 2" value={str(c.image_2)} onChange={v => setContent('image_2', v)} accept="image" />
+            <MediaPicker label="Customized image — 3" value={str(c.image_3)} onChange={v => setContent('image_3', v)} accept="image" />
+            <MediaPicker label="Customized image — 4" value={str(c.image_4)} onChange={v => setContent('image_4', v)} accept="image" />
+            <MediaPicker label="Customized image — 5" value={str(c.image_5)} onChange={v => setContent('image_5', v)} accept="image" />
           </>)}
 
           {/* Home: Who We Serve */}
@@ -422,15 +436,15 @@ function SectionEditModal({
 
           {/* Image */}
           {section.type === 'image' && (<>
-            <Field label="Image URL" value={str(c.url)} onChange={v => setContent('url', v)} />
+            <MediaPicker label="Image" value={str(c.url)} onChange={v => setContent('url', v)} accept="image" />
             <Field label="Alt text" value={str(c.alt)} onChange={v => setContent('alt', v)} />
             <Field label="Caption" value={str(c.caption)} onChange={v => setContent('caption', v)} />
           </>)}
 
           {/* Video */}
           {section.type === 'video' && (<>
-            <Field label="Video URL" value={str(c.url)} onChange={v => setContent('url', v)} />
-            <Field label="Poster image URL" value={str(c.poster)} onChange={v => setContent('poster', v)} />
+            <MediaPicker label="Video" value={str(c.url)} onChange={v => setContent('url', v)} accept="video" />
+            <MediaPicker label="Poster image" value={str(c.poster)} onChange={v => setContent('poster', v)} accept="image" />
             <div className="flex items-center gap-2">
               <Toggle label="Autoplay" checked={!!c.autoplay} onChange={v => setContent('autoplay', v)} />
               <Toggle label="Loop" checked={!!c.loop} onChange={v => setContent('loop', v)} />
@@ -442,7 +456,7 @@ function SectionEditModal({
           {section.type === 'image_text' && (<>
             <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
             <Field label="Body text" value={str(c.text)} onChange={v => setContent('text', v)} textarea />
-            <Field label="Image URL" value={str(c.image_url)} onChange={v => setContent('image_url', v)} />
+            <MediaPicker label="Image" value={str(c.image_url)} onChange={v => setContent('image_url', v)} accept="image" />
             <Field label="Alt text" value={str(c.alt)} onChange={v => setContent('alt', v)} />
             <Select label="Image position" value={str(c.image_position) || 'right'} onChange={v => setContent('image_position', v)}
               options={[{ value: 'left', label: 'Left' }, { value: 'right', label: 'Right' }]} />
@@ -498,6 +512,7 @@ function getDefaultContent(type: SectionType): Record<string, unknown> {
       cta_secondary_url: '',
       cta_tertiary_text: '',
       cta_tertiary_url: '',
+      background_image_url: '',
       video_url: '',
       video_poster: '',
       image_url: '',
@@ -514,6 +529,9 @@ function getDefaultContent(type: SectionType): Record<string, unknown> {
       checklist: [],
       cta_label: '',
       cta_url: '',
+      image_main: '',
+      image_color: '',
+      image_detail: '',
     },
 
     academic_feature: {
@@ -523,6 +541,10 @@ function getDefaultContent(type: SectionType): Record<string, unknown> {
       checklist: [],
       cta_label: '',
       wa_message: '',
+      image_main: '',
+      image_secondary: '',
+      image_tertiary: '',
+      image_wide: '',
     },
 
     how_it_works: {
@@ -540,6 +562,11 @@ function getDefaultContent(type: SectionType): Record<string, unknown> {
       items: [],
       cta_label: '',
       cta_url: '',
+      image_main: '',
+      image_2: '',
+      image_3: '',
+      image_4: '',
+      image_5: '',
     },
 
     who_we_serve: {
@@ -723,7 +750,7 @@ function ServePanelsEditor({ panels, onChange }: {
           <Field label="Title" value={str(panel.title)} onChange={v => update(index, 'title', v)} />
           <Field label="Description" value={str(panel.description)} onChange={v => update(index, 'description', v)} textarea />
           <StringListEditor label="Tags" value={stringArray(panel.tags)} onChange={v => update(index, 'tags', v)} />
-          <Field label="Image URL" value={str(panel.image)} onChange={v => update(index, 'image', v)} />
+          <MediaPicker label="Image" value={str(panel.image)} onChange={v => update(index, 'image', v)} accept="image" />
           <Field label="Image alt text" value={str(panel.image_alt)} onChange={v => update(index, 'image_alt', v)} />
         </div>
       ))}

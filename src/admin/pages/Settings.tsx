@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../components/Toast';
+import MediaPicker from '../components/MediaPicker';
 import type { SiteSettings } from '../types';
 
 export default function Settings() {
@@ -56,8 +57,8 @@ export default function Settings() {
         <Section title="Business Identity">
           <Field label="Business name" value={settings.business_name ?? ''} onChange={v => set('business_name', v)} />
           <Field label="Tagline" value={settings.tagline ?? ''} onChange={v => set('tagline', v)} />
-          <Field label="Logo URL" value={settings.logo_url ?? ''} onChange={v => set('logo_url', v)} />
-          <Field label="Favicon URL" value={settings.favicon_url ?? ''} onChange={v => set('favicon_url', v)} />
+          <MediaPicker label="Logo" value={settings.logo_url ?? ''} onChange={v => set('logo_url', v)} accept="image" />
+          <MediaPicker label="Favicon" value={settings.favicon_url ?? ''} onChange={v => set('favicon_url', v)} accept="image" />
         </Section>
 
         <Section title="Contact Information">

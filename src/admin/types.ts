@@ -155,6 +155,7 @@ export interface MediaAsset {
   filename: string;
   storage_path: string;
   public_url: string;
+  source_url?: string | null;
   type: 'image' | 'video' | 'svg';
   mime_type: string;
   size_bytes: number;

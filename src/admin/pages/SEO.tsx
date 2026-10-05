@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../components/Toast';
+import MediaPicker from '../components/MediaPicker';
 import { useAuth } from '../context/AuthContext';
 import { useAuditLog } from '../hooks/useAuditLog';
 import { useVersionHistory } from '../hooks/useVersionHistory';
@@ -466,11 +467,8 @@ export default function SEOManager() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">OG Image URL <span className="text-gray-400">Recommended: 1200×630px</span></label>
-                        <input type="url" value={editing.og_image ?? ''}
-                          onChange={e => set('og_image', e.target.value || undefined)}
-                          placeholder="https://…/og-image.jpg"
-                          className={inputCls} />
+                        <MediaPicker label="OG image (recommended 1200×630px)" value={editing.og_image ?? ''}
+                          onChange={v => set('og_image', v || undefined)} accept="image" />
                       </div>
                     </div>
 
@@ -496,11 +494,8 @@ export default function SEOManager() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-gray-600 mb-1.5">Twitter Image URL <span className="text-gray-400">(defaults to OG image)</span></label>
-                        <input type="url" value={editing.twitter_image ?? ''}
-                          onChange={e => set('twitter_image', e.target.value || undefined)}
-                          placeholder={editing.og_image || 'https://…/twitter-image.jpg'}
-                          className={inputCls} />
+                        <MediaPicker label="Twitter image (defaults to OG image)" value={editing.twitter_image ?? ''}
+                          onChange={v => set('twitter_image', v || undefined)} accept="image" />
                       </div>
                     </div>
                   </div>
