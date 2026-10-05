@@ -113,7 +113,7 @@ const FALLBACK_INTRO = 'By accessing the Mateen Documentation website or submitt
 
 export default function TermsConditions() {
   const { siteSettings } = useCms();
-  const cmsSection = useCmsSection('/terms-conditions', 'rich_text');
+  const cmsSection = useCmsSection('/terms-and-conditions', 'rich_text');
   const cmsSections = arr<LegalSection>(cmsSection, 'sections');
   const introduction = str(cmsSection, 'introduction', FALLBACK_INTRO);
   const pageTitle = str(cmsSection, 'page_title', 'Terms & Conditions');

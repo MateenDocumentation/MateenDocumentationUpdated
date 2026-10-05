@@ -26,6 +26,16 @@ const SECTION_TYPES: { type: SectionType; label: string; icon: string }[] = [
   { type: 'customized_printing', label: 'Customized Printing', icon: '🎨' },
   { type: 'who_we_serve', label: 'Who We Serve', icon: '👥' },
   { type: 'final_cta', label: 'Final CTA', icon: '📣' },
+  { type: 'who_we_are', label: 'Who We Are', icon: '🏢' },
+  { type: 'audiences', label: 'Audiences', icon: '👥' },
+  { type: 'principles', label: 'Approach Principles', icon: '🧭' },
+  { type: 'location', label: 'Location', icon: '📍' },
+  { type: 'contact_info', label: 'Contact Information', icon: '☎️' },
+  { type: 'services_list', label: 'Available Services', icon: '📋' },
+  { type: 'how_steps', label: 'How We Help', icon: '🪜' },
+  { type: 'related', label: 'Related Services', icon: '🔗' },
+  { type: 'rich_text', label: 'Legal Content', icon: '📄' },
+  { type: 'services_page', label: 'Services Page', icon: '🧰' },
 ];
 
 export default function PageEditor() {
@@ -318,26 +328,35 @@ function SectionEditModal({
 
           {/* Hero */}
           {section.type === 'hero' && (<>
-            <Field
-              label="Heading (H1)"
-              value={str(c.heading)}
-              onChange={v => setContent('heading', v)}
-              textarea
-            />
-            <p className="text-[11px] text-gray-400 -mt-2">Use a new line to control the two-line hero heading.</p>
-            <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
-            <Field label="Badge text" value={str(c.badge)} onChange={v => setContent('badge', v)} />
-            <Field label="Primary CTA text" value={str(c.cta_primary_text) || str(c.cta_primary_label)} onChange={v => setContent('cta_primary_text', v)} />
-            <Field label="Primary CTA URL" value={str(c.cta_primary_url)} onChange={v => setContent('cta_primary_url', v)} />
-            <Field label="Secondary CTA text" value={str(c.cta_secondary_text) || str(c.cta_secondary_label)} onChange={v => setContent('cta_secondary_text', v)} />
-            <Field label="Secondary CTA URL" value={str(c.cta_secondary_url)} onChange={v => setContent('cta_secondary_url', v)} />
-            <Field label="Tertiary CTA text" value={str(c.cta_tertiary_text)} onChange={v => setContent('cta_tertiary_text', v)} />
-            <Field label="Tertiary CTA URL" value={str(c.cta_tertiary_url)} onChange={v => setContent('cta_tertiary_url', v)} />
-            <MediaPicker label="Hero background image" value={str(c.background_image_url)} onChange={v => setContent('background_image_url', v)} accept="image" help="Background behind the hero content. Leave empty to use the original website image." />
-            <MediaPicker label="Hero video" value={str(c.video_url)} onChange={v => setContent('video_url', v)} accept="video" help="Leave empty to use the built-in MP4 fallback." />
-            <MediaPicker label="Hero video poster" value={str(c.video_poster)} onChange={v => setContent('video_poster', v)} accept="image" help="Poster shown before the video loads." />
-            <MediaPicker label="Hero fallback image" value={str(c.image_url)} onChange={v => setContent('image_url', v)} accept="image" help="Shown when video is unavailable or reduced-motion is enabled." />
-            <Field label="Alt text" value={str(c.alt_text)} onChange={v => setContent('alt_text', v)} />
+            {'heading' in c && (
+              <Field label="Heading (H1)" value={str(c.heading)} onChange={v => setContent('heading', v)} textarea />
+            )}
+            {'heading' in c && <p className="text-[11px] text-gray-400 -mt-2">Use a new line to control the two-line hero heading.</p>}
+            {'title_line1' in c && <Field label="Heading line 1" value={str(c.title_line1)} onChange={v => setContent('title_line1', v)} />}
+            {'title_line2' in c && <Field label="Heading line 2" value={str(c.title_line2)} onChange={v => setContent('title_line2', v)} />}
+            {'subtitle' in c && <Field label="Subtitle" value={str(c.subtitle)} onChange={v => setContent('subtitle', v)} textarea />}
+            {'intro' in c && <Field label="Intro" value={str(c.intro)} onChange={v => setContent('intro', v)} textarea />}
+            {'eyebrow' in c && <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />}
+            {'location_pill' in c && <Field label="Location pill" value={str(c.location_pill)} onChange={v => setContent('location_pill', v)} />}
+            {'description' in c && <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />}
+            {'badge' in c && <Field label="Badge text" value={str(c.badge)} onChange={v => setContent('badge', v)} />}
+            {'heading_line1' in c && <Field label="Heading line 1" value={str(c.heading_line1)} onChange={v => setContent('heading_line1', v)} />}
+            {'heading_line2' in c && <Field label="Heading line 2" value={str(c.heading_line2)} onChange={v => setContent('heading_line2', v)} />}
+            {'pill_1' in c && <Field label="Pill 1" value={str(c.pill_1)} onChange={v => setContent('pill_1', v)} />}
+            {'pill_2' in c && <Field label="Pill 2" value={str(c.pill_2)} onChange={v => setContent('pill_2', v)} />}
+            {'cta_primary_text' in c && <Field label="Primary CTA text" value={str(c.cta_primary_text) || str(c.cta_primary_label)} onChange={v => setContent('cta_primary_text', v)} />}
+            {'cta_primary_url' in c && <Field label="Primary CTA URL" value={str(c.cta_primary_url)} onChange={v => setContent('cta_primary_url', v)} />}
+            {'cta_secondary_text' in c && <Field label="Secondary CTA text" value={str(c.cta_secondary_text) || str(c.cta_secondary_label)} onChange={v => setContent('cta_secondary_text', v)} />}
+            {'cta_secondary_url' in c && <Field label="Secondary CTA URL" value={str(c.cta_secondary_url)} onChange={v => setContent('cta_secondary_url', v)} />}
+            {'cta_tertiary_text' in c && <Field label="Tertiary CTA text" value={str(c.cta_tertiary_text)} onChange={v => setContent('cta_tertiary_text', v)} />}
+            {'cta_tertiary_url' in c && <Field label="Tertiary CTA URL" value={str(c.cta_tertiary_url)} onChange={v => setContent('cta_tertiary_url', v)} />}
+            {'note' in c && <Field label="Important note" value={str(c.note)} onChange={v => setContent('note', v)} textarea />}
+            {'wa_message' in c && <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />}
+            {'background_image_url' in c && <MediaPicker label="Hero background image" value={str(c.background_image_url)} onChange={v => setContent('background_image_url', v)} accept="image" help="Background behind the hero content." />}
+            {'video_url' in c && <MediaPicker label="Hero video" value={str(c.video_url)} onChange={v => setContent('video_url', v)} accept="video" />}
+            {'video_poster' in c && <MediaPicker label="Hero video poster" value={str(c.video_poster)} onChange={v => setContent('video_poster', v)} accept="image" />}
+            {'image_url' in c && <MediaPicker label="Hero fallback image" value={str(c.image_url)} onChange={v => setContent('image_url', v)} accept="image" />}
+            {'alt_text' in c && <Field label="Alt text" value={str(c.alt_text)} onChange={v => setContent('alt_text', v)} />}
           </>)}
 
           {/* Home: Service Strip */}
@@ -413,14 +432,81 @@ function SectionEditModal({
 
           {/* Home: Final CTA */}
           {section.type === 'final_cta' && (<>
+            {'eyebrow' in c && <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />}
             <Field label="Heading line 1" value={str(c.heading_line1)} onChange={v => setContent('heading_line1', v)} />
             <Field label="Heading line 2" value={str(c.heading_line2)} onChange={v => setContent('heading_line2', v)} />
-            <Field label="Subline" value={str(c.subline)} onChange={v => setContent('subline', v)} textarea />
-            <Field label="WhatsApp button label" value={str(c.wa_label)} onChange={v => setContent('wa_label', v)} />
-            <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />
-            <Field label="Phone button label" value={str(c.phone_label)} onChange={v => setContent('phone_label', v)} />
-            <StringListEditor label="Service tags" value={stringArray(c.service_tags)} onChange={v => setContent('service_tags', v)} />
+            {'subline' in c && <Field label="Subline" value={str(c.subline)} onChange={v => setContent('subline', v)} textarea />}
+            {'description' in c && <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />}
+            {'wa_label' in c && <Field label="WhatsApp button label" value={str(c.wa_label)} onChange={v => setContent('wa_label', v)} />}
+            {'wa_message' in c && <Field label="WhatsApp message" value={str(c.wa_message)} onChange={v => setContent('wa_message', v)} textarea />}
+            {'phone_label' in c && <Field label="Phone button label" value={str(c.phone_label)} onChange={v => setContent('phone_label', v)} />}
+            {'primary_label' in c && <Field label="Primary button label" value={str(c.primary_label)} onChange={v => setContent('primary_label', v)} />}
+            {'primary_url' in c && <Field label="Primary button URL" value={str(c.primary_url)} onChange={v => setContent('primary_url', v)} />}
+            {'secondary_label' in c && <Field label="Secondary button label" value={str(c.secondary_label)} onChange={v => setContent('secondary_label', v)} />}
+            {'service_tags' in c && <StringListEditor label="Service tags" value={stringArray(c.service_tags)} onChange={v => setContent('service_tags', v)} />}
           </>)}
+
+          {/* About: Who We Are */}
+          {section.type === 'who_we_are' && (<>
+            <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <Field label="Paragraph 1" value={str(c.body1)} onChange={v => setContent('body1', v)} textarea />
+            <Field label="Paragraph 2" value={str(c.body2)} onChange={v => setContent('body2', v)} textarea />
+            <StringListEditor label="Service tags" value={stringArray(c.tags)} onChange={v => setContent('tags', v)} />
+            <MediaPicker label="Section image" value={str(c.image)} onChange={v => setContent('image', v)} accept="image" />
+            <Field label="Image alt text" value={str(c.image_alt)} onChange={v => setContent('image_alt', v)} />
+          </>)}
+
+          {/* About: Audiences / Principles */}
+          {(section.type === 'audiences' || section.type === 'principles') && (<>
+            <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <JsonArrayEditor label="Items" value={c.items} onChange={v => setContent('items', v)} />
+          </>)}
+
+          {/* About: Location */}
+          {section.type === 'location' && (<>
+            <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} />
+            <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
+            <Field label="Hours / note" value={str(c.hours)} onChange={v => setContent('hours', v)} textarea />
+            <Field label="Address" value={str(c.address)} onChange={v => setContent('address', v)} textarea />
+            <Field label="Google Maps URL" value={str(c.maps_url)} onChange={v => setContent('maps_url', v)} />
+            <Field label="Location badge" value={str(c.badge_text)} onChange={v => setContent('badge_text', v)} />
+          </>)}
+
+          {/* Contact information */}
+          {section.type === 'contact_info' && (<>
+            <Field label="Reach us heading" value={str(c.reach_us_heading)} onChange={v => setContent('reach_us_heading', v)} />
+            <Field label="Opening hours label" value={str(c.hours_label)} onChange={v => setContent('hours_label', v)} />
+            <Field label="Opening hours text" value={str(c.hours_text)} onChange={v => setContent('hours_text', v)} textarea />
+          </>)}
+
+          {/* Service detail: services list */}
+          {section.type === 'services_list' && (
+            <JsonArrayEditor label="Available services" value={c.items} onChange={v => setContent('items', v)} />
+          )}
+
+          {/* Service detail: how steps */}
+          {section.type === 'how_steps' && (
+            <HowStepsEditor steps={objectArray(c.steps)} onChange={steps => setContent('steps', steps)} />
+          )}
+
+          {/* Service detail: related */}
+          {section.type === 'related' && (
+            <JsonArrayEditor label="Related services" value={c.items} onChange={v => setContent('items', v)} />
+          )}
+
+          {/* Legal pages */}
+          {section.type === 'rich_text' && (<>
+            <Field label="Page title" value={str(c.page_title)} onChange={v => setContent('page_title', v)} />
+            <Field label="Introduction" value={str(c.introduction)} onChange={v => setContent('introduction', v)} textarea />
+            <JsonArrayEditor label="Content sections" value={c.sections} onChange={v => setContent('sections', v)} />
+          </>)}
+
+          {/* Services page custom settings */}
+          {section.type === 'services_page' && (
+            <JsonArrayEditor label="Settings" value={c.items ?? c} onChange={v => setContent('items', v)} />
+          )}
 
           {/* Heading */}
           {section.type === 'heading' && (<>
@@ -494,6 +580,30 @@ function SectionEditModal({
           <button onClick={() => onSave(section)} className="px-5 py-2 text-sm font-bold text-white bg-[#071A2B] rounded-xl hover:bg-[#0f2d47] transition-colors">Save Section</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function JsonArrayEditor({ label, value, onChange }: { label: string; value: unknown; onChange: (value: unknown[]) => void }) {
+  const initial = Array.isArray(value) ? value : [];
+  const [draft, setDraft] = useState(JSON.stringify(initial, null, 2));
+  return (
+    <div>
+      <p className="text-xs font-semibold text-gray-600 mb-1.5">{label}</p>
+      <textarea
+        value={draft}
+        onChange={e => {
+          const next = e.target.value;
+          setDraft(next);
+          try {
+            const parsed = JSON.parse(next);
+            if (Array.isArray(parsed)) onChange(parsed);
+          } catch { /* keep draft until valid JSON */ }
+        }}
+        rows={10}
+        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#071A2B]/15 resize-y"
+      />
+      <p className="text-[11px] text-gray-400 mt-1">Structured list. Keep valid JSON.</p>
     </div>
   );
 }
@@ -584,6 +694,17 @@ function getDefaultContent(type: SectionType): Record<string, unknown> {
       phone_label: '',
       service_tags: [],
     },
+
+    who_we_are: { eyebrow: '', heading: '', body1: '', body2: '', tags: [], image: '', image_alt: '' },
+    audiences: { eyebrow: '', heading: '', items: [] },
+    principles: { eyebrow: '', heading: '', items: [] },
+    location: { eyebrow: '', heading: '', hours: '', address: '', maps_url: '', badge_text: '' },
+    contact_info: { reach_us_heading: '', hours_label: '', hours_text: '' },
+    services_list: { items: [] },
+    how_steps: { steps: [] },
+    related: { items: [] },
+    rich_text: { page_title: '', introduction: '', sections: [] },
+    services_page: { items: [] },
 
     heading: { text: '', level: 'h2' },
     text: { text: '' },

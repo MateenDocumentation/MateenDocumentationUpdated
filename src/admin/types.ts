@@ -136,7 +136,17 @@ export type SectionType =
   | 'features'
   | 'gallery'
   | 'faq'
-  | 'contact';
+  | 'contact'
+  | 'who_we_are'
+  | 'audiences'
+  | 'principles'
+  | 'location'
+  | 'contact_info'
+  | 'services_list'
+  | 'how_steps'
+  | 'related'
+  | 'rich_text'
+  | 'services_page';
 
 export interface PageSection {
   id: string;

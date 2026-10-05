@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { resolveCmsMedia, useCms } from '../cms/CmsContext';
+import { useCmsSection, str } from '../cms/useCmsPage';
 
 const inView = { once: true, margin: '-80px' };
 const fadeUp = {
@@ -124,6 +125,23 @@ const standardServices = services.filter((s) => !s.featured);
 
 export default function Services() {
   const { cmsServices, mediaAssets } = useCms();
+  const heroSection = useCmsSection('/services', 'hero');
+  const finalCtaSection = useCmsSection('/services', 'final_cta');
+
+  const heroEyebrow = str(heroSection, 'eyebrow', 'All Services');
+  const heroHeadingLine1 = str(heroSection, 'heading_line1', 'Everything We Can');
+  const heroHeadingLine2 = str(heroSection, 'heading_line2', 'Help You With.');
+  const heroDescription = str(heroSection, 'description', '12 service categories. One convenient location. Printing, documentation, customized products and public facilitation — all in H Block, North Nazimabad.');
+  const heroPill1 = str(heroSection, 'pill_1', '12 Service Categories');
+  const heroPill2 = str(heroSection, 'pill_2', 'H Block, North Nazimabad');
+
+  const finalEyebrow = str(finalCtaSection, 'eyebrow', 'Ready to Start?');
+  const finalHeadingLine1 = str(finalCtaSection, 'heading_line1', 'Get It Done.');
+  const finalHeadingLine2 = str(finalCtaSection, 'heading_line2', 'Today.');
+  const finalDescription = str(finalCtaSection, 'description', "Walk in or reach us online. We're here to help at every step.");
+  const finalPrimaryLabel = str(finalCtaSection, 'primary_label', 'Order Online');
+  const finalPrimaryUrl = str(finalCtaSection, 'primary_url', '/order-online');
+  const finalSecondaryLabel = str(finalCtaSection, 'secondary_label', 'WhatsApp Us');
   const media = (url: string) => resolveCmsMedia(mediaAssets, url);
   const resolvedServices = services.map(item => {
     const slug = item.to.replace(/^\/services\//, '');
@@ -180,7 +198,7 @@ export default function Services() {
                 variants={fadeUp}
                 className="text-[#00AEEF] text-[11px] font-black tracking-[0.22em] uppercase mb-4"
               >
-                All Services
+                {heroEyebrow}
               </motion.p>
 
               {/* H1 */}
@@ -189,7 +207,7 @@ export default function Services() {
                 className="font-bold text-[#090B0D] leading-[1.08] mb-6"
                 style={{ fontSize: 'clamp(40px, 5.5vw, 68px)' }}
               >
-                Everything We Can<br className="hidden sm:block" /> Help You With.
+                {heroHeadingLine1}<br className="hidden sm:block" /> {heroHeadingLine2}
               </motion.h1>
 
               {/* Subtitle */}
@@ -197,18 +215,18 @@ export default function Services() {
                 variants={fadeUp}
                 className="text-gray-500 text-lg leading-relaxed max-w-xl mb-8"
               >
-                12 service categories. One convenient location. Printing, documentation, customized products and public facilitation — all in H Block, North Nazimabad.
+                {heroDescription}
               </motion.p>
 
               {/* Pills */}
               <motion.div variants={fadeUp} className="flex flex-wrap gap-3">
                 <span className="inline-flex items-center gap-2 bg-[#EEF7FF] border border-[#dce6ff] text-[#071A2B] text-sm font-semibold px-4 py-2 rounded-full">
                   <span className="w-2 h-2 rounded-full bg-[#00AEEF] inline-block" />
-                  12 Service Categories
+                  {heroPill1}
                 </span>
                 <span className="inline-flex items-center gap-2 bg-[#EEF7FF] border border-[#dce6ff] text-[#071A2B] text-sm font-semibold px-4 py-2 rounded-full">
                   <span className="w-2 h-2 rounded-full bg-[#00AEEF] inline-block" />
-                  H Block, North Nazimabad
+                  {heroPill2}
                 </span>
               </motion.div>
             </motion.div>
@@ -356,7 +374,7 @@ export default function Services() {
           >
             <motion.div variants={fadeUp} whileHover={{ y: -3 }}>
               <Link
-                to="/order-online"
+                to={finalPrimaryUrl}
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00AEEF] to-[#071A2B] text-white font-bold px-7 py-3.5 rounded-full text-sm shadow-lg hover:shadow-[#00AEEF]/30 transition-shadow"
               >
                 Send Your Requirement
@@ -372,7 +390,7 @@ export default function Services() {
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                 </svg>
-                WhatsApp Us
+                {finalSecondaryLabel}
               </a>
             </motion.div>
           </motion.div>
@@ -416,7 +434,7 @@ export default function Services() {
           >
             <span className="h-px w-16 bg-[#00AEEF]/40" />
             <span className="text-[#00AEEF] text-[11px] font-black tracking-[0.22em] uppercase">
-              Ready to Start?
+              {finalEyebrow}
             </span>
             <span className="h-px w-16 bg-[#00AEEF]/40" />
           </motion.div>
@@ -430,8 +448,8 @@ export default function Services() {
             className="font-bold leading-[1.06] mb-6"
             style={{ fontSize: 'clamp(44px, 6vw, 80px)' }}
           >
-            <span className="text-white">Get It Done. </span>
-            <span className="text-[#00AEEF]">Today.</span>
+            <span className="text-white">{finalHeadingLine1} </span>
+            <span className="text-[#00AEEF]">{finalHeadingLine2}</span>
           </motion.h2>
 
           <motion.p
@@ -441,7 +459,7 @@ export default function Services() {
             viewport={inView}
             className="text-white/45 text-lg max-w-lg mx-auto mb-10 leading-relaxed"
           >
-            Walk in or reach us online. We're here to help at every step.
+            {finalDescription}
           </motion.p>
 
           {/* Buttons */}
@@ -468,10 +486,10 @@ export default function Services() {
 
             <motion.div variants={fadeUp} whileHover={{ y: -3 }}>
               <Link
-                to="/order-online"
+                to={finalPrimaryUrl}
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-[#00AEEF] to-[#071A2B] text-white font-bold px-7 py-3.5 rounded-full text-sm shadow-lg hover:shadow-[#00AEEF]/30 transition-shadow"
               >
-                Order Online
+                {finalPrimaryLabel}
               </Link>
             </motion.div>
 

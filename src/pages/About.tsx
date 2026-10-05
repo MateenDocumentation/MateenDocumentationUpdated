@@ -240,6 +240,7 @@ export default function About() {
   const heroTitle1 = str(aboutHero, 'title_line1', 'Multiple Services.');
   const heroTitle2 = str(aboutHero, 'title_line2', 'One Convenient Place.');
   const heroSubtitle = str(aboutHero, 'subtitle', 'A multi-service printing, documentation, biometric and public facilitation centre in H Block, North Nazimabad — all your needs handled under one roof.');
+  const heroBackgroundImage = media(str(aboutHero, 'background_image_url', 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&h=700&fit=crop&auto=format'));
 
   const whoHeading = str(whoSection, 'heading', 'Your Neighbourhood Documentation & Print Centre');
   const whoBody1 = str(whoSection, 'body1', 'Mateen Documentation is a multi-service centre providing printing, photocopying, scanning, documentation, biometric facilitation, customized printing, student assignment services and business documentation — all in one convenient location in H Block, North Nazimabad.');
@@ -301,7 +302,7 @@ export default function About() {
       <section className="relative min-h-[480px] flex items-end overflow-hidden" style={{ background: '#071A2B' }}>
         {/* BG image */}
         <img
-          src={media('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&h=700&fit=crop&auto=format')}
+          src={heroBackgroundImage}
           alt=""
           aria-hidden="true"
           width={1600}

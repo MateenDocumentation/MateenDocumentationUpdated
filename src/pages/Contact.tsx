@@ -26,6 +26,7 @@ export default function Contact() {
   const heroIntro = str(contactHero, 'intro', "We're here to help. Come to our shop in H Block, North Nazimabad — or reach us online.");
   const heroEyebrow = str(contactHero, 'eyebrow', 'GET IN TOUCH');
   const locationPill = str(contactHero, 'location_pill', siteSettings?.address?.split(',').slice(1, 3).join(',').trim() ?? 'H Block, North Nazimabad');
+  const heroBackgroundImage = media(str(contactHero, 'background_image_url', 'https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=1600&h=700&fit=crop&auto=format'));
 
   const contactInfoSection = useCmsSection('/contact', 'contact_info');
   const reachUsHeading = str(contactInfoSection, 'reach_us_heading', 'Reach Us');
@@ -77,7 +78,7 @@ export default function Contact() {
       >
         {/* Background image */}
         <img
-          src={media('https://images.unsplash.com/photo-1497366412874-3415097a27e7?w=1600&h=700&fit=crop&auto=format')}
+          src={heroBackgroundImage}
           alt=""
           aria-hidden="true"
           width={1600}
