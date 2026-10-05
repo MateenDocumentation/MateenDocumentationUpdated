@@ -317,8 +317,13 @@ function SectionEditModal({
 
           {/* Hero */}
           {section.type === 'hero' && (<>
-            <Field label="Heading (H1)" value={str(c.heading)} onChange={v => setContent('heading', v)} />
-            <Field label="Subheading" value={str(c.subheading)} onChange={v => setContent('subheading', v)} />
+            <Field
+              label="Heading (H1)"
+              value={str(c.heading)}
+              onChange={v => setContent('heading', v)}
+              textarea
+            />
+            <p className="text-[11px] text-gray-400 -mt-2">Use a new line to control the two-line hero heading.</p>
             <Field label="Description" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
             <Field label="Badge text" value={str(c.badge)} onChange={v => setContent('badge', v)} />
             <Field label="Primary CTA text" value={str(c.cta_primary_text) || str(c.cta_primary_label)} onChange={v => setContent('cta_primary_text', v)} />
@@ -327,9 +332,9 @@ function SectionEditModal({
             <Field label="Secondary CTA URL" value={str(c.cta_secondary_url)} onChange={v => setContent('cta_secondary_url', v)} />
             <Field label="Tertiary CTA text" value={str(c.cta_tertiary_text)} onChange={v => setContent('cta_tertiary_text', v)} />
             <Field label="Tertiary CTA URL" value={str(c.cta_tertiary_url)} onChange={v => setContent('cta_tertiary_url', v)} />
-            <Field label="Video URL" value={str(c.video_url)} onChange={v => setContent('video_url', v)} />
-            <Field label="Video poster URL" value={str(c.video_poster)} onChange={v => setContent('video_poster', v)} />
-            <Field label="Image URL (fallback)" value={str(c.image_url)} onChange={v => setContent('image_url', v)} />
+            <Field label="Hero video URL" value={str(c.video_url)} onChange={v => setContent('video_url', v)} placeholder="Leave empty to use the built-in MP4" />
+            <Field label="Hero video poster URL" value={str(c.video_poster)} onChange={v => setContent('video_poster', v)} placeholder="Leave empty to use the built-in poster" />
+            <Field label="Hero fallback image URL" value={str(c.image_url)} onChange={v => setContent('image_url', v)} placeholder="Leave empty to use the video poster" />
             <Field label="Alt text" value={str(c.alt_text)} onChange={v => setContent('alt_text', v)} />
           </>)}
 
@@ -485,7 +490,6 @@ function getDefaultContent(type: SectionType): Record<string, unknown> {
   const defaults: Record<SectionType, Record<string, unknown>> = {
     hero: {
       heading: '',
-      subheading: '',
       description: '',
       badge: '',
       cta_primary_text: '',

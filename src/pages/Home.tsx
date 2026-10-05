@@ -153,6 +153,12 @@ export default function Home() {
   const ctaTertiaryText = str(heroSection, 'cta_tertiary_text', 'View Services');
   const ctaTertiaryUrl = str(heroSection, 'cta_tertiary_url', '/services');
 
+  // CMS-controlled hero media with safe local fallbacks
+  const heroVideoSrc = str(heroSection, 'video_url', '') || heroPrinterVideo;
+  const heroPosterSrc = str(heroSection, 'video_poster', '') || heroPrinterPoster;
+  const heroImageSrc = str(heroSection, 'image_url', '') || heroPosterSrc;
+  const heroAltText = str(heroSection, 'alt_text', 'Professional printer producing paper output');
+
   // CMS phone/wa with fallbacks
   const rawWa = headerSettings?.whatsapp ?? siteSettings?.whatsapp ?? '923312478337';
   const rawPhone = headerSettings?.phone ?? siteSettings?.phone ?? '+923312478337';
@@ -423,21 +429,21 @@ export default function Home() {
                 {/* Static poster remains visible on mobile, reduced-motion devices, and if video cannot load. */}
                 <img
                   className="absolute inset-0 w-full h-full object-cover object-center"
-                  alt="Professional printer producing paper output"
-                  src={heroPrinterPoster}
+                  alt={heroAltText}
+                  src={heroImageSrc}
                   width={1280}
                   height={720}
                   fetchPriority="high"
                 />
                 <video
                   className="absolute inset-0 hidden md:block motion-reduce:hidden w-full h-full object-cover object-center"
-                  src={heroPrinterVideo}
+                  src={heroVideoSrc}
                   autoPlay
                   muted
                   loop
                   playsInline
                   preload="auto"
-                  poster={heroPrinterPoster}
+                  poster={heroPosterSrc}
                   onCanPlay={(event) => {
                     event.currentTarget.play().catch(() => undefined);
                   }}
