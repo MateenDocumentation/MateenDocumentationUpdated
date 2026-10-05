@@ -43,10 +43,60 @@ const navSections = [
 ];
 
 export default function AdminLayout() {
-  const { profile, role, signOut } = useAuth();
+  const { profile, role, session, signOut } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [deploying, setDeploying] = useState(false);
+  const [deployState, setDeployState] = useState<'idle' | 'triggered' | 'failed'>('idle');
+
+  async function handleGlobalDeploy() {
+    if (!session?.access_token) {
+      toast('Session expired — please log in again', 'error');
+      return;
+    }
+
+    if (deploying) return;
+
+    setDeploying(true);
+    setDeployState('idle');
+
+    try {
+      const res = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await res.json() as {
+        success?: boolean;
+        deploy?: 'triggered' | 'failed';
+        message?: string;
+        error?: string;
+      };
+
+      if (!res.ok || data.error || !data.success) {
+        throw new Error(data.error ?? data.message ?? 'Deploy failed');
+      }
+
+      if (data.deploy === 'triggered') {
+        setDeployState('triggered');
+        toast(data.message ?? 'Vercel build triggered', 'success');
+      } else {
+        setDeployState('failed');
+        toast(data.message ?? 'Deploy trigger failed', 'error');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Deploy failed';
+      setDeployState('failed');
+      toast(message, 'error');
+    } finally {
+      setDeploying(false);
+      window.setTimeout(() => setDeployState('idle'), 5000);
+    }
+  }
 
   async function handleSignOut() {
     await signOut();
@@ -104,6 +154,39 @@ export default function AdminLayout() {
           </div>
         ))}
       </nav>
+
+      {/* Global deploy action — available everywhere in the CMS */}
+      <div className="flex-shrink-0 px-3 pb-3">
+        <button
+          type="button"
+          onClick={handleGlobalDeploy}
+          disabled={deploying}
+          className={`w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all border ${
+            deployState === 'triggered'
+              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-400/25'
+              : deployState === 'failed'
+                ? 'bg-red-500/15 text-red-300 border-red-400/25'
+                : 'bg-[#00AEEF] text-white border-[#00AEEF] hover:bg-[#009bd6]'
+          } disabled:opacity-60 disabled:cursor-not-allowed`}
+        >
+          <svg className={`w-4 h-4 ${deploying ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            {deploying
+              ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
+            }
+          </svg>
+          {deploying
+            ? 'Deploying…'
+            : deployState === 'triggered'
+              ? 'Build Triggered ✓'
+              : deployState === 'failed'
+                ? 'Deploy Failed'
+                : 'Deploy Changes'}
+        </button>
+        <p className="mt-1.5 px-1 text-[10px] leading-relaxed text-white/35">
+          Save your changes first, then deploy to rebuild the public site.
+        </p>
+      </div>
 
       {/* Deploy status */}
       <Suspense fallback={null}>
@@ -186,7 +269,27 @@ export default function AdminLayout() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="text-sm font-bold text-[#071A2B]">Mateen CMS</span>
+          <span className="text-sm font-bold text-[#071A2B] flex-1">Mateen CMS</span>
+          <button
+            type="button"
+            onClick={handleGlobalDeploy}
+            disabled={deploying}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+              deployState === 'triggered'
+                ? 'bg-emerald-100 text-emerald-700'
+                : deployState === 'failed'
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-[#00AEEF] text-white hover:bg-[#009bd6]'
+            } disabled:opacity-60`}
+          >
+            {deploying
+              ? 'Deploying…'
+              : deployState === 'triggered'
+                ? 'Triggered ✓'
+                : deployState === 'failed'
+                  ? 'Failed'
+                  : 'Deploy Changes'}
+          </button>
         </div>
 
         <main className="flex-1 overflow-auto">
