@@ -334,6 +334,7 @@ function SectionEditModal({
 
           {/* Hero */}
           {section.type === 'hero' && (<>
+            {'title' in c && <Field label="Page title" value={str(c.title)} onChange={v => setContent('title', v)} />}
             {'heading' in c && (
               <Field label="Heading (H1)" value={str(c.heading)} onChange={v => setContent('heading', v)} textarea />
             )}
@@ -608,7 +609,7 @@ function SectionEditModal({
 
           {section.type === 'group_list' && (<>
             <Field label="Heading" value={str(c.heading)} onChange={v => setContent('heading', v)} />
-            <Field label="Icon key" value={str(c.icon_key)} onChange={v => setContent('icon_key', v)} />
+            <SelectField label="Icon" value={str(c.icon_key)} options={['users', 'photo', 'card', 'print', 'document']} onChange={v => setContent('icon_key', v)} />
             <StringListEditor label="Items" value={stringArray(c.items)} onChange={v => setContent('items', v)} />
           </>)}
 
@@ -719,17 +720,35 @@ function SectionEditModal({
   );
 }
 
+function SelectField({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void }) {
+  const pretty = (v: string) => v.replace(/[-_]/g, ' ').replace(/\b\w/g, m => m.toUpperCase());
+  return (
+    <label className="block">
+      <span className="block text-xs font-semibold text-gray-600 mb-1.5">{label}</span>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#071A2B]/15"
+      >
+        {options.map(option => <option key={option} value={option}>{pretty(option)}</option>)}
+      </select>
+    </label>
+  );
+}
+
 function ObjectListEditor({
   label,
   value,
   template,
   mediaKeys = [],
+  selectKeys = {},
   onChange,
 }: {
   label: string;
   value: unknown;
   template: Record<string, unknown>;
   mediaKeys?: string[];
+  selectKeys?: Record<string, string[]>;
   onChange: (value: Record<string, unknown>[]) => void;
 }) {
   const items = objectArray(value);
@@ -768,6 +787,8 @@ function ObjectListEditor({
             </div>
             {keys.map(key => mediaKeys.includes(key) ? (
               <MediaPicker key={key} label={pretty(key)} value={str(item[key])} onChange={v => update(index, key, v)} accept="image" />
+            ) : selectKeys[key] ? (
+              <SelectField key={key} label={pretty(key)} value={str(item[key])} options={selectKeys[key]} onChange={v => update(index, key, v)} />
             ) : (
               <Field key={key} label={pretty(key)} value={str(item[key])} onChange={v => update(index, key, v)} textarea={key === 'desc' || key === 'description'} />
             ))}
@@ -1053,12 +1074,24 @@ function HowStepsEditor({ steps, onChange }: {
   steps: Record<string, unknown>[];
   onChange: (steps: Record<string, unknown>[]) => void;
 }) {
-  const update = (index: number, key: 'n' | 'title' | 'body', value: string) => {
+  const update = (index: number, key: string, value: string) => {
     const next = steps.map((step, i) => i === index ? { ...step, [key]: value } : step);
     onChange(next);
   };
-  const add = () => onChange([...steps, { n: String(steps.length + 1).padStart(2, '0'), title: '', body: '' }]);
+  const add = () => onChange([...steps, {
+    num: String(steps.length + 1).padStart(2, '0'),
+    title: '',
+    desc: '',
+    icon_key: ['upload', 'clipboard', 'wrench', 'truck'][steps.length % 4],
+  }]);
   const remove = (index: number) => onChange(steps.filter((_, i) => i !== index));
+  const move = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= steps.length) return;
+    const copy = [...steps];
+    [copy[index], copy[target]] = [copy[target], copy[index]];
+    onChange(copy);
+  };
 
   return (
     <div className="space-y-3">
@@ -1070,11 +1103,26 @@ function HowStepsEditor({ steps, onChange }: {
         <div key={index} className="rounded-xl border border-gray-100 p-3 space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-500">Step {index + 1}</span>
-            <button type="button" onClick={() => remove(index)} className="text-xs text-red-500">Remove</button>
+            <div className="flex gap-1">
+              <button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↑</button>
+              <button type="button" onClick={() => move(index, 1)} disabled={index === steps.length - 1} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↓</button>
+              <button type="button" onClick={() => remove(index)} className="px-2 py-1 text-xs text-red-500 border border-red-100 rounded">Remove</button>
+            </div>
           </div>
-          <Field label="Number" value={str(step.n)} onChange={v => update(index, 'n', v)} />
+          <Field label="Number" value={str(step.num) || str(step.n)} onChange={v => update(index, 'num', v)} />
           <Field label="Title" value={str(step.title)} onChange={v => update(index, 'title', v)} />
-          <Field label="Body" value={str(step.body)} onChange={v => update(index, 'body', v)} textarea />
+          <Field label="Description" value={str(step.desc) || str(step.body)} onChange={v => update(index, 'desc', v)} textarea />
+          <Select
+            label="Icon"
+            value={str(step.icon_key) || ['upload', 'clipboard', 'wrench', 'truck'][index % 4]}
+            onChange={v => update(index, 'icon_key', v)}
+            options={[
+              { value: 'upload', label: 'Upload / Send File' },
+              { value: 'clipboard', label: 'Clipboard / Requirements' },
+              { value: 'wrench', label: 'Wrench / Prepare' },
+              { value: 'truck', label: 'Truck / Delivery' },
+            ]}
+          />
         </div>
       ))}
       {steps.length === 0 && <p className="text-xs text-gray-400">No steps yet.</p>}

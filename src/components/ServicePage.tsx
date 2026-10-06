@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Layout from './Layout';
 import { useCms } from '../cms/CmsContext';
-import { useCmsSection, str, arr } from '../cms/useCmsPage';
+import { useCmsPageSections, useCmsSection, str, arr } from '../cms/useCmsPage';
 
 interface ServiceItem {
   name: string;
@@ -246,6 +246,26 @@ const FloatingDocShapes = () => (
   </div>
 );
 
+const StepIcon = ({ iconKey }: { iconKey?: string }) => {
+  switch ((iconKey || '').toLowerCase()) {
+    case 'clipboard': return <ClipboardIcon />;
+    case 'wrench': return <WrenchIcon />;
+    case 'truck': return <TruckIcon />;
+    case 'upload':
+    default: return <UploadIcon />;
+  }
+};
+
+const GroupIcon = ({ iconKey }: { iconKey?: string }) => {
+  const key = (iconKey || '').toLowerCase();
+  if (key === 'photo' || key === 'frame') return <span aria-hidden="true">🖼️</span>;
+  if (key === 'card' || key === 'id-card') return <span aria-hidden="true">🪪</span>;
+  if (key === 'users' || key === 'audience') return <span aria-hidden="true">👥</span>;
+  if (key === 'print') return <span aria-hidden="true">🖨️</span>;
+  if (key === 'document') return <span aria-hidden="true">📄</span>;
+  return null;
+};
+
 // ── Main Component ──────────────────────────────────────────────────────────
 
 export default function ServicePage({
@@ -275,11 +295,13 @@ export default function ServicePage({
   const servicesListSection = useCmsSection(pageSlug, 'services_list');
   const howStepsSection = useCmsSection(pageSlug, 'how_steps');
   const relatedSection = useCmsSection(pageSlug, 'related');
+  const pageSections = useCmsPageSections(pageSlug);
+  const groupSections = pageSections.filter(section => section.type === 'group_list');
   const sharedHowSection = useCmsSection('/shared', 'shared_labels');
 
   // Apply CMS values with prop fallbacks
-  const resolvedTitle = (cmsService?.title?.trim() || title);
-  const resolvedIntro = (cmsService?.description?.trim() || intro);
+  const resolvedTitle = str(heroSection, 'title', cmsService?.title?.trim() || title);
+  const resolvedIntro = str(heroSection, 'intro', cmsService?.description?.trim() || intro);
   const resolvedHeroImage = (str(heroSection, 'image_url', '') || str(heroSection, 'background_image_url', '') || cmsService?.image_url?.trim() || heroImage);
   const resolvedHeroSubtitle = str(heroSection, 'subtitle', heroSubtitle);
   const resolvedBreadcrumb = str(heroSection, 'breadcrumb', breadcrumb);
@@ -293,11 +315,16 @@ export default function ServicePage({
   const resolvedServices = cmsServiceItems.length ? cmsServiceItems : services;
 
   // How We Help steps from CMS
-  type CmsHowStep = { num: string; title: string; desc: string };
+  type CmsHowStep = { num?: string; title: string; desc: string; icon_key?: string };
   const cmsHowSteps = arr<CmsHowStep>(howStepsSection, 'steps');
   const resolvedHowSteps = cmsHowSteps.length
-    ? HOW_STEPS.map((s, i) => ({ ...s, title: cmsHowSteps[i]?.title ?? s.title, desc: cmsHowSteps[i]?.desc ?? s.desc }))
-    : HOW_STEPS;
+    ? cmsHowSteps.map((step, i) => ({
+        num: step.num || String(i + 1).padStart(2, '0'),
+        title: step.title,
+        desc: step.desc,
+        icon_key: step.icon_key || ['upload', 'clipboard', 'wrench', 'truck'][i % 4],
+      }))
+    : HOW_STEPS.map((step, i) => ({ ...step, icon_key: ['upload', 'clipboard', 'wrench', 'truck'][i] }));
 
   type SharedLabel = { key: string; value: string };
   const sharedLabelItems = arr<SharedLabel>(sharedHowSection, 'items');
@@ -564,12 +591,41 @@ export default function ServicePage({
                 </motion.div>
               )}
 
-              {/* children slot */}
-              {children && (
+              {/* Service-specific CMS groups. Hardcoded children remain emergency fallback only. */}
+              {groupSections.length > 0 ? (
+                <motion.div variants={itemFade} className={`mt-8 ${groupSections.length > 1 ? 'grid sm:grid-cols-2 gap-6' : ''}`}>
+                  {groupSections.map(group => {
+                    const items = Array.isArray(group.content.items)
+                      ? group.content.items.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+                      : [];
+                    const heading = typeof group.content.heading === 'string' ? group.content.heading : '';
+                    const iconKey = typeof group.content.icon_key === 'string' ? group.content.icon_key : '';
+                    return (
+                      <div key={group.id} className="bg-white rounded-xl border border-gray-100 p-5 mb-6">
+                        {heading && (
+                          <p className="font-semibold text-[#071A2B] mb-3 text-base flex items-center gap-2">
+                            <GroupIcon iconKey={iconKey} />
+                            {heading}
+                          </p>
+                        )}
+                        <div className={groupSections.length === 1 ? 'flex flex-wrap gap-2' : ''}>
+                          {items.map(item => groupSections.length === 1 ? (
+                            <span key={item} className="bg-[#EEEAE1] text-[#071A2B] text-xs font-medium px-3 py-1.5 rounded-full">{item}</span>
+                          ) : (
+                            <div key={item} className="text-sm text-gray-600 flex items-center gap-2 py-0.5">
+                              <span className="w-1 h-1 rounded-full bg-[#071A2B] inline-block" />{item}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </motion.div>
+              ) : children ? (
                 <motion.div variants={itemFade} className="mt-8">
                   {children}
                 </motion.div>
-              )}
+              ) : null}
             </motion.div>
 
             {/* RIGHT — Hero image */}
@@ -780,7 +836,7 @@ export default function ServicePage({
 
                   {/* Icon circle */}
                   <div className="relative w-14 h-14 rounded-2xl bg-[#EEF7FF] border border-[#e8edf8] flex items-center justify-center text-[#071A2B] shadow-sm mb-4 z-10">
-                    {step.icon}
+                    <StepIcon iconKey={'icon_key' in step ? step.icon_key : undefined} />
                     {/* Small numbered pill */}
                     <div className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#071A2B] flex items-center justify-center">
                       <span className="text-white font-bold" style={{ fontSize: 9, fontFamily: 'Manrope, sans-serif' }}>
