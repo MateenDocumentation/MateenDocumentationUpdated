@@ -3,13 +3,16 @@ import { supabase } from '../../lib/supabase';
 import { useToast } from '../components/Toast';
 import MediaPicker from '../components/MediaPicker';
 import type { Service } from '../types';
+import { useSharedLabels } from '../hooks/useSharedLabels';
 
 export default function ServicesManager() {
   const toast = useToast();
+  const shared = useSharedLabels();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Service | null>(null);
   const [saving, setSaving] = useState(false);
+  const [savingLabels, setSavingLabels] = useState(false);
 
   useEffect(() => {
     supabase.from('services').select('*').order('order_index').then(({ data }) => {
@@ -45,6 +48,18 @@ export default function ServicesManager() {
     toast('Service saved');
   }
 
+  async function saveSharedServiceLabels() {
+    setSavingLabels(true);
+    try {
+      await shared.saveLabels();
+      toast('Shared service labels saved');
+    } catch (error: any) {
+      toast('Shared labels failed: ' + (error?.message ?? 'Unknown error'), 'error');
+    } finally {
+      setSavingLabels(false);
+    }
+  }
+
   function moveService(index: number, dir: -1 | 1) {
     const next = [...services];
     const target = index + dir;
@@ -54,7 +69,7 @@ export default function ServicesManager() {
     next.forEach((s, i) => supabase.from('services').update({ order_index: i }).eq('id', s.id));
   }
 
-  if (loading) return (
+  if (loading || shared.loading) return (
     <div className="p-8"><div className="animate-pulse h-40 bg-gray-100 rounded-2xl" /></div>
   );
 
@@ -63,6 +78,44 @@ export default function ServicesManager() {
       <div className="mb-6">
         <h1 className="text-xl font-bold text-gray-900">Services</h1>
         <p className="text-sm text-gray-400 mt-1">Manage service listings, descriptions, and display order</p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 max-w-5xl mb-6">
+        <div className="flex items-center justify-between gap-4 mb-5">
+          <div>
+            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Shared Service Page Labels</h2>
+            <p className="text-xs text-gray-400 mt-1">These labels are used across all individual service detail pages.</p>
+          </div>
+          <button
+            onClick={saveSharedServiceLabels}
+            disabled={savingLabels}
+            className="px-4 py-2 text-xs font-bold text-white bg-[#071A2B] rounded-xl hover:bg-[#0f2d47] disabled:opacity-60"
+          >
+            {savingLabels ? 'Saving...' : 'Save Shared Labels'}
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Field label="Service eyebrow" value={shared.getLabel('service', 'Service')} onChange={v => shared.setLabel('service', v)} />
+          <Field label="Available Services" value={shared.getLabel('available_services', 'Available Services')} onChange={v => shared.setLabel('available_services', v)} />
+          <Field label="What We Offer" value={shared.getLabel('what_we_offer', 'What We Offer')} onChange={v => shared.setLabel('what_we_offer', v)} />
+          <Field label="Simple Process" value={shared.getLabel('simple_process', 'Simple Process')} onChange={v => shared.setLabel('simple_process', v)} />
+          <Field label="How We Help" value={shared.getLabel('how_we_help', 'How We Help You')} onChange={v => shared.setLabel('how_we_help', v)} />
+          <Field label="Explore More" value={shared.getLabel('explore_more', 'Explore More')} onChange={v => shared.setLabel('explore_more', v)} />
+          <Field label="Related heading" value={shared.getLabel('you_might_need', 'You Might Also Need')} onChange={v => shared.setLabel('you_might_need', v)} />
+          <Field label="WhatsApp button" value={shared.getLabel('whatsapp_us', 'WhatsApp Us')} onChange={v => shared.setLabel('whatsapp_us', v)} />
+          <Field label="Send Requirement button" value={shared.getLabel('send_requirement', 'Send Requirement Online')} onChange={v => shared.setLabel('send_requirement', v)} />
+          <Field label="Call button" value={shared.getLabel('call_now', 'Call Now')} onChange={v => shared.setLabel('call_now', v)} />
+          <Field label="About section heading" value={shared.getLabel('about_service', 'About This Service')} onChange={v => shared.setLabel('about_service', v)} />
+          <Field label="Explore link" value={shared.getLabel('explore', 'Explore')} onChange={v => shared.setLabel('explore', v)} />
+          <Field label="Final CTA eyebrow" value={shared.getLabel('get_started_eyebrow', 'Get Started Today')} onChange={v => shared.setLabel('get_started_eyebrow', v)} />
+          <Field label="Final CTA heading" value={shared.getLabel('ready_heading', 'Ready to Get Started?')} onChange={v => shared.setLabel('ready_heading', v)} />
+          <Field label="WhatsApp Now button" value={shared.getLabel('whatsapp_now', 'WhatsApp Us Now')} onChange={v => shared.setLabel('whatsapp_now', v)} />
+          <Field label="Order Online button" value={shared.getLabel('order_online', 'Order Online')} onChange={v => shared.setLabel('order_online', v)} />
+          <Field label="Phone CTA" value={shared.getLabel('phone_cta', 'Call Now')} onChange={v => shared.setLabel('phone_cta', v)} />
+          <div className="md:col-span-2 lg:col-span-3">
+            <Field label="Final CTA description" value={shared.getLabel('ready_description', 'Visit us in H Block North Nazimabad, send your file online, or WhatsApp us now.')} onChange={v => shared.setLabel('ready_description', v)} textarea />
+          </div>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden max-w-5xl">

@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../components/Toast';
 import type { FooterSettings, FooterServiceLink, FooterQuickLink } from '../types';
+import { useSharedLabels } from '../hooks/useSharedLabels';
 
 export default function FooterManager() {
   const toast = useToast();
+  const shared = useSharedLabels();
   const [settings, setSettings] = useState<Partial<FooterSettings>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,9 +30,18 @@ export default function FooterManager() {
       id: settings.id ?? '1',
       updated_at: new Date().toISOString(),
     });
+    if (!error) {
+      try {
+        await shared.saveLabels();
+      } catch (sharedError: any) {
+        setSaving(false);
+        toast('Footer saved, but shared labels failed: ' + (sharedError?.message ?? 'Unknown error'), 'error');
+        return;
+      }
+    }
     setSaving(false);
     if (error) toast('Save failed: ' + error.message, 'error');
-    else toast('Footer settings saved');
+    else toast('Footer settings and labels saved');
   }
 
   // Service links helpers
@@ -59,7 +70,7 @@ export default function FooterManager() {
     set('quick_links', [...quickLinks, { label: 'New Link', url: '/', enabled: true }]);
   }
 
-  if (loading) {
+  if (loading || shared.loading) {
     return (
       <div className="p-8">
         <div className="animate-pulse h-40 bg-gray-100 rounded-2xl" />
@@ -103,11 +114,20 @@ export default function FooterManager() {
           <Field label="Tagline" value={settings.tagline ?? ''} onChange={v => set('tagline', v)} placeholder="Where Printing Meets Documentation" />
           <Field label="Description" value={settings.description ?? ''} onChange={v => set('description', v)} placeholder="A multi-service printing..." textarea />
           <Field label="Trusted Since" value={settings.trusted_since ?? ''} onChange={v => set('trusted_since', v)} placeholder="2005" />
+          <div className="pt-3 border-t border-gray-100">
+            <Field label="Trusted since label" value={shared.getLabel('footer_trusted_since', 'Trusted since')} onChange={v => shared.setLabel('footer_trusted_since', v)} />
+          </div>
         </div>
       )}
 
       {tab === 'links' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
+        <div className="space-y-6 max-w-4xl">
+          <div className="bg-white rounded-2xl border border-gray-100 p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field label="Services column heading" value={shared.getLabel('footer_services_heading', 'Services')} onChange={v => shared.setLabel('footer_services_heading', v)} />
+            <Field label="All Services link label" value={shared.getLabel('footer_all_services', 'All 12 Services →')} onChange={v => shared.setLabel('footer_all_services', v)} />
+            <Field label="Quick Links column heading" value={shared.getLabel('footer_quick_links_heading', 'Quick Links')} onChange={v => shared.setLabel('footer_quick_links_heading', v)} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Service Links */}
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -144,6 +164,7 @@ export default function FooterManager() {
             </div>
           </div>
         </div>
+        </div>
       )}
 
       {tab === 'contact' && (
@@ -153,6 +174,9 @@ export default function FooterManager() {
           <Field label="Email" value={settings.email ?? ''} onChange={v => set('email', v)} placeholder="mateendocumentation@gmail.com" />
           <Field label="Address" value={settings.address ?? ''} onChange={v => set('address', v)} placeholder="Shop# 1, A&Z Comforts..." textarea />
           <Field label="Google Maps URL" value={settings.maps_url ?? ''} onChange={v => set('maps_url', v)} placeholder="https://maps.app.goo.gl/..." />
+          <div className="pt-3 border-t border-gray-100">
+            <Field label="Contact column heading" value={shared.getLabel('footer_contact_heading', 'Contact')} onChange={v => shared.setLabel('footer_contact_heading', v)} />
+          </div>
         </div>
       )}
 
@@ -161,6 +185,12 @@ export default function FooterManager() {
           <Field label="Copyright text" value={settings.copyright_text ?? ''} onChange={v => set('copyright_text', v)} placeholder="© 2025 Mateen Documentation. All Rights Reserved." />
           <Field label="Developer credit name" value={settings.developer_credit ?? ''} onChange={v => set('developer_credit', v)} placeholder="BrandBugs" />
           <Field label="Developer URL" value={settings.developer_url ?? ''} onChange={v => set('developer_url', v)} placeholder="https://www.brandbugs.net" />
+          <div className="pt-3 border-t border-gray-100 space-y-4">
+            <Field label="Privacy link label" value={shared.getLabel('footer_privacy', 'Privacy Policy')} onChange={v => shared.setLabel('footer_privacy', v)} />
+            <Field label="Terms link label" value={shared.getLabel('footer_terms', 'Terms & Conditions')} onChange={v => shared.setLabel('footer_terms', v)} />
+            <Field label="Developer prefix" value={shared.getLabel('footer_developed_by', 'Designed and Developed by')} onChange={v => shared.setLabel('footer_developed_by', v)} />
+            <Field label="Bottom summary line" value={shared.getLabel('footer_summary', 'Printing · Documentation · Biometric · Public Facilitation · Customized Printing · Cards · Stationery · Business Services')} onChange={v => shared.setLabel('footer_summary', v)} textarea />
+          </div>
         </div>
       )}
     </div>

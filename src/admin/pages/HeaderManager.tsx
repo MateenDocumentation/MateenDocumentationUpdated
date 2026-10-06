@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../components/Toast';
 import type { HeaderSettings, NavigationItem } from '../types';
+import { useSharedLabels } from '../hooks/useSharedLabels';
 
 const defaultHeader: Omit<HeaderSettings, 'id' | 'updated_at'> = {
   phone: '+92 331 2478337',
@@ -35,6 +36,7 @@ const serviceDropdownDefaults: Omit<NavigationItem, 'id' | 'created_at' | 'updat
 
 export default function HeaderManager() {
   const toast = useToast();
+  const shared = useSharedLabels();
   const [settings, setSettings] = useState<Partial<HeaderSettings>>(defaultHeader);
   const [navItems, setNavItems] = useState<NavigationItem[]>([]);
   const [dropdownItems, setDropdownItems] = useState<NavigationItem[]>([]);
@@ -65,9 +67,18 @@ export default function HeaderManager() {
       id: settings.id ?? '1',
       updated_at: new Date().toISOString(),
     });
+    if (!error) {
+      try {
+        await shared.saveLabels();
+      } catch (sharedError: any) {
+        setSaving(false);
+        toast('Header saved, but shared labels failed: ' + (sharedError?.message ?? 'Unknown error'), 'error');
+        return;
+      }
+    }
     setSaving(false);
     if (error) toast('Failed to save: ' + error.message, 'error');
-    else toast('Header settings saved');
+    else toast('Header settings and labels saved');
   }
 
   async function updateNavItem(item: NavigationItem, changes: Partial<NavigationItem>) {
@@ -97,7 +108,7 @@ export default function HeaderManager() {
     });
   }
 
-  if (loading) return <PageShell title="Header Manager"><div className="animate-pulse h-40 bg-gray-100 rounded-2xl" /></PageShell>;
+  if (loading || shared.loading) return <PageShell title="Header Manager"><div className="animate-pulse h-40 bg-gray-100 rounded-2xl" /></PageShell>;
 
   return (
     <PageShell title="Header Manager">
@@ -124,6 +135,17 @@ export default function HeaderManager() {
             <Field label="WhatsApp number (no spaces, with country code)" value={settings.whatsapp ?? ''} onChange={v => setSettings(s => ({ ...s, whatsapp: v }))} placeholder="923312478337" />
             <Field label="CTA Button label" value={settings.cta_label ?? ''} onChange={v => setSettings(s => ({ ...s, cta_label: v }))} placeholder="WhatsApp Us" />
             <Field label="CTA Button URL" value={settings.cta_url ?? ''} onChange={v => setSettings(s => ({ ...s, cta_url: v }))} placeholder="https://wa.me/..." />
+            <div className="pt-3 mt-2 border-t border-gray-100">
+              <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Public Header Labels</p>
+              <div className="space-y-4">
+                <Field label="View All Services label" value={shared.getLabel('header_view_all_services', 'View All Services')} onChange={v => shared.setLabel('header_view_all_services', v)} />
+                <Field label="Desktop Call label" value={shared.getLabel('header_call', 'Call')} onChange={v => shared.setLabel('header_call', v)} />
+                <Field label="Desktop WhatsApp label" value={shared.getLabel('header_whatsapp', 'WhatsApp')} onChange={v => shared.setLabel('header_whatsapp', v)} />
+                <Field label="Mobile Call label" value={shared.getLabel('header_call_mobile', 'CALL')} onChange={v => shared.setLabel('header_call_mobile', v)} />
+                <Field label="Mobile WhatsApp label" value={shared.getLabel('header_whatsapp_mobile', 'WHATSAPP')} onChange={v => shared.setLabel('header_whatsapp_mobile', v)} />
+                <Field label="Mobile Send File label" value={shared.getLabel('header_send_file', 'SEND FILE')} onChange={v => shared.setLabel('header_send_file', v)} />
+              </div>
+            </div>
           </div>
           <button
             onClick={saveSettings}
