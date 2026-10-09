@@ -3,6 +3,11 @@
   "trailingSlash": false,
   "redirects": [
     {
+      "source": "/services/student-assignment-services",
+      "destination": "/services/assignment-printing-binding",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {

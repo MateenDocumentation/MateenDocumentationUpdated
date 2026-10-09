@@ -692,8 +692,16 @@ function SectionEditModal({
             <ObjectListEditor label="Service cards" value={c.items} template={{ title: '', eyebrow: '', desc: '', image: '', to: '' }} onChange={v => setContent('items', v)} mediaKeys={['image']} />
           </>)}
 
-          {/* Generic JSON for complex types */}
-          {['cards', 'features', 'gallery', 'faq', 'contact'].includes(section.type) && (
+          {/* FAQ — client-friendly editor */}
+          {section.type === 'faq' && (<>
+            <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} placeholder="FAQ" />
+            <Field label="Heading" value={str(c.heading || c.title)} onChange={v => setContent('heading', v)} placeholder="Frequently Asked Questions" />
+            <Field label="Intro (optional)" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
+            <ObjectListEditor label="Questions & Answers" value={c.items} template={{ question: '', answer: '' }} onChange={v => setContent('items', v)} />
+          </>)}
+
+          {/* Generic JSON for remaining complex types */}
+          {['cards', 'features', 'gallery', 'contact'].includes(section.type) && (
             <div>
               <p className="text-xs font-semibold text-gray-600 mb-1.5">Content (JSON)</p>
               <textarea

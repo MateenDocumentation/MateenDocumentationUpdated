@@ -211,6 +211,9 @@ export interface SeoSetting {
   title: string;
   description: string;
   canonical_url?: string;
+  focus_keyword?: string;
+  image_alt_text?: string;
+  breadcrumb_label?: string;
   // Social
   og_title?: string;
   og_description?: string;

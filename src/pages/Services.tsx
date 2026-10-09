@@ -28,7 +28,7 @@ const services = [
     tag: 'Academic',
     desc: 'Assignment printing, typing, formatting, thesis binding, project work and academic submissions.',
     img: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&h=500&fit=crop&auto=format',
-    to: '/services/student-assignment-services',
+    to: '/services/assignment-printing-binding',
     featured: true,
   },
   {

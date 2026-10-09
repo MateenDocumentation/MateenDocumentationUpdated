@@ -102,14 +102,14 @@ export const SEO_CONFIG: Record<string, SeoEntry> = {
     serviceName: 'Printing & Photocopy',
     breadcrumbs: [homeCrumb, servicesCrumb, { name: 'Printing & Photocopy', path: '/services/printing-photocopy' }],
   },
-  '/services/student-assignment-services': {
+  '/services/assignment-printing-binding': {
     load: () => import('../pages/services/StudentAssignment'),
-    title: 'Student Assignment Printing | Mateen Documentation',
+    title: 'Assignment Printing & Binding Karachi | Mateen Documentation',
     description:
-      'Assignment printing, typing, editing, formatting, binding and academic document support for school, college and university students.',
+      'Assignment printing, binding, formatting and academic document printing support for school, college and university students in Karachi.',
     type: 'Service',
-    serviceName: 'Student & Assignment Services',
-    breadcrumbs: [homeCrumb, servicesCrumb, { name: 'Student & Assignment Services', path: '/services/student-assignment-services' }],
+    serviceName: 'Assignment Printing & Binding',
+    breadcrumbs: [homeCrumb, servicesCrumb, { name: 'Assignment Printing & Binding', path: '/services/assignment-printing-binding' }],
   },
   '/services/customized-printing': {
     load: () => import('../pages/services/CustomizedPrinting'),

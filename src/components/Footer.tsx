@@ -13,7 +13,7 @@ const WaIcon = () => (
 // ─── Static fallbacks ──────────────────────────────────────────────────────
 const DEFAULT_SERVICE_LINKS = [
   { label: 'Printing & Photocopy', url: '/services/printing-photocopy' },
-  { label: 'Student Assignments', url: '/services/student-assignment-services' },
+  { label: 'Student Assignments', url: '/services/assignment-printing-binding' },
   { label: 'Customized Printing', url: '/services/customized-printing' },
   { label: 'Biometric & NADRA', url: '/services/nadra-biometric-public-facilitation' },
   { label: 'Legal Documentation', url: '/services/legal-documentation' },

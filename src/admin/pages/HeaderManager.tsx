@@ -21,7 +21,7 @@ const defaultNavItems: Omit<NavigationItem, 'id' | 'created_at' | 'updated_at'>[
 
 const serviceDropdownDefaults: Omit<NavigationItem, 'id' | 'created_at' | 'updated_at'>[] = [
   { label: 'Printing & Photocopy', url: '/services/printing-photocopy', order_index: 0, is_enabled: true, has_dropdown: false, parent_id: 'services' },
-  { label: 'Student & Assignment Services', url: '/services/student-assignment-services', order_index: 1, is_enabled: true, has_dropdown: false, parent_id: 'services' },
+  { label: 'Student & Assignment Services', url: '/services/assignment-printing-binding', order_index: 1, is_enabled: true, has_dropdown: false, parent_id: 'services' },
   { label: 'Customized Printing', url: '/services/customized-printing', order_index: 2, is_enabled: true, has_dropdown: false, parent_id: 'services' },
   { label: 'PVC Cards & Photo Frames', url: '/services/cards-photo-frames', order_index: 3, is_enabled: true, has_dropdown: false, parent_id: 'services' },
   { label: 'Design & Branding', url: '/services/design-branding', order_index: 4, is_enabled: true, has_dropdown: false, parent_id: 'services' },

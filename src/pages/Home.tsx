@@ -56,7 +56,7 @@ const services = [
   },
   {
     label: 'Assignments',
-    to: '/services/student-assignment-services',
+    to: '/services/assignment-printing-binding',
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
@@ -276,7 +276,7 @@ export default function Home() {
   const showcaseSlugs = arr<string>(servicesShowcaseSection, 'service_slugs');
   const resolvedShowcaseSlugs = showcaseSlugs.length ? showcaseSlugs : [
     'printing-photocopy',
-    'student-assignment-services',
+    'assignment-printing-binding',
     'customized-printing',
     'nadra-biometric-public-facilitation',
     'legal-documentation',
@@ -322,6 +322,14 @@ export default function Home() {
   const whyWaHref = whyWaMsg ? `${waBase}?text=${encodeURIComponent(whyWaMsg)}` : waBase;
   const whyOrderLabel = str(whySection, 'order_label', 'Order Online');
   const whyOrderUrl = str(whySection, 'order_url', '/order-online');
+
+  // ── FAQ CMS ──
+  const faqSection = useCmsSection('/', 'faq');
+  type HomeFaqItem = { question: string; answer: string };
+  const homeFaqItems = arr<HomeFaqItem>(faqSection, 'items').filter(item => item.question?.trim() && item.answer?.trim());
+  const homeFaqEyebrow = str(faqSection, 'eyebrow', 'FAQ');
+  const homeFaqHeading = str(faqSection, 'heading', str(faqSection, 'title', 'Frequently Asked Questions'));
+  const homeFaqDescription = str(faqSection, 'description', 'Quick answers about our printing, documentation and facilitation services.');
 
   // ── Final CTA CMS ──
   const finalCtaSection = useCmsSection('/', 'final_cta');
@@ -1471,7 +1479,7 @@ export default function Home() {
             {/* ── CENTER: Two stacked medium cards ── */}
             <div className="flex flex-col gap-4 flex-shrink-0 lg:w-[34%]">
               {[
-                showcaseService(resolvedShowcaseSlugs[1] || 'student-assignment-services', { title: 'Student Assignments', tag: 'Academic', description: 'Typing, formatting, binding and projects.', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&h=480&fit=crop&auto=format', to: '/services/student-assignment-services' }),
+                showcaseService(resolvedShowcaseSlugs[1] || 'assignment-printing-binding', { title: 'Student Assignments', tag: 'Academic', description: 'Typing, formatting, binding and projects.', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&h=480&fit=crop&auto=format', to: '/services/assignment-printing-binding' }),
                 showcaseService(resolvedShowcaseSlugs[2] || 'customized-printing', { title: 'Customized Printing', tag: 'Gifts & Branding', description: 'Mugs, cards, stickers, frames and more.', image: 'https://images.unsplash.com/photo-1682339374155-6fdc4869a75b?w=700&h=480&fit=crop&auto=format', to: '/services/customized-printing' }),
               ].map(card => (
                 <motion.div key={card.title} variants={fadeUp}
@@ -1653,6 +1661,29 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+
+      {/* ═══ FAQ ════════════════════════════════════════════════════════ */}
+      {homeFaqItems.length > 0 && (
+        <section className="py-20 bg-white">
+          <div className="max-w-[1000px] mx-auto px-6 lg:px-10">
+            <div className="text-center mb-10">
+              <p className="text-xs font-black tracking-[0.22em] uppercase text-[#00AEEF] mb-3">{homeFaqEyebrow}</p>
+              <h2 className="font-bold text-[#090B0D] text-3xl lg:text-5xl">{homeFaqHeading}</h2>
+              {homeFaqDescription && <p className="text-[#6b7280] mt-4 max-w-2xl mx-auto leading-relaxed">{homeFaqDescription}</p>}
+            </div>
+            <div className="space-y-3">
+              {homeFaqItems.map((item, index) => (
+                <details key={index} className="group rounded-2xl border border-[#e8edf8] bg-[#EEF7FF]/45 px-5 py-4">
+                  <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-bold text-[#090B0D]">
+                    <span>{item.question}</span><span className="text-[#00AEEF] text-xl group-open:rotate-45 transition-transform">+</span>
+                  </summary>
+                  <p className="pt-3 pr-8 text-sm leading-relaxed text-[#6b7280]">{item.answer}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ═══ FINAL CTA — HIGH-CONVERSION CLOSE ═════════════════════════ */}
       <section className="relative overflow-hidden" style={{ background: '#071A2B', paddingTop: '88px', paddingBottom: '88px' }}>

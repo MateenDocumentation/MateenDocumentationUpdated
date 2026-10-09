@@ -7,7 +7,7 @@ import { useCmsSection, arr } from '../cms/useCmsPage';
 
 const DEFAULT_SERVICE_LINKS = [
   { label: 'Printing & Photocopy',              to: '/services/printing-photocopy' },
-  { label: 'Student & Assignment Services',      to: '/services/student-assignment-services' },
+  { label: 'Student & Assignment Services',      to: '/services/assignment-printing-binding' },
   { label: 'Customized Printing',               to: '/services/customized-printing' },
   { label: 'PVC Cards & Photo Frames',          to: '/services/cards-photo-frames' },
   { label: 'Design & Branding',                 to: '/services/design-branding' },

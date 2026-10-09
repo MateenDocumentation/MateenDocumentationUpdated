@@ -14,7 +14,7 @@ const audiences = ['Students', 'Schools', 'Colleges', 'Offices', 'Businesses', '
 
 const related = [
   { label: 'Printing & Photocopy', to: '/services/printing-photocopy' },
-  { label: 'Student Assignment Services', to: '/services/student-assignment-services' },
+  { label: 'Student Assignment Services', to: '/services/assignment-printing-binding' },
   { label: 'Customized Printing', to: '/services/customized-printing' },
 ];
 

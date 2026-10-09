@@ -143,6 +143,9 @@ export default function SEOManager() {
       title: String(raw.title ?? ''),
       description: String(raw.description ?? ''),
       canonical_url: raw.canonical_url ? String(raw.canonical_url) : undefined,
+      focus_keyword: raw.focus_keyword ? String(raw.focus_keyword) : undefined,
+      image_alt_text: raw.image_alt_text ? String(raw.image_alt_text) : undefined,
+      breadcrumb_label: raw.breadcrumb_label ? String(raw.breadcrumb_label) : undefined,
       og_title: raw.og_title ? String(raw.og_title) : undefined,
       og_description: raw.og_description ? String(raw.og_description) : undefined,
       og_image: raw.og_image ? String(raw.og_image) : undefined,
@@ -399,6 +402,30 @@ export default function SEOManager() {
                       placeholder="https://mateendocumentation.com/page"
                       className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#071A2B]/15 focus:border-[#071A2B]"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Focus Keyword</label>
+                      <input type="text" value={editing.focus_keyword ?? ''}
+                        onChange={e => set('focus_keyword', e.target.value || undefined)}
+                        placeholder="e.g. printing services karachi" className={inputCls} />
+                      <p className="text-[11px] text-gray-400 mt-1">Internal SEO planning field; it is not emitted as a meta-keywords tag.</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Image Alt Text</label>
+                      <input type="text" value={editing.image_alt_text ?? ''}
+                        onChange={e => set('image_alt_text', e.target.value || undefined)}
+                        placeholder="Describe the page/social image" className={inputCls} />
+                      <p className="text-[11px] text-gray-400 mt-1">Used for OG/Twitter image alt text.</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">Breadcrumb Label</label>
+                      <input type="text" value={editing.breadcrumb_label ?? ''}
+                        onChange={e => set('breadcrumb_label', e.target.value || undefined)}
+                        placeholder="Short page name" className={inputCls} />
+                      <p className="text-[11px] text-gray-400 mt-1">Used in breadcrumb structured data for this page.</p>
+                    </div>
                   </div>
 
                   <div className="bg-gray-50 rounded-xl p-4 space-y-3">

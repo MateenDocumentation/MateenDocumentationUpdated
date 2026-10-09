@@ -178,10 +178,36 @@ function seoTags(pathname) {
   const twDesc = cms?.twitter_description || description;
   const twImage = cms?.twitter_image || socialImage;
   const faviconUrl = cmsData?.siteSettings?.favicon_url || '/favicon.png';
+  const imageAlt = cms?.image_alt_text || socialImageAlt;
+
+  // Enhance generated structured data with CMS breadcrumb and FAQ content.
+  const enhancedStructuredData = JSON.parse(JSON.stringify(structuredData));
+  if (cms?.breadcrumb_label && Array.isArray(enhancedStructuredData?.['@graph'])) {
+    const breadcrumb = enhancedStructuredData['@graph'].find(item => item?.['@type'] === 'BreadcrumbList');
+    if (breadcrumb?.itemListElement?.length) {
+      breadcrumb.itemListElement[breadcrumb.itemListElement.length - 1].name = cms.breadcrumb_label;
+    }
+  }
+  const slug = pathname === '/' ? '/' : pathname.replace(/\/+$/, '');
+  const faqSection = (cmsData?.pageSections?.[slug] ?? []).find(section => section.type === 'faq' && section.is_visible !== false);
+  const faqItems = Array.isArray(faqSection?.content?.items)
+    ? faqSection.content.items.filter(item => item?.question && item?.answer)
+    : [];
+  if (faqItems.length && Array.isArray(enhancedStructuredData?.['@graph'])) {
+    enhancedStructuredData['@graph'].push({
+      '@type': 'FAQPage',
+      '@id': `${canonicalUrl}#faq`,
+      mainEntity: faqItems.map(item => ({
+        '@type': 'Question',
+        name: item.question,
+        acceptedAnswer: { '@type': 'Answer', text: item.answer },
+      })),
+    });
+  }
 
   const schema = cms?.custom_jsonld
     ? cms.custom_jsonld.replace(/</g, '\\u003c')
-    : JSON.stringify(structuredData).replace(/</g, '\\u003c');
+    : JSON.stringify(enhancedStructuredData).replace(/</g, '\\u003c');
 
   const customMetaHtml = (cmsData?.customMetaTags ?? []).map(tag => {
     if (tag.name) {
@@ -221,14 +247,14 @@ function seoTags(pathname) {
     <meta property="og:image" content="${ogImage}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="${escapeHtml(socialImageAlt)}" />
+    <meta property="og:image:alt" content="${escapeHtml(imageAlt)}" />
     <meta property="og:site_name" content="${escapeHtml(cmsData?.siteSettings?.business_name ?? 'Mateen Documentation')}" />
     <meta property="og:locale" content="en_PK" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${escapeHtml(twTitle)}" />
     <meta name="twitter:description" content="${escapeHtml(twDesc)}" />
     <meta name="twitter:image" content="${twImage}" />
-    <meta name="twitter:image:alt" content="${escapeHtml(socialImageAlt)}" />
+    <meta name="twitter:image:alt" content="${escapeHtml(imageAlt)}" />
     ${customMetaHtml}
     <noscript><style>
       header[style*="opacity:0;"],

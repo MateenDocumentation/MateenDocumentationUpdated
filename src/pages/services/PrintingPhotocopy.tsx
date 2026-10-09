@@ -16,7 +16,7 @@ const services = [
 ];
 
 const related = [
-  { label: 'Student Assignments', to: '/services/student-assignment-services' },
+  { label: 'Student Assignments', to: '/services/assignment-printing-binding' },
   { label: 'Bulk Printing', to: '/services/bulk-printing' },
   { label: 'Design & Branding', to: '/services/design-branding' },
 ];

@@ -64,6 +64,9 @@ export interface CmsSeoSetting {
   title: string;
   description: string;
   canonical_url?: string | null;
+  focus_keyword?: string | null;
+  image_alt_text?: string | null;
+  breadcrumb_label?: string | null;
   og_title?: string | null;
   og_description?: string | null;
   og_image?: string | null;
