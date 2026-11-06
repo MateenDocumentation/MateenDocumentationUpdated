@@ -692,16 +692,17 @@ function SectionEditModal({
             <ObjectListEditor label="Service cards" value={c.items} template={{ title: '', eyebrow: '', desc: '', image: '', to: '' }} onChange={v => setContent('items', v)} mediaKeys={['image']} />
           </>)}
 
-          {/* FAQ — client-friendly editor */}
-          {section.type === 'faq' && (<>
+          {/* FAQ — always show a client-friendly editor. Some older records can have a legacy type/label,
+              so detect FAQ by type, label, or question/answer-shaped content. */}
+          {isFaqSection(section) && (<>
             <Field label="Eyebrow" value={str(c.eyebrow)} onChange={v => setContent('eyebrow', v)} placeholder="FAQ" />
             <Field label="Heading" value={str(c.heading || c.title)} onChange={v => setContent('heading', v)} placeholder="Frequently Asked Questions" />
             <Field label="Intro (optional)" value={str(c.description)} onChange={v => setContent('description', v)} textarea />
-            <ObjectListEditor label="Questions & Answers" value={c.items} template={{ question: '', answer: '' }} onChange={v => setContent('items', v)} />
+            <FaqItemsEditor value={c.items} onChange={v => setContent('items', v)} />
           </>)}
 
-          {/* Generic JSON for remaining complex types */}
-          {['cards', 'features', 'gallery', 'contact'].includes(section.type) && (
+          {/* Generic JSON for remaining complex types. Never expose FAQ content as JSON. */}
+          {!isFaqSection(section) && ['cards', 'features', 'gallery', 'contact'].includes(section.type) && (
             <div>
               <p className="text-xs font-semibold text-gray-600 mb-1.5">Content (JSON)</p>
               <textarea
@@ -724,6 +725,57 @@ function SectionEditModal({
           <button onClick={() => onSave(section)} className="px-5 py-2 text-sm font-bold text-white bg-[#071A2B] rounded-xl hover:bg-[#0f2d47] transition-colors">Save Section</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function isFaqSection(section: PageSection): boolean {
+  if (section.type === 'faq') return true;
+  const label = String(section.label ?? '').toLowerCase();
+  if (label.includes('faq') || label.includes('frequently asked')) return true;
+  const items = objectArray(section.content?.items);
+  return items.length > 0 && items.every(item => 'question' in item && 'answer' in item);
+}
+
+function FaqItemsEditor({ value, onChange }: { value: unknown; onChange: (value: Record<string, unknown>[]) => void }) {
+  const items = objectArray(value);
+  const update = (index: number, key: 'question' | 'answer', next: string) => {
+    onChange(items.map((item, i) => i === index ? { ...item, [key]: next } : item));
+  };
+  const add = () => onChange([...items, { question: '', answer: '' }]);
+  const remove = (index: number) => onChange(items.filter((_, i) => i !== index));
+  const move = (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= items.length) return;
+    const copy = [...items];
+    [copy[index], copy[target]] = [copy[target], copy[index]];
+    onChange(copy);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold text-gray-700">Questions & Answers</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">Edit each FAQ normally — no JSON required.</p>
+        </div>
+        <button type="button" onClick={add} className="px-3 py-1.5 rounded-lg bg-[#071A2B] text-white text-xs font-bold hover:bg-[#0f2d47]">+ Add FAQ</button>
+      </div>
+      {items.map((item, index) => (
+        <div key={index} className="rounded-xl border border-gray-200 bg-gray-50/60 p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11px] font-bold text-gray-500">FAQ {index + 1}</span>
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => move(index, -1)} disabled={index === 0} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↑</button>
+              <button type="button" onClick={() => move(index, 1)} disabled={index === items.length - 1} className="px-2 py-1 text-xs border rounded disabled:opacity-30">↓</button>
+              <button type="button" onClick={() => remove(index)} className="px-2 py-1 text-xs text-red-600 border border-red-200 rounded">Remove</button>
+            </div>
+          </div>
+          <Field label="Question" value={str(item.question)} onChange={v => update(index, 'question', v)} placeholder="Enter the question" />
+          <Field label="Answer" value={str(item.answer)} onChange={v => update(index, 'answer', v)} placeholder="Enter the answer" textarea />
+        </div>
+      ))}
+      {!items.length && <div className="rounded-xl border border-dashed border-gray-300 p-5 text-center text-xs text-gray-400">No FAQs yet. Click “Add FAQ”.</div>}
     </div>
   );
 }
