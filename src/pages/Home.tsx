@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion';
 import Layout from '../components/Layout';
+import CmsHeading from '../components/CmsHeading';
 import heroPrinterPoster from '../imports/mateen_hero_printer_poster.webp';
 import heroPrinterVideo from '../imports/mateen_hero_printer_preview_16x9.mp4';
 import { useCmsSection, str, arr } from '../cms/useCmsPage';
@@ -56,7 +57,7 @@ const services = [
   },
   {
     label: 'Assignments',
-    to: '/services/assignment-printing-binding',
+    to: '/services/student-assignment-services',
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
@@ -276,7 +277,7 @@ export default function Home() {
   const showcaseSlugs = arr<string>(servicesShowcaseSection, 'service_slugs');
   const resolvedShowcaseSlugs = showcaseSlugs.length ? showcaseSlugs : [
     'printing-photocopy',
-    'assignment-printing-binding',
+    'student-assignment-services',
     'customized-printing',
     'nadra-biometric-public-facilitation',
     'legal-documentation',
@@ -322,14 +323,6 @@ export default function Home() {
   const whyWaHref = whyWaMsg ? `${waBase}?text=${encodeURIComponent(whyWaMsg)}` : waBase;
   const whyOrderLabel = str(whySection, 'order_label', 'Order Online');
   const whyOrderUrl = str(whySection, 'order_url', '/order-online');
-
-  // ── FAQ CMS ──
-  const faqSection = useCmsSection('/', 'faq');
-  type HomeFaqItem = { question: string; answer: string };
-  const homeFaqItems = arr<HomeFaqItem>(faqSection, 'items').filter(item => item.question?.trim() && item.answer?.trim());
-  const homeFaqEyebrow = str(faqSection, 'eyebrow', 'FAQ');
-  const homeFaqHeading = str(faqSection, 'heading', str(faqSection, 'title', 'Frequently Asked Questions'));
-  const homeFaqDescription = str(faqSection, 'description', 'Quick answers about our printing, documentation and facilitation services.');
 
   // ── Final CTA CMS ──
   const finalCtaSection = useCmsSection('/', 'final_cta');
@@ -800,14 +793,12 @@ export default function Home() {
                 </motion.div>
 
                 {/* Heading */}
-                <motion.h2
-                  variants={fadeUp}
-                  className="font-bold leading-[1.04] tracking-tight mb-6"
-                  style={{ fontSize: 'clamp(2.9rem, 4.5vw, 4.4rem)' }}
-                >
-                  <span style={{ color: '#08122a' }}>{printingHeading.split('\n')[0] ?? printingHeading}</span><br />
-                  {printingHeading.includes('\n') && <span style={{ color: '#071A2B' }}>{printingHeading.split('\n')[1]}</span>}
-                </motion.h2>
+                <motion.div variants={fadeUp}>
+                  <CmsHeading section={printingSection} fallbackTag="h2" className="font-bold leading-[1.04] tracking-tight mb-6" style={{ fontSize: 'clamp(2.9rem, 4.5vw, 4.4rem)' }}>
+                    <span style={{ color: '#08122a' }}>{printingHeading.split('\n')[0] ?? printingHeading}</span><br />
+                    {printingHeading.includes('\n') && <span style={{ color: '#071A2B' }}>{printingHeading.split('\n')[1]}</span>}
+                  </CmsHeading>
+                </motion.div>
 
                 {/* Description */}
                 <motion.p variants={fadeUp} className="leading-relaxed mb-9 text-[15.5px] max-w-[400px]" style={{ color: 'rgba(30,40,80,0.58)' }}>
@@ -872,14 +863,12 @@ export default function Home() {
               </motion.div>
 
               {/* Heading */}
-              <motion.h2
-                variants={fadeUp}
-                className="font-bold leading-[1.05] tracking-tight mb-6"
-                style={{ fontSize: 'clamp(2.6rem, 4vw, 4rem)', color: '#08122a' }}
-              >
-                {academicHeading1}<br />
-                <span style={{ color: '#071A2B' }}>{academicHeading2}</span>
-              </motion.h2>
+              <motion.div variants={fadeUp}>
+                <CmsHeading section={academicSection} fallbackTag="h2" className="font-bold leading-[1.05] tracking-tight mb-6" style={{ fontSize: 'clamp(2.6rem, 4vw, 4rem)', color: '#08122a' }}>
+                  {academicHeading1}<br />
+                  <span style={{ color: '#071A2B' }}>{academicHeading2}</span>
+                </CmsHeading>
+              </motion.div>
 
               {/* Description */}
               <motion.p
@@ -1077,10 +1066,11 @@ export default function Home() {
               <span className="text-[10.5px] font-black tracking-[0.26em] uppercase text-[#071A2B]">{homeLabel('home_process_label', 'Process')}</span>
               <div className="w-6 h-[2px] rounded-full bg-[#071A2B]" />
             </motion.div>
-            <motion.h2 variants={fadeUp} className="font-bold text-[#08122a] leading-tight"
-              style={{ fontSize: 'clamp(2.4rem,4vw,3.8rem)' }}>
-              {howHeading}
-            </motion.h2>
+            <motion.div variants={fadeUp}>
+              <CmsHeading section={howSection} fallbackTag="h2" className="font-bold text-[#08122a] leading-tight" style={{ fontSize: 'clamp(2.4rem,4vw,3.8rem)' }}>
+                {howHeading}
+              </CmsHeading>
+            </motion.div>
             <motion.p variants={fadeUp} className="mt-4 text-[15.5px] max-w-md mx-auto" style={{ color: 'rgba(30,40,80,0.50)' }}>
               {howSubtitle}
             </motion.p>
@@ -1257,10 +1247,12 @@ export default function Home() {
               </motion.div>
 
               {/* Heading */}
-              <motion.h2 variants={fadeUp} className="font-bold leading-[1.04] tracking-tight mb-6" style={{ fontSize: 'clamp(2.8rem,4.5vw,4.4rem)' }}>
-                <span className="text-white">{customHeading1}</span><br />
-                <span style={{ color: '#5a84f0' }}>{customHeading2}</span>
-              </motion.h2>
+              <motion.div variants={fadeUp}>
+                <CmsHeading section={customizedSection} fallbackTag="h2" className="font-bold leading-[1.04] tracking-tight mb-6" style={{ fontSize: 'clamp(2.8rem,4.5vw,4.4rem)' }}>
+                  <span className="text-white">{customHeading1}</span><br />
+                  <span style={{ color: '#5a84f0' }}>{customHeading2}</span>
+                </CmsHeading>
+              </motion.div>
 
               {/* Description */}
               <motion.p variants={fadeUp} className="leading-relaxed mb-8 text-[15px] max-w-[380px]" style={{ color: 'rgba(255,255,255,0.48)' }}>
@@ -1454,7 +1446,7 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 relative z-10">
           <motion.div className="text-center mb-16" variants={staggerSlow} initial="hidden" whileInView="show" viewport={inView}>
             <motion.p variants={fadeUp} className="text-[#00AEEF] font-bold text-xs tracking-[0.22em] uppercase mb-3">{servicesShowcaseEyebrow}</motion.p>
-            <motion.h2 variants={fadeUp} className="text-4xl lg:text-5xl font-bold text-[#090B0D]">{servicesShowcaseHeading}</motion.h2>
+            <motion.div variants={fadeUp}><CmsHeading section={servicesShowcaseSection} fallbackTag="h2" className="text-4xl lg:text-5xl font-bold text-[#090B0D]">{servicesShowcaseHeading}</CmsHeading></motion.div>
           </motion.div>
 
           {/* Asymmetric service universe: flexbox columns on desktop */}
@@ -1479,7 +1471,7 @@ export default function Home() {
             {/* ── CENTER: Two stacked medium cards ── */}
             <div className="flex flex-col gap-4 flex-shrink-0 lg:w-[34%]">
               {[
-                showcaseService(resolvedShowcaseSlugs[1] || 'assignment-printing-binding', { title: 'Student Assignments', tag: 'Academic', description: 'Typing, formatting, binding and projects.', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&h=480&fit=crop&auto=format', to: '/services/assignment-printing-binding' }),
+                showcaseService(resolvedShowcaseSlugs[1] || 'student-assignment-services', { title: 'Student Assignments', tag: 'Academic', description: 'Typing, formatting, binding and projects.', image: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=700&h=480&fit=crop&auto=format', to: '/services/student-assignment-services' }),
                 showcaseService(resolvedShowcaseSlugs[2] || 'customized-printing', { title: 'Customized Printing', tag: 'Gifts & Branding', description: 'Mugs, cards, stickers, frames and more.', image: 'https://images.unsplash.com/photo-1682339374155-6fdc4869a75b?w=700&h=480&fit=crop&auto=format', to: '/services/customized-printing' }),
               ].map(card => (
                 <motion.div key={card.title} variants={fadeUp}
@@ -1544,9 +1536,11 @@ export default function Home() {
           {/* Centered heading */}
           <motion.div className="text-center mb-16 max-w-3xl mx-auto" variants={staggerSlow} initial="hidden" whileInView="show" viewport={inView}>
             <motion.p variants={fadeUp} className="text-[#00AEEF] font-bold text-xs tracking-[0.22em] uppercase mb-4">{whyEyebrow}</motion.p>
-            <motion.h2 variants={fadeUp} className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#090B0D] mb-5 leading-[1.05] tracking-tight">
-              {whyHeading1}<br />{whyHeading2}
-            </motion.h2>
+            <motion.div variants={fadeUp}>
+              <CmsHeading section={whySection} fallbackTag="h2" className="text-4xl lg:text-5xl xl:text-6xl font-bold text-[#090B0D] mb-5 leading-[1.05] tracking-tight">
+                {whyHeading1}<br />{whyHeading2}
+              </CmsHeading>
+            </motion.div>
             <motion.p variants={fadeUp} className="text-gray-500 leading-relaxed text-lg">
               {whyDescription}
             </motion.p>
@@ -1622,7 +1616,7 @@ export default function Home() {
         <div className="max-w-[1400px] mx-auto px-6 lg:px-10 relative z-10">
           <motion.div className="text-center mb-14" variants={staggerSlow} initial="hidden" whileInView="show" viewport={inView}>
             <motion.p variants={fadeUp} className="text-[#00AEEF] font-bold text-xs tracking-[0.22em] uppercase mb-3">{whoServeEyebrow}</motion.p>
-            <motion.h2 variants={fadeUp} className="text-4xl lg:text-5xl font-bold text-[#090B0D]">{whoServeHeading}</motion.h2>
+            <motion.div variants={fadeUp}><CmsHeading section={whoServeSection} fallbackTag="h2" className="text-4xl lg:text-5xl font-bold text-[#090B0D]">{whoServeHeading}</CmsHeading></motion.div>
           </motion.div>
 
           <motion.div className="grid grid-cols-1 md:grid-cols-3 gap-5" variants={stagger} initial="hidden" whileInView="show" viewport={inView}>
@@ -1661,29 +1655,6 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* ═══ FAQ ════════════════════════════════════════════════════════ */}
-      {homeFaqItems.length > 0 && (
-        <section className="py-20 bg-white">
-          <div className="max-w-[1000px] mx-auto px-6 lg:px-10">
-            <div className="text-center mb-10">
-              <p className="text-xs font-black tracking-[0.22em] uppercase text-[#00AEEF] mb-3">{homeFaqEyebrow}</p>
-              <h2 className="font-bold text-[#090B0D] text-3xl lg:text-5xl">{homeFaqHeading}</h2>
-              {homeFaqDescription && <p className="text-[#6b7280] mt-4 max-w-2xl mx-auto leading-relaxed">{homeFaqDescription}</p>}
-            </div>
-            <div className="space-y-3">
-              {homeFaqItems.map((item, index) => (
-                <details key={index} className="group rounded-2xl border border-[#e8edf8] bg-[#EEF7FF]/45 px-5 py-4">
-                  <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-bold text-[#090B0D]">
-                    <span>{item.question}</span><span className="text-[#00AEEF] text-xl group-open:rotate-45 transition-transform">+</span>
-                  </summary>
-                  <p className="pt-3 pr-8 text-sm leading-relaxed text-[#6b7280]">{item.answer}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ═══ FINAL CTA — HIGH-CONVERSION CLOSE ═════════════════════════ */}
       <section className="relative overflow-hidden" style={{ background: '#071A2B', paddingTop: '88px', paddingBottom: '88px' }}>

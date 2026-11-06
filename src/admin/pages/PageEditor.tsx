@@ -332,6 +332,31 @@ function SectionEditModal({
           {/* Section label */}
           <Field label="Section label (internal)" value={section.label ?? ''} onChange={v => onChange({ ...section, label: v })} />
 
+          {/* Heading presentation controls — semantic HTML level is independent from visual size. */}
+          {(section.type === 'heading' || 'heading' in c || 'heading_line1' in c || 'title_line1' in c || 'title' in c || 'page_title' in c) && (
+            <div className="rounded-2xl border border-[#dbe5f0] bg-[#f8fbff] p-4 space-y-3">
+              <div>
+                <p className="text-xs font-bold text-[#071A2B] uppercase tracking-wider">Heading Presentation</p>
+                <p className="text-[11px] text-gray-500 mt-1">Choose the SEO/semantic heading level separately from how large it looks.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Select label="Heading level (HTML tag)" value={str(c.heading_tag) || (section.type === 'hero' ? 'h1' : 'h2')} onChange={v => setContent('heading_tag', v)}
+                  options={[
+                    { value: 'h1', label: 'H1' }, { value: 'h2', label: 'H2' }, { value: 'h3', label: 'H3' },
+                    { value: 'h4', label: 'H4' }, { value: 'h5', label: 'H5' }, { value: 'h6', label: 'H6' },
+                  ]} />
+                <Select label="Visual size" value={str(c.heading_visual_size) || 'default'} onChange={v => setContent('heading_visual_size', v)}
+                  options={[
+                    { value: 'default', label: 'Use design default' },
+                    { value: 'small', label: 'Small' }, { value: 'medium', label: 'Medium' },
+                    { value: 'large', label: 'Large' }, { value: 'xl', label: 'Extra Large' },
+                  ]} />
+              </div>
+              <Field label="Custom font size (px) — optional" value={str(c.heading_font_size_px)} onChange={v => setContent('heading_font_size_px', v.replace(/[^0-9.]/g, ''))} placeholder="e.g. 36" />
+              <p className="text-[11px] text-gray-400">If Custom font size is filled, it overrides Visual size. Changing size does not change the H1/H2/H3 tag.</p>
+            </div>
+          )}
+
           {/* Hero */}
           {section.type === 'hero' && (<>
             {'title' in c && <Field label="Page title" value={str(c.title)} onChange={v => setContent('title', v)} />}
@@ -640,8 +665,8 @@ function SectionEditModal({
           {/* Heading */}
           {section.type === 'heading' && (<>
             <Field label="Heading text" value={str(c.text)} onChange={v => setContent('text', v)} />
-            <Select label="Level" value={str(c.level) || 'h2'} onChange={v => setContent('level', v)}
-              options={[{ value: 'h1', label: 'H1' }, { value: 'h2', label: 'H2' }, { value: 'h3', label: 'H3' }]} />
+            <Select label="Legacy level" value={str(c.level) || str(c.heading_tag) || 'h2'} onChange={v => { setContent('level', v); setContent('heading_tag', v); }}
+              options={[{ value: 'h1', label: 'H1' }, { value: 'h2', label: 'H2' }, { value: 'h3', label: 'H3' }, { value: 'h4', label: 'H4' }, { value: 'h5', label: 'H5' }, { value: 'h6', label: 'H6' }]} />
           </>)}
 
           {/* Text */}

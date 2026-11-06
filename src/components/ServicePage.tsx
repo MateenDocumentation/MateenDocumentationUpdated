@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Layout from './Layout';
+import CmsHeading from './CmsHeading';
 import { useCms } from '../cms/CmsContext';
 import { useCmsPageSections, useCmsSection, str, arr } from '../cms/useCmsPage';
 
@@ -295,7 +296,6 @@ export default function ServicePage({
   const servicesListSection = useCmsSection(pageSlug, 'services_list');
   const howStepsSection = useCmsSection(pageSlug, 'how_steps');
   const relatedSection = useCmsSection(pageSlug, 'related');
-  const faqSection = useCmsSection(pageSlug, 'faq');
   const pageSections = useCmsPageSections(pageSlug);
   const groupSections = pageSections.filter(section => section.type === 'group_list');
   const sharedHowSection = useCmsSection('/shared', 'shared_labels');
@@ -354,12 +354,6 @@ export default function ServicePage({
   type CmsRelated = { label: string; to: string };
   const cmsRelated = arr<CmsRelated>(relatedSection, 'items');
   const resolvedRelated = cmsRelated.length ? cmsRelated : related;
-
-  type CmsFaqItem = { question: string; answer: string };
-  const resolvedFaqs = arr<CmsFaqItem>(faqSection, 'items').filter(item => item.question?.trim() && item.answer?.trim());
-  const faqEyebrow = str(faqSection, 'eyebrow', 'FAQ');
-  const faqHeading = str(faqSection, 'heading', str(faqSection, 'title', 'Frequently Asked Questions'));
-  const faqDescription = str(faqSection, 'description', 'Common questions about this service.');
 
   // CMS phone/WhatsApp with hardcoded fallback
   const rawPhone = headerSettings?.phone ?? siteSettings?.phone ?? '+923312478337';
@@ -468,18 +462,11 @@ export default function ServicePage({
           </motion.p>
 
           {/* Title */}
-          <motion.h1
-            className="font-bold text-white mb-4 leading-tight"
-            style={{
-              fontFamily: 'Sora, sans-serif',
-              fontSize: 'clamp(36px, 5vw, 64px)',
-            }}
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.65, delay: 0.2, ease: 'easeOut' }}
-          >
-            {resolvedTitle}
-          </motion.h1>
+          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, delay: 0.2, ease: 'easeOut' }}>
+            <CmsHeading section={heroSection} fallbackTag="h1" className="font-bold text-white mb-4 leading-tight" style={{ fontFamily: 'Sora, sans-serif', fontSize: 'clamp(36px, 5vw, 64px)' }}>
+              {resolvedTitle}
+            </CmsHeading>
+          </motion.div>
 
           {/* Subtitle */}
           <motion.p
@@ -724,12 +711,9 @@ export default function ServicePage({
             >
               {labelAvailable}
             </p>
-            <h2
-              className="text-3xl lg:text-4xl font-bold text-[#090B0D]"
-              style={{ fontFamily: 'Sora, sans-serif' }}
-            >
+            <CmsHeading section={servicesListSection} fallbackTag="h2" className="text-3xl lg:text-4xl font-bold text-[#090B0D]" style={{ fontFamily: 'Sora, sans-serif' }}>
               {labelWhatWeOffer}
-            </h2>
+            </CmsHeading>
           </motion.div>
 
           {/* Services grid */}
@@ -795,12 +779,9 @@ export default function ServicePage({
             >
               {labelSimpleProcess}
             </p>
-            <h2
-              className="text-3xl lg:text-4xl font-bold text-[#090B0D]"
-              style={{ fontFamily: 'Sora, sans-serif' }}
-            >
+            <CmsHeading section={howStepsSection} fallbackTag="h2" className="text-3xl lg:text-4xl font-bold text-[#090B0D]" style={{ fontFamily: 'Sora, sans-serif' }}>
               {labelHowWeHelp}
-            </h2>
+            </CmsHeading>
           </motion.div>
 
           {/* Steps */}
@@ -871,32 +852,6 @@ export default function ServicePage({
         </div>
       </section>
 
-
-      {/* ══════════════════════════════════════════════════════════════════
-          FAQ
-      ══════════════════════════════════════════════════════════════════ */}
-      {resolvedFaqs.length > 0 && (
-        <section className="py-20 bg-white">
-          <div className="max-w-[1000px] mx-auto px-6 lg:px-10">
-            <div className="text-center mb-10">
-              <p className="text-xs font-semibold text-[#071A2B] tracking-[0.2em] uppercase mb-3" style={{ fontFamily: 'Manrope, sans-serif' }}>{faqEyebrow}</p>
-              <h2 className="text-3xl lg:text-4xl font-bold text-[#090B0D]" style={{ fontFamily: 'Sora, sans-serif' }}>{faqHeading}</h2>
-              {faqDescription && <p className="text-[#6b7280] mt-4 max-w-2xl mx-auto" style={{ fontFamily: 'Manrope, sans-serif' }}>{faqDescription}</p>}
-            </div>
-            <div className="space-y-3">
-              {resolvedFaqs.map((item, index) => (
-                <details key={index} className="group rounded-2xl border border-[#e8edf8] bg-[#EEF7FF]/40 px-5 py-4">
-                  <summary className="cursor-pointer list-none flex items-center justify-between gap-4 font-bold text-[#090B0D]" style={{ fontFamily: 'Sora, sans-serif' }}>
-                    <span>{item.question}</span><span className="text-[#00AEEF] text-xl group-open:rotate-45 transition-transform">+</span>
-                  </summary>
-                  <p className="pt-3 pr-8 text-sm leading-relaxed text-[#6b7280]" style={{ fontFamily: 'Manrope, sans-serif' }}>{item.answer}</p>
-                </details>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ══════════════════════════════════════════════════════════════════
           5. RELATED SERVICES
       ══════════════════════════════════════════════════════════════════ */}
@@ -918,12 +873,9 @@ export default function ServicePage({
               >
                 {labelExploreMore}
               </p>
-              <h2
-                className="text-2xl lg:text-3xl font-bold text-[#090B0D]"
-                style={{ fontFamily: 'Sora, sans-serif' }}
-              >
+              <CmsHeading section={relatedSection} fallbackTag="h2" className="text-2xl lg:text-3xl font-bold text-[#090B0D]" style={{ fontFamily: 'Sora, sans-serif' }}>
                 {labelYouMightNeed}
-              </h2>
+              </CmsHeading>
             </motion.div>
 
             {/* Cards */}
